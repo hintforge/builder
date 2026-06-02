@@ -1,0 +1,136 @@
+# hintforge -- Pre-filled setup answers
+# ----------------------------------------------------------------------
+# Fill in what you can. Leave blank, or write "ask" to be asked live.
+# Lines starting with # are comments and are ignored.
+# Format: key = value (one per line; spaces around = are fine)
+#
+# Once you've filled this in, paste the prompt from OPEN ME if new to AI into
+# Claude Code and it'll use these answers instead of asking you live.
+# ======================================================================
+
+
+# === Game ===
+
+# What game is this guide for? (free-form name)
+game_name =
+
+# Folder name for the guide. Lowercase + underscores.
+# (Default: derived from game_name. Leave blank if unsure.)
+game_folder =
+
+# What platform are you playing on? Required as of corpus-core-version 3.
+# Examples: PC / Steam, PC / GOG, PC / Epic, PS5, PS4, Xbox Series X|S,
+# Xbox One, Switch, Switch 2. Required even if the game is single-platform
+# today -- games frequently expand to other platforms post-launch.
+game_platform =
+
+# What version of the game are you on? Freeform string. Acceptable shapes:
+# semver (1.10.5.0), patch name ("Annihilation Instinct"), build number
+# ("Build 12345"), DLC-named era (pre-DLC2, post-launch-patch-2), or
+# "unknown" if you can't find it. The wizard does not normalize.
+# Where to look: Steam library version field, console game-info menu,
+# in-game settings/about screen.
+game_version =
+
+
+# === Player (Step 1.5) ===
+
+# What should Claude call you?
+# (Default if blank: "Player")
+player_name =
+
+
+
+# === Workspace location (Step 2) ===
+
+# Where should the per-game folder be created?
+# Default: <parent of hintforge>/Guides/<game_folder>/
+# Leave blank for the default. Most users should leave this blank.
+workspace_root =
+
+
+# === Save-watcher / game install paths (Step 3) ===
+# ⚠️ Heads-up: setting up the save-watcher takes 10-30 messages on Pro.
+# Most users should leave both blank or write "skip".
+
+# Where does the game save your progress? (full path, or "skip")
+save_dir = skip
+
+# Where is the game installed? (full path, or "skip" -- only useful with save-watcher)
+game_install_dir = skip
+
+
+# === Hint tiers (Step 4) ===
+# Both default to the lowest setting (most discovery, least info up-front).
+# You can change these any time during play.
+
+# Enemy/threat tier 0-5:
+#   0 = no warnings ever (encounters are surprises)
+#   1 = mob types named in route hints; bosses still hidden
+#   2 = boss-fight existence flagged; no boss details
+#   3 = boss generically named + loadout suggestions
+#   4 = + crafting materials to stock
+#   5 = full move-by-move boss strategy
+enemy_tier = 0
+
+# Puzzle/decision tier 0-3:
+#   0 = silent until you ask
+#   1 = on entry, name the puzzle type and core mechanic
+#   2 = + auto-deliver a Lvl-1 nudge on entry
+#   3 = + auto-deliver full step-by-step on entry
+puzzle_tier = 1
+
+
+# === Personas (Step 5) ===
+# Two voices the guide can speak in. One active, one available as a toggle.
+# Either name two characters from the game, write "you pick" to have Claude
+# research candidates, or write "none" for plain assistant voice.
+
+personas = you pick
+
+
+# === Push-to-talk / PTT (Step 6.5) ===
+# ⚠️ Heads-up: setting up PTT takes 3-5 messages on Pro and requires
+# Python + AutoHotkey v2. Most users should leave as "skip".
+
+# Options: skip / yes
+ptt = skip
+
+# If ptt = yes, what key do you want to hold to talk?
+# The default Numpad+ only works on full-size keyboards. Common picks:
+# CapsLock, F13, ScrollLock, RAlt, AppsKey, MButton, XButton1, XButton2.
+# AVOID keys you use in-game and bare modifier keys (Ctrl/Alt/Shift/Win).
+# Full key reference: https://www.autohotkey.com/docs/v2/KeyList.htm
+# (Ignored if ptt = skip.)
+ptt_hotkey = CapsLock
+
+
+# === Read-aloud / TTS (Step 6) ===
+# ⚠️ Heads-up: setting up read-aloud takes 5-15 messages on Pro.
+# Most users should leave as "skip".
+
+# Options: skip / persona-matched / generic
+tts = skip
+
+
+# === Stage 0 pre-research (Step 6.7) ===
+# 1-3 message web search before subfolder shape (Step 7) so Claude can
+# suggest specific content categories instead of asking you to guess.
+# Cost is small; default is yes. Skip only if you want zero cost up-front.
+# Options: yes / skip
+
+stage0 = yes
+
+
+# === Research mode (Step 8) ===
+# How much of the game should Claude research up-front vs. as you ask?
+# Options:
+#   none      -- ~0 messages now; lookups happen on demand (recommended on Pro)
+#   minimal   -- ~5 messages; one source per category
+#   standard  -- ~20 messages; 1-2 sources per category, conflicts flagged
+#   deep      -- ~50+ messages; sweep everything reachable (Max/Team only)
+#   handoff   -- Claude writes a research brief to paste into Gemini Deep
+#               Research / ChatGPT / Perplexity; you bring results back and
+#               Claude ingests them in a fresh session. Cost externalized.
+
+research = handoff

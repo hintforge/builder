@@ -1,0 +1,327 @@
+==========================================================
+  OPEN ME if new to AI -- How to prompt Claude
+==========================================================
+
+If someone shared this folder with you, it's because
+they thought it'd help with a game you're playing. Follow
+these steps to set up a tier-controlled game guide.
+
+==========================================================
+  IMPORTANT: USE CLAUDE CODE DESKTOP -- NOT COWORK
+==========================================================
+
+This guide is for Claude Code Desktop -- the app you download
+and install on your computer from:
+
+   https://claude.ai/download
+
+It is NOT for any of these, even though they all say
+"Claude" somewhere:
+
+  - Cowork
+  - claude.ai in your web browser
+  - Any chat tool that doesn't have its own access to
+    files on your actual computer
+
+Why does it matter? This guide has Claude create files in
+your Documents folder so your game notes stick around
+between sessions. Cowork and the browser version of Claude
+don't put files on your computer -- whatever they make
+disappears when you close the chat. So you'd have to redo
+the whole setup every time you came back.
+
+If you've been using Claude in a browser tab or in Cowork,
+pause here, download Claude Code Desktop from the link above,
+sign in with the same account, and continue from STEP 1
+below in the desktop app.
+
+==========================================================
+
+This takes about 5 minutes. You're going to:
+
+  1. Fill in setup_answers.txt with your preferences (Notepad)
+  2. Open Claude Code Desktop and turn on file access
+  3. Confirm the model is set to SONNET
+  4. Paste the prompt below into the chat
+  5. Confirm a few last things in chat
+  6. Done -- start asking about the game
+
+
+----------------------------------------------------------
+  STEP 1 -- Fill in setup_answers.txt
+----------------------------------------------------------
+
+In the same folder as this file, there's a file called
+setup_answers.txt. Open it in Notepad (right-click -> Open
+With -> Notepad).
+
+It looks like a simple list with lines like:
+
+   game_name =
+   player_name =
+   enemy_tier = 0
+
+Fill in what you can. Each section has comments above it
+(the # lines) explaining what to put. The basics:
+
+   game_name      -- What's the game called?
+   player_name    -- What should Claude call you? Try a title or name relevant to the game
+   enemy_tier     -- 0 (surprises stay surprises) up to 5
+   puzzle_tier    -- 0 (silent) up to 3 (full solutions)
+   personas       -- Two character voices the guide can speak in.
+                     Default "you pick" lets Claude propose two
+                     characters from the game. Or write "none" for
+                     a plain assistant voice. Or name two yourself,
+                     e.g. "Mentor / Rival Captain".
+   research       -- How much background research Claude does
+                     up-front. Default "handoff" writes you a
+                     research brief to paste into a free deep-
+                     research tool (Gemini Deep Research, ChatGPT
+                     Deep Research, Perplexity) so the cost
+                     doesn't eat your Claude messages. Other
+                     options: "none" (cheapest -- Claude looks
+                     things up as you ask), "minimal", "standard",
+                     "deep". See the "ABOUT THE RESEARCH HANDOFF"
+                     section below if you want the details.
+
+Save the file when you're done. Keep it as a .txt file --
+don't let Notepad save it as .txt.txt or anything else.
+
+If you skip this step entirely, that's fine -- Claude will
+just ask you the same questions live in chat.
+
+
+----------------------------------------------------------
+  STEP 2 -- Open Claude Code Desktop and enable file access
+----------------------------------------------------------
+
+If you don't have Claude Code Desktop yet, download it from:
+
+   https://claude.ai/download
+
+Sign in with your Claude account. Open the app and click
+"New Chat" (or just start fresh -- usually it opens on a
+new chat).
+
+Then turn on file access:
+
+   1. Click the gear / Settings icon (usually top right)
+   2. Find "Connectors" in the settings sidebar
+   3. Make sure "Files" (or "Filesystem") is toggled ON
+   4. Close settings
+
+If you skip this, Claude will say "I can't read files"
+and you'll have to come back here.
+
+
+----------------------------------------------------------
+  STEP 3 -- Pick a Claude model: SONNET (minimum)
+----------------------------------------------------------
+
+Claude Code Desktop lets you pick which version of Claude
+you're talking to. There's a model dropdown somewhere near
+the top of the chat or next to the message input box.
+
+Pick:    SONNET   (the default for most users)
+
+Stay on Sonnet the whole way through -- setup AND gameplay.
+There's no model-switching dance.
+
+
+----------------------------------------------------------
+  STEP 4 -- Copy and paste the message below
+----------------------------------------------------------
+
+Copy everything between the ===== lines below and paste it
+into the Claude Code Desktop chat. Hit Send.
+
+The prompt assumes hintforge is at ~/Documents/hintforge
+(the default when you extract the ZIP into Documents). If
+you put it somewhere else -- different drive, Downloads,
+Dropbox / OneDrive -- replace ~/Documents/hintforge in the
+prompt with your actual path. (Right-click the folder in
+File Explorer -> Copy as path.)
+
+==========================================================
+
+Hi Claude, I have a folder at ~/Documents/hintforge with a
+tier-controlled game-guide framework. (If that path is
+wrong, use whatever path I pasted in over it -- otherwise
+that default is correct.) Please:
+
+1. First, find the hintforge folder. Try ~/Documents/hintforge
+   first; if that doesn't exist, ask me where I put it before
+   doing anything else.
+2. Read <hintforge>/setup_answers.txt -- I may have
+   pre-filled some answers there. Use those instead of
+   asking me live for the same things. If the file is
+   missing, empty, or a field is blank, ask me live for
+   that one.
+3. Read <hintforge>/setup_wizard.md and walk me through
+   whatever's still missing in plain English.
+4. Create the new game folder as a sibling of hintforge,
+   under a Guides/ folder next to it (e.g. if hintforge is
+   at ~/Documents/hintforge then the guide goes at
+   ~/Documents/Guides/<game>/). Don't change anything
+   outside the hintforge folder and the new guide folder.
+5. After setup, just be ready to answer my questions
+   about the game.
+
+Tell me before doing anything that touches files, and
+explain each step in plain English before doing it.
+
+==========================================================
+
+
+----------------------------------------------------------
+  STEP 5 -- Confirm the last few things
+----------------------------------------------------------
+
+Claude reads your setup_answers.txt and skips any questions
+you already answered there. Anything you left blank, Claude
+will probably batch into a single popup or numbered-list
+message -- answer them all together rather than one at a
+time. (This saves messages.)
+
+After the batched questions, a couple things still need
+back-and-forth:
+
+   Persona confirmation
+      If you left "personas = you pick" in setup_answers.txt,
+      Claude will research candidates and propose two
+      characters from the game. Confirm or pick different
+      ones. (You already saw this field at STEP 1 -- this is
+      just the live moment where Claude shows you its
+      proposals.)
+
+   "Which subfolders should it create?"
+      Claude usually suggests good defaults based on the
+      game. Say "use those" unless you have specific
+      preferences.
+
+   Final summary
+      Claude will show every answer (yours from the file +
+      anything you said live) before doing anything. Look
+      it over, fix typos if needed, then say "yes" to
+      proceed.
+
+After Claude finishes setup, it will tell you to:
+
+   * Close this chat and open a new one
+   * Open the new chat in your game's folder
+     (~/Documents/Guides/<game>/)
+   * Stay on Sonnet (no model switch needed)
+
+This handoff matters -- a fresh chat starts with clean
+memory and only reads your finished guide files. Trust
+the handoff message.
+
+
+----------------------------------------------------------
+  STEP 6 -- Use the guide (in a fresh chat with SONNET)
+----------------------------------------------------------
+
+In your new chat, set the working folder to your game's
+folder (something like ~/Documents/Guides/<game>/), confirm
+the model is still SONNET, and just chat normally:
+
+   "I'm stuck on the puzzle in the second area"
+      Claude gives the smallest possible nudge first. You
+      can ask for more help if you want.
+
+   "Where's the hidden chest near [location]?"
+      Claude looks it up.
+
+   "Bump my puzzle help up one level"
+      Claude updates your settings.
+
+   "Research the items in this game"
+      Claude does a focused research pass. Uses about 20
+      messages -- only do this when you have budget to
+      spare. (Sonnet for this one too.)
+
+You don't have to edit any files yourself. Claude does it
+all and tells you what it's doing before doing it.
+
+
+----------------------------------------------------------
+  ABOUT THE RESEARCH HANDOFF
+----------------------------------------------------------
+
+If you left "research = handoff" in setup_answers.txt (the
+default), here's what happens and how to bring results back.
+
+What it does:
+   Heavy research (item lists, mech specs, faction overviews,
+   etc.) can burn 30-50 Claude messages and blow a Pro user's
+   5-hour cap on day one. Instead, Claude writes a one-page
+   research brief to:
+
+      ~/Documents/Guides/<game>/research_brief.txt
+
+   ...and tells you which external tool to paste it into,
+   based on your Claude tier:
+
+      Max / Team / Enterprise   Claude Research on claude.ai
+      Pro                       Gemini Deep Research (free)
+      Free / no Claude sub      Perplexity Deep Research
+
+   The expensive sweep happens on the external tool's
+   tokens, not yours.
+
+How to bring results back as a file:
+
+   1. The external tool finishes and gives you a long
+      writeup in your browser. Save the output -- any of
+      .txt, .md, or .docx works. Two easy ways:
+        a) Use the tool's "download" or "export" button
+           if it has one.
+        b) Select-all -> copy -> paste into Notepad ->
+           Save As.
+   2. Save the file into the drop-zone folder Claude made
+      for you:
+
+         ~/Documents/Guides/<game>/research_inbox/
+
+      That's the ONLY folder Claude looks in for handoff
+      results. Anything you put there is fair game;
+      nothing else on your computer gets touched.
+   3. Open a FRESH Claude Code chat in the guide folder
+      (~/Documents/Guides/<game>/) and say:
+
+         ingest the research
+
+      Claude reads every file in research_inbox/,
+      distributes the content into the right subfolders
+      (items/, mechs/, etc.) with source-tagged metadata,
+      then moves the processed file out of the inbox so
+      it doesn't get re-ingested.
+
+If you set "research = none" instead, skip this section --
+Claude will just look things up as you ask. No handoff,
+no inbox folder needed.
+
+
+----------------------------------------------------------
+  IF SOMETHING GOES WRONG
+----------------------------------------------------------
+
+   "I can't write files"
+      File access isn't on. Go back to STEP 2.
+
+   Claude says it can't find ~/Documents/hintforge
+      The ZIP didn't extract right. Re-extract the ZIP
+      into your Documents folder. You should end up with
+      Documents\hintforge\ containing a bunch of .md files
+      and a setup_answers.txt.
+
+   Claude is asking questions you already answered in
+   setup_answers.txt
+      It might not have read the file. Tell it: "Please
+      re-read ~/Documents/hintforge/setup_answers.txt and
+      use those answers."
+
+   Claude is being weird or wrong
+      Tell Claude what's happening -- it can usually
+      recover. If it can't, ask whoever shared this
+      folder with you.

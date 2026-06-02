@@ -1,0 +1,16 @@
+{
+  "_comment": "Claude Code settings for the TTS Stop hook. Copy to <game>/.claude/settings.json (committable, ships with the guide repo). Hook fires on every assistant turn end; the hook script itself path-guards against running outside allowlisted game folders.",
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\tts_hook.ps1\""
+          }
+        ]
+      }
+    ]
+  }
+}

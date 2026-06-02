@@ -1,0 +1,35 @@
+# TTS persona → voice mapping for this game
+# ----------------------------------------------------------------------
+# Format: PersonaName=VoiceID
+#   or:   PersonaName=VoiceID,RatePercent
+#
+# PersonaName: must match a name from this game's persona.md, case-sensitive.
+# VoiceID: any edge-tts voice. Common picks below; full list:
+#   python -m edge_tts --list-voices
+#
+# RatePercent (optional): negative slows down (e.g. -8% for a deliberate
+# pace), positive speeds up. Useful for personas that should sound
+# slower/more measured.
+#
+# A persona with no entry here uses the default (en-US-AvaNeural). The
+# hook also falls back to that if persona.md is missing or unparseable.
+# ======================================================================
+
+
+# === Examples (delete and replace with your game's personas) ===
+
+# Female AI voice -- neutral US English neural voice (Microsoft Copilot)
+# default = en-US-AvaNeural
+
+# Male British voice, slowed for a measured pace
+# PersonaA = en-GB-RyanNeural,-8%
+
+# Female US voice
+# PersonaB = en-US-AvaNeural
+
+
+# === Your personas ===
+
+# Add lines like:
+#   PersonaName = en-US-VoiceName
+#   PersonaName = en-US-VoiceName,RATE

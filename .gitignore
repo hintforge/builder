@@ -1,0 +1,31 @@
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor junk
+.vscode/
+.idea/
+*.swp
+*~
+
+# Drive sync conflict copies (workspace-wide hygiene; see workspace CLAUDE.md File-hygiene section)
+* (1).*
+* (2).*
+* (3).*
+
+# Python (in case save_watcher.py runs)
+__pycache__/
+*.pyc
+
+# Node (in case anyone adds tooling later)
+node_modules/
+
+# Per-folder Claude Code settings (per-user state; supply-chain hazard if shared)
+.claude/settings.local.json
+
+# Secrets -- never commit
+.env
+*.key
+*.pem
+credentials.json
