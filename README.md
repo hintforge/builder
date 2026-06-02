@@ -39,6 +39,27 @@ hintforge inverts that: **information is opt-in.** Want more? Ask. Want less? Lo
 
 **Remembering where you left off can be difficult.** Complex games demand a lot up front: crafting systems, skill trees, gear builds, hotkey layouts you spent an hour customizing. Then life happens. Come back six weeks later and you're staring at a skill tree you don't recognize, a control layout you've half-forgotten, and quest context that's gone cold. The usual workaround is Googling "how do I play X again" and landing on a five-year-old forum post that's slightly wrong for the current patch. hintforge keeps that context alongside your save -- when you tell it you're returning after a break, it reconstructs what you had going without spoiling where the story goes. No plot hints. No boss previews. Just "here's your build, here's what you were doing, and here are the four buttons you always forget."
 
+### "Couldn't I just put a wiki into NotebookLM?"
+
+It is the obvious objection, and answering it is the cleanest way to see what Hintforge is for. NotebookLM is the best-known source-grounded research assistant: you upload documents, it answers from them instead of from open-web training data, and it cites as it goes. Point it at a game wiki and it will happily answer questions about that game.
+
+The catch is that NotebookLM and Hintforge are built toward opposite goals. NotebookLM exists to surface everything in your sources as fast as possible; that is the entire value proposition of a research assistant. Hintforge exists to withhold, to hand you exactly as much as you asked for and not one beat more. Feeding a full game wiki into NotebookLM does not give you a spoiler-safe companion; it gives you a faster way to get spoiled, because the tool has no concept of where you are in the game or what you have not reached yet.
+
+| Dimension | Google NotebookLM | Hintforge |
+|---|---|---|
+| Design goal | Surface everything in your sources, fast | Withhold by default; reveal only what you request |
+| Spoiler control | None; any answer can spoil | Two graduated dials (enemy 0-5, puzzle 0-3) plus a request-based hint ladder |
+| Progress awareness | Stateless; no concept of where you are in the game | Tracks your position, open threads, and build; reconstructs context after a break |
+| Conflicting sources | Answers over raw uploads; contradictions surface unresolved | Ingestion, stitch, and zipper reconcile conflicts; every claim is source-weighted with confidence metadata |
+| Voice and character | Custom personas and selectable host voices and tones | Game-themed persona bound by the spoiler rules; it flavors how an answer is delivered, never what gets revealed |
+| What you own | A notebook locked inside your Google account | Plain markdown files you own, fork, edit, and merge |
+| Where it runs | Google web and mobile only | Claude Code, Codex, OpenClaw; an OS- and agent-agnostic markdown core |
+| Cost model | Tied to a Google AI subscription; usage-limited tiers, cannot be bought standalone | Runs on your own LLM tokens; the framework itself is free under CC BY-NC-SA |
+| Privacy | Closed cloud product | Local files you control; no telemetry, no daemons, inspectable in plain language |
+| Shareability | A notebook is not a mergeable community format | Corpus is designed to be shared and merged into consensus guides (roadmap) |
+
+To be fair to it, NotebookLM is genuinely better at some things: polished multimedia output, a large context window, a clean mobile app, and zero setup. If your goal is to study a document you have already finished, it is excellent. If your goal is to play a game you have not finished without being told how it ends, the design is working against you. That gap is the reason Hintforge exists.
+
 It's also designed as a framework for **multi-contributor truth aggregation** -- players' agents push observations to a shared repo, an aggregator merges them into percentage-based truth, and a static HTML wiki gets generated. Not there yet, but guides created with this framework are meant to be not only shareable but mergeable.
 
 ---
