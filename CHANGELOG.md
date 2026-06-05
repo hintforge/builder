@@ -4,6 +4,17 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Framework path convention updated to `../../hintforge/builder/`; packaged SKILL.md trigger parity (v66, 2026-06-05)
+
+**Builder changes.**
+
+- The guide→framework breadcrumb convention -- the relative paths written into each guide's `CLAUDE.md` from `templates/claude_md.md` -- now resolves to `../../hintforge/builder/` rather than `../../hintforge/`, reflecting the builder repo living in a `builder/` subdirectory of the framework checkout (alongside the reader at `reader/`). The stale `principles.md` breadcrumb (that file is now reader-side) is repointed to the builder's `CLAUDE.md`, which carries the framework rule set.
+- `templates/checkpoint.md`, `instantiation.md`, and `setup_wizard.md` (literal-path-discipline notes, incident reference, and the absolute-path leak-scanner's "correct form" guidance) updated to the `../../hintforge/builder/` convention so the wizard's self-checks stay consistent with what it writes.
+- The packaged skill entry point at `.agents/skills/hintforge/SKILL.md` (the copy Codex / OpenClaw / Claude Code install from) was missing the "Hintforge doctor, reddit sweep" activation trigger that the rest of the skill carries; restored so every install path exposes the same triggers.
+- `CLAUDE.md` line 2 bumped v65→v66.
+
+**Existing corpus impact.** No `corpus-core-version` bump and no change to corpus structure. Guides built before this version carry the old `../../hintforge/` breadcrumb in their `CLAUDE.md`; if your framework checkout places the builder under `hintforge/builder/`, update those breadcrumb paths to `../../hintforge/builder/...` (the `principles.md` reference becomes `../../hintforge/builder/CLAUDE.md`). Guides built after this version ship the corrected paths.
+
 ### Setup wizard: manifest-artifact gate, player-name prose enforcement, deterministic handoff (v65, 2026-06-02)
 
 **Builder changes.**

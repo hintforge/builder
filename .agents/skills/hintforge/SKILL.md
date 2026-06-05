@@ -23,6 +23,7 @@ Activate on author-style intents:
 - "Ingest the research in research_inbox"
 - "Run stitch" / "run zipper"
 - **"Doctor hintforge"** (primary trigger for post-instantiation maintenance: format bumps, game updates, targeted repair). Aliases that also work: "doctor my guide", "doctor the corpus". **Do not** trigger on the bare "run the doctor" -- that phrasing collides with Claude Code's built-in `/doctor` CLI health-check command and routes to the wrong place.
+- **"Hintforge doctor, reddit sweep"** (the community-knowledge sweep; canonical phrase, runs via the doctor anchor). Optionally scoped: "hintforge doctor, reddit sweep for the [patch / DLC / gap]". Routes to [`reddit_sweep.md`](reddit_sweep.md) as a dedicated session. There is no standalone "run the reddit sweep" trigger -- the `hintforge doctor` anchor is what reliably loads the skill.
 - "Generate a research brief for [game / topic]"
 
 Do not activate for runtime player questions ("where do I go?", "hint for this puzzle"). Those belong to the `hintforge-reader` skill.
