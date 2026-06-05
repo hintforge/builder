@@ -12,7 +12,7 @@ This procedure runs on an existing, instantiated guide when something is wrong, 
 
 ## Pre-flight
 
-- The session is **fresh** and opened **inside the game folder** (`Guides/<game>/`), not at workspace root or inside `hintforge/`. The framework lives at `../hintforge/`.
+- The session is **fresh** and opened **inside the game folder** (`Guides/<game>/`), not at workspace root or inside the framework folder. Framework files this procedure reads (`docs/corpus-format.md`, `CHANGELOG.md`, templates) come from the running skill, not a path relative to the guide.
 - The guide has already been instantiated (`architecture.md` exists, `CHECKPOINT.md` exists, at least one content subfolder has been populated). If those aren't present, redirect the user to `setup_wizard.md` or `ingestion.md` and stop.
 - Run on a mid-tier model with extended thinking off. This is structural work, not reasoning-chain work.
 
@@ -53,7 +53,7 @@ If the user can't pick, ask three diagnostic questions: (1) Did the reader show 
 
 | Branch | Fetch target |
 | --- | --- |
-| **A** | None online. Read `../hintforge/CHANGELOG.md` and `../hintforge/docs/corpus-format.md` to identify what changed between the corpus's current `corpus-core-version` and the framework's target. |
+| **A** | None online. Read `CHANGELOG.md` and `docs/corpus-format.md` (from the running skill) to identify what changed between the corpus's current `corpus-core-version` and the framework's target. |
 | **B** | Web fetch: patch notes, DLC announcement page, dev blog, or wiki version-history section. Establish what changed in the game world. Single source minimum, two preferred. |
 | **C** | Web fetch only if the gap is factual and existing corpus sources don't cover it. For misclassification or structural issues, no fetch needed -- the gap is in our handling, not in the world. **For achievement gaps:** use the source ladder in [`setup_wizard.md`](setup_wizard.md) Step 6.7 sub-step 4 (WebSearch first, not URL crawling). |
 
@@ -62,8 +62,8 @@ Show the user what was fetched and a one-line summary of the change before conti
 ### 3. Branch A -- Format bump
 
 1. Read the corpus's current `corpus-core-version` from `nav/architecture.md`'s `## Hintforge manifest` block.
-2. Read the framework's target `corpus-core-version` from `../hintforge/docs/corpus-format.md` §3 (Versioning).
-3. For each intermediate version step between them, apply the migration the `../hintforge/CHANGELOG.md` entry describes for that step. Migrations are additive; earlier-version corpora remain valid under the reader's `MIN_SUPPORTED_CORE` / `MAX_SUPPORTED_CORE` bounds, so the goal is "bring format current," not "rescue an unreadable corpus."
+2. Read the framework's target `corpus-core-version` from `docs/corpus-format.md` §3 (Versioning).
+3. For each intermediate version step between them, apply the migration the `CHANGELOG.md` entry describes for that step. Migrations are additive; earlier-version corpora remain valid under the reader's `MIN_SUPPORTED_CORE` / `MAX_SUPPORTED_CORE` bounds, so the goal is "bring format current," not "rescue an unreadable corpus."
 4. Update `nav/architecture.md`'s `corpus-core-version` field. This is the only doctor branch that touches the manifest version.
 5. Enumerate any newly-scaffolded files or fields and offer to queue branch C to fill them. Phrasing: "Branch A scaffolded these empty: X, Y, Z. Want to run branch C now to fill them?" Yes proceeds; no logs the deferred work in CHECKPOINT as pending.
 6. Log the migration in `CHECKPOINT.md`'s `## Harness changelog` with from-version, to-version, and which files were touched.
