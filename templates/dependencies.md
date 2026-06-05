@@ -30,7 +30,7 @@
 
 ## Corpus inconsistencies
 
-Stitch's per-edge convergence audit (see [`../hintforge/stitch_and_zipper.md`](../hintforge/stitch_and_zipper.md) Phase B) populates this section when a candidate edge's cited sources contradict each other. Each row records the contradiction; resolving it is the user's call (or a follow-up doctor / ingestion run). Edges blocked on an unresolved entry are NOT written to the tables above until the inconsistency is closed.
+Stitch's per-edge convergence audit (see [`../../hintforge/builder/stitch_and_zipper.md`](../../hintforge/builder/stitch_and_zipper.md) Phase B) populates this section when a candidate edge's cited sources contradict each other. Each row records the contradiction; resolving it is the user's call (or a follow-up doctor / ingestion run). Edges blocked on an unresolved entry are NOT written to the tables above until the inconsistency is closed.
 
 | Detected | Files | Conflicting values | Suspected authoritative source | Status |
 |----------|-------|--------------------|--------------------------------|--------|
