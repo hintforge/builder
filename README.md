@@ -4,7 +4,7 @@
 
 A guide for any game, on any system, where you choose how much help you want and it logs your progress so you can pick up easily even after a long time away. It's a loyal sidekick -- customized to your spoiler preferences and interaction style -- that tags along and helps you out. Markdown + structured-claim convention, OS- and agent-agnostic, consumed by a local AI agent that reads and writes files you control.
 
-> Want to **use** an existing guide rather than build one? Go to [`hintforge-reader`](https://github.com/dtiger1889-ops/hintforge-reader) -- the runtime hint-companion skill that pairs with any Hintforge-format guide.
+> Want to **use** an existing guide rather than build one? Go to [`hintforge-reader`](https://github.com/hintforge/reader) -- the runtime hint-companion skill that pairs with any Hintforge-format guide.
 >
 > [Pre-built guides coming soon.]
 
@@ -12,7 +12,7 @@ A guide for any game, on any system, where you choose how much help you want and
 
 Paste this into Claude Code, Codex, or OpenClaw:
 
-> Install the hintforge skill from github.com/dtiger1889-ops/hintforge
+> Install the hintforge skill from github.com/hintforge/builder
 
 Per-runtime details in [`docs/install/`](docs/install/).
 
@@ -23,7 +23,7 @@ Per-runtime details in [`docs/install/`](docs/install/).
    - [Codex (CLI + desktop)](docs/install/codex.md)
    - [OpenClaw](docs/install/openclaw.md)
 2. **In your runtime,** ask: "build a guide for [GAME]". The wizard walks you through ~10 questions, then scaffolds `~/Documents/Guides/<game>/` with the universal core directories, the vector extensions your game needs, and a `research_brief.txt` ready for a deep-research handoff.
-3. **Install the [`hintforge-reader`](https://github.com/dtiger1889-ops/hintforge-reader) skill** to play with the guide once it's built.
+3. **Install the [`hintforge-reader`](https://github.com/hintforge/reader) skill** to play with the guide once it's built.
 
 **You'll know it's working when** the wizard greets you and starts asking setup questions (game name, persona cast, dial defaults) before touching any files.
 
@@ -141,7 +141,7 @@ If the skill did not trigger, check that you opened the session inside the hintf
 
 ### How to confirm the reader skill triggered
 
-The same check applies. Open a session inside your game guide folder and ask "what skill is running." The reader skill should be installed per the reader's install instructions. See the [hintforge-reader repo](https://github.com/dtiger1889-ops/hintforge-reader) for install details.
+The same check applies. Open a session inside your game guide folder and ask "what skill is running." The reader skill should be installed per the reader's install instructions. See the [hintforge-reader repo](https://github.com/hintforge/reader) for install details.
 
 ## Deep-research handoff
 
@@ -212,7 +212,7 @@ These three tools exist because the principles in `principles.md` require that e
 
 ## Principles -- what shapes the framework
 
-Load-bearing rules summarized. Full set (16 principles + rationale) in the [reader skill's `principles.md`](https://github.com/dtiger1889-ops/hintforge-reader/blob/main/.agents/skills/hintforge-reader/principles.md).
+Load-bearing rules summarized. Full set (16 principles + rationale) in the [reader skill's `principles.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md).
 
 **User-controlled assistance is the backbone, not a feature.** The two tiers are first-class state, not a setting hidden in a config screen. Every other rule (spoiler discipline, the hint ladder, persona constraints) only makes sense in service of reader agency over information flow. Inverting the fan-wiki "spoil-everything-by-default" model is what hintforge exists to do.
 
@@ -239,7 +239,7 @@ The reader is non-technical and trusts the framework by trusting the link they w
 
 **Token-aware execution.** Token-heavy operations (game research, content sweeps, multi-source fetching) are opt-in and flagged before they run. The primary users are paid AI-bot subscribers on capped plans -- if setup auto-launches a research burst on day one, the reader hits their cap before getting any guide value. Research and guide-use are separable so the reader can budget across both. The setup wizard is lightweight by default; heavy optional steps (save-watcher, read-aloud / TTS, batch research) default to skipped on Pro tier.
 
-**OS-portable + bot-portable by design.** The markdown core (templates, principles, claim format, tier logic) is portable anywhere. What's locked to a specific environment is quarantined: TTS hook (Windows SAPI), default file paths (Windows-flavored), PowerShell snippets in some scripts, and Claude-Code-specific hook configs in the optional modules. A non-Windows reader, or a non-Claude AI bot, can consume the markdown layer directly; OS-specific add-ons need contributor adaptation. The minimum capability bar for a useful agent: read markdown, write markdown, fetch URLs, run a script, take user input across multiple turns. See the [reader skill's `os_compatibility.md`](https://github.com/dtiger1889-ops/hintforge-reader/blob/main/.agents/skills/hintforge-reader/os_compatibility.md) for the player-facing compatibility disclosure, or [`os_compatibility.md`](os_compatibility.md) here for the full portability matrix and porting roadmap.
+**OS-portable + bot-portable by design.** The markdown core (templates, principles, claim format, tier logic) is portable anywhere. What's locked to a specific environment is quarantined: TTS hook (Windows SAPI), default file paths (Windows-flavored), PowerShell snippets in some scripts, and Claude-Code-specific hook configs in the optional modules. A non-Windows reader, or a non-Claude AI bot, can consume the markdown layer directly; OS-specific add-ons need contributor adaptation. The minimum capability bar for a useful agent: read markdown, write markdown, fetch URLs, run a script, take user input across multiple turns. See the [reader skill's `os_compatibility.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/os_compatibility.md) for the player-facing compatibility disclosure, or [`os_compatibility.md`](os_compatibility.md) here for the full portability matrix and porting roadmap.
 
 ---
 
@@ -247,13 +247,13 @@ The reader is non-technical and trusts the framework by trusting the link they w
 
 Verified-running on Windows 11 + Claude Desktop / Claude Code, Pro/Max tier. The markdown core is OS- and agent-agnostic; Windows-specific add-ons (TTS hook, save-game default paths, PowerShell snippets) need adaptation for Mac / Linux. Cowork and browser claude.ai are not the right runtimes for building or maintaining a guide -- both lack the local-file persistence the framework relies on.
 
-Full portability matrix in [`os_compatibility.md`](os_compatibility.md). Per-runtime install caveats (Claude Code hooks, Cowork session-scoping, browser claude.ai) live with the install docs at [`docs/install/`](docs/install/). The player-facing OS-compatibility view ships with the reader at the [reader skill's `os_compatibility.md`](https://github.com/dtiger1889-ops/hintforge-reader/blob/main/.agents/skills/hintforge-reader/os_compatibility.md).
+Full portability matrix in [`os_compatibility.md`](os_compatibility.md). Per-runtime install caveats (Claude Code hooks, Cowork session-scoping, browser claude.ai) live with the install docs at [`docs/install/`](docs/install/). The player-facing OS-compatibility view ships with the reader at the [reader skill's `os_compatibility.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/os_compatibility.md).
 
 ---
 
 ## Folder map
 
-This repo is the **builder** skill (authoring side). The runtime **reader** skill is a sibling repo at [`hintforge-reader`](https://github.com/dtiger1889-ops/hintforge-reader).
+This repo is the **builder** skill (authoring side). The runtime **reader** skill is a sibling repo at [`hintforge-reader`](https://github.com/hintforge/reader).
 
 | File | Purpose |
 |---|---|
@@ -327,7 +327,7 @@ Even without a patch or DLC, a corpus built from a snapshot of web sources drift
 A full `CONTRIBUTING.md` lands alongside the multi-contributor aggregator -- see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the current stub (license inheritance + pointer back here). For now:
 
 - Found a missing template field, an OS that doesn't work for you, or a content-discipline gap? Open an issue.
-- PRs welcome -- the framework's hard rules (in the [framework definition](CLAUDE.md) and the [reader skill's `principles.md`](https://github.com/dtiger1889-ops/hintforge-reader/blob/main/.agents/skills/hintforge-reader/principles.md)) are the bar. Anything that violates spoiler discipline, transparent operations, or token-aware execution is a regression.
+- PRs welcome -- the framework's hard rules (in the [framework definition](CLAUDE.md) and the [reader skill's `principles.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md)) are the bar. Anything that violates spoiler discipline, transparent operations, or token-aware execution is a regression.
 
 ---
 

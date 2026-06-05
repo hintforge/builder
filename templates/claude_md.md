@@ -1,6 +1,6 @@
 # [GAME NAME] -- Game Guide
 <!-- v1 -- YYYY-MM-DD HH:MM UTC -->
-<!-- forged with hintforge [HINTFORGE_VERSION] · dtiger1889-ops · CC BY-NC-SA 4.0 · github.com/dtiger1889-ops/hintforge -->
+<!-- forged with hintforge [HINTFORGE_VERSION] · dtiger1889-ops · CC BY-NC-SA 4.0 · github.com/hintforge/builder -->
 
 This folder is a spoiler-controlled, [PERSONA1]-or-[PERSONA2]-flavored reference for the player's [GAME NAME] playthrough. It is **not** a Claude Code task list. AI agent sessions opened here read this file for orientation, then look up specific topics in the subfolders below.
 
