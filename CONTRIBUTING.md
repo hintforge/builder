@@ -14,7 +14,7 @@ This is the **builder** repo. Open issues here for:
 - Templates (universal core, vector extensions, persona cast scaffolding)
 - Domain vocabulary (`CONTEXT.md`) gaps or wording
 
-Open issues at [`hintforge-reader`](https://github.com/dtiger1889-ops/hintforge-reader) for:
+Open issues at [`hintforge-reader`](https://github.com/hintforge/reader) for:
 
 - Dial behavior (graduated spoilers, escalation)
 - Runtime rules (lookahead, backtrack, reachability, locks-and-keys notifications)

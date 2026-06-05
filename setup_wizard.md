@@ -25,7 +25,7 @@ The first-user test: a non-technical user receives a single pastable message fro
 
 **The pastable trigger is natural language**, not a shell command. A non-tech-friendly example:
 
-> Hi Claude -- please clone `https://github.com/dtiger1889-ops/hintforge` into my Documents folder and walk me through setting up a guide for [GAME NAME]. Ask me what I need to answer; otherwise use sensible defaults. Don't change anything outside that folder.
+> Hi Claude -- please clone `https://github.com/hintforge/builder` into my Documents folder and walk me through setting up a guide for [GAME NAME]. Ask me what I need to answer; otherwise use sensible defaults. Don't change anything outside that folder.
 
 The AI bot then:
 1. Clones the framework repo
@@ -796,7 +796,7 @@ This failsafe is broader than compaction. If earlier steps fell apart for any re
 
 If yes (and headroom is sufficient), the AI agent:
 1. Creates `[WORKSPACE_ROOT]/[GAME_FOLDER]/`
-2. **Extracts `[HINTFORGE_VERSION]` from `hintforge/CLAUDE.md`.** Read the second line of that file and pull the version token via the regex `v(\d+)`. Set `[HINTFORGE_VERSION]` to the matched `v<N>` string (e.g. `v14`). If the file is missing, the line is malformed, or the regex doesn't match, fall back to `v?` and warn the user once: *"Couldn't read the hintforge framework version -- your guide will be stamped `v?`. File an issue at github.com/dtiger1889-ops/hintforge so we can fix the framework."* Don't block setup. The breadcrumb is set once at instantiation and is never updated by future framework version bumps.
+2. **Extracts `[HINTFORGE_VERSION]` from `hintforge/CLAUDE.md`.** Read the second line of that file and pull the version token via the regex `v(\d+)`. Set `[HINTFORGE_VERSION]` to the matched `v<N>` string (e.g. `v14`). If the file is missing, the line is malformed, or the regex doesn't match, fall back to `v?` and warn the user once: *"Couldn't read the hintforge framework version -- your guide will be stamped `v?`. File an issue at github.com/hintforge/builder so we can fix the framework."* Don't block setup. The breadcrumb is set once at instantiation and is never updated by future framework version bumps.
 3. Copies + fills templates from `hintforge/templates/`:
 
    > **Do not enumerate `templates/`.** Read each template by name as listed in this sub-step (`claude_md.md`, `checkpoint.md`, `persona.md`, `warning_tiers.md`, `limitations.md`, and the universal-core files referenced in sub-step 4). Do NOT call `Glob('templates/**/*', path='<skill-root>')`, `Bash(ls templates/)`, or similar enumeration steps -- the template list is fixed by this spec, not discovered at runtime. The Glob tool also does not resolve patterns with a literal subdirectory prefix relative to `path` (e.g. `templates/*.md` with `path='<skill-root>'` returns zero results); if a future step legitimately needs to list a subdirectory, set Glob's `path` argument to that subdirectory directly and use `*.md` or `**/*.md` as the pattern, or use PowerShell `Get-ChildItem`. Enumeration-via-Glob in this step burns 2-3 turns on fallback attempts (Bash `ls` has a Windows trailing-backslash escape bug; PowerShell `Get-ChildItem` works) and adds no value over the named-list approach.
@@ -834,7 +834,7 @@ If yes (and headroom is sufficient), the AI agent:
     >
     > These should be `../../hintforge/...` (relative). Rewriting now.
 
-    Then rewrite the offending lines using the relative form (`../../hintforge/<path>`) and re-scan. If a second scan still surfaces matches, escalate to the user with: *"Couldn't resolve the absolute-path leak automatically. Please file an issue at github.com/dtiger1889-ops/hintforge with the contents of your generated CLAUDE.md."* Don't block setup at this point -- the guide will work locally, it just isn't cleanly publishable. Note the leak in `<game>/CHECKPOINT.md` under a "Setup warnings" line so the maintainer can fix before any publish flip.
+    Then rewrite the offending lines using the relative form (`../../hintforge/<path>`) and re-scan. If a second scan still surfaces matches, escalate to the user with: *"Couldn't resolve the absolute-path leak automatically. Please file an issue at github.com/hintforge/builder with the contents of your generated CLAUDE.md."* Don't block setup at this point -- the guide will work locally, it just isn't cleanly publishable. Note the leak in `<game>/CHECKPOINT.md` under a "Setup warnings" line so the maintainer can fix before any publish flip.
 
     The absolute-path scan covers `CLAUDE.md` only -- other generated files (CHECKPOINT.md, persona.md, warning_tiers.md, limitations.md) don't reference framework paths.
 

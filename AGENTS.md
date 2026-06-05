@@ -8,7 +8,7 @@ The skill lives at [`.agents/skills/hintforge/SKILL.md`](.agents/skills/hintforg
 
 ## Companion skill
 
-The corresponding *reader* skill (used at runtime, when a player wants hints) is at [`hintforge-reader`](https://github.com/dtiger1889-ops/hintforge-reader). The two skills together replace what was previously a single monolithic framework.
+The corresponding *reader* skill (used at runtime, when a player wants hints) is at [`hintforge-reader`](https://github.com/hintforge/reader). The two skills together replace what was previously a single monolithic framework.
 
 ## Domain vocabulary
 
