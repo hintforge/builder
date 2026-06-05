@@ -30,7 +30,7 @@ Announce the resolved `<workspace>` value before any Write -- even when running 
 
 ## Step 2 -- Copy the templates
 
-> **Literal-path discipline (v37).** Only `[BRACKETED_PLACEHOLDERS]` get substituted when copying templates. The strings `../../hintforge/` in `claude_md.md` (and any other template content) are **literal content** -- do NOT resolve them to absolute paths like `C:\Users\<name>\.claude\skills\hintforge\` or `~/.claude/skills/hintforge/`, even when running from an installed skill. Published guides must reference the framework via relative path to remain portable when cloned. Same discipline class as the v33 `[WORKSPACE_ROOT]` cascade.
+> **Literal-path discipline (v37).** Only `[BRACKETED_PLACEHOLDERS]` get substituted when copying templates. The strings `../../hintforge/builder/` in `claude_md.md` (and any other template content) are **literal content** -- do NOT resolve them to absolute paths like `C:\Users\<name>\.claude\skills\hintforge\` or `~/.claude/skills/hintforge/`, even when running from an installed skill. Published guides must reference the framework via relative path to remain portable when cloned. Same discipline class as the v33 `[WORKSPACE_ROOT]` cascade.
 
 | Template | Destination | What to do |
 |---|---|---|
