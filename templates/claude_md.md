@@ -9,7 +9,7 @@ This folder is a spoiler-controlled, [PERSONA1]-or-[PERSONA2]-flavored reference
 - **[PLATFORM, e.g. PC mouse+keyboard].** Translate any other-platform references before quoting.
 - **Hint ladder for puzzles & [GAME-SPECIFIC CHALLENGES].** Smallest nudge first; escalate on request.
 - **Don't invent solutions.** If no source has it, say so and link the closest source.
-- **Every claim cites a source** in the structured form (see `../../hintforge/templates/claim_format.md`).
+- **Every claim cites a source** in the structured form (see `../../hintforge/builder/templates/claim_format.md`).
 - **[GAME-SPECIFIC: optional extra rule, e.g. transliteration flexibility, non-English UI, mod compatibility]**
 
 ## Folder map
@@ -29,4 +29,4 @@ This folder is a spoiler-controlled, [PERSONA1]-or-[PERSONA2]-flavored reference
 - When research adds new info, update the relevant subfolder file -- don't bloat `mechanics.md`.
 - Every fact: structured-claim form with source + confidence.
 
-> Framework: `../../hintforge/`. See `../../hintforge/principles.md` for the full rule set, `../../hintforge/templates/claim_format.md` for source-citation conventions, `../../hintforge/ingestion.md` when the user says "ingest the research" (cascade result integration; runs in a fresh session), and `../../hintforge/stitch_and_zipper.md` when the user says "run stitch" or "run zipper" (post-ingestion synthesis; runs in a fresh session).
+> Framework: `../../hintforge/builder/`. See `../../hintforge/builder/CLAUDE.md` for the full rule set, `../../hintforge/builder/templates/claim_format.md` for source-citation conventions, `../../hintforge/builder/ingestion.md` when the user says "ingest the research" (cascade result integration; runs in a fresh session), and `../../hintforge/builder/stitch_and_zipper.md` when the user says "run stitch" or "run zipper" (post-ingestion synthesis; runs in a fresh session).
