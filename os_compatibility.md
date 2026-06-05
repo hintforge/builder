@@ -1,6 +1,6 @@
 # OS Compatibility -- Maintainer / Porter Reference
 
-OS portability matrix and adaptation roadmap for porting hintforge to new operating systems. Runtime-specific caveats (Claude Code hooks, Cowork session-scoping, etc.) live in the per-runtime install docs at [`docs/install/`](docs/install/). The trimmed player-facing OS-compatibility view ships with the reader skill at [`hintforge-reader/.../os_compatibility.md`](https://github.com/dtiger1889-ops/hintforge-reader/blob/main/.agents/skills/hintforge-reader/os_compatibility.md).
+OS portability matrix and adaptation roadmap for porting hintforge to new operating systems. Runtime-specific caveats (Claude Code hooks, Cowork session-scoping, etc.) live in the per-runtime install docs at [`docs/install/`](docs/install/). The trimmed player-facing OS-compatibility view ships with the reader skill at [`hintforge-reader/.../os_compatibility.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/os_compatibility.md).
 
 ## Verified-running setup
 
@@ -57,7 +57,7 @@ Bots that probably can't (today):
 
 Per-game repos are **corpora**, not framework instances -- they ship markdown content the reader skill consumes and have no compatibility surface of their own. Compatibility lives in two places only:
 
-1. **The reader skill** declares what it needs from the host environment (markdown read/write, etc.) and presents this doc's player-facing companion (the reader repo's [`os_compatibility.md`](https://github.com/dtiger1889-ops/hintforge-reader/blob/main/.agents/skills/hintforge-reader/os_compatibility.md)) so players know whether their setup will work.
+1. **The reader skill** declares what it needs from the host environment (markdown read/write, etc.) and presents this doc's player-facing companion (the reader repo's [`os_compatibility.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/os_compatibility.md)) so players know whether their setup will work.
 2. **The builder skill's setup wizard** detects OS at setup time and adapts (file path defaults, TTS availability, etc.), then writes a verified-running line into the corpus's `README.md` so a player downloading the corpus can see the environment it was authored on.
 
 The future aggregator should:

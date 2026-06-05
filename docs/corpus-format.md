@@ -183,4 +183,4 @@ The authoritative template lives at [`templates/warning_tiers.md`](../templates/
 
 ## 8. Where this document lives
 
-This file is `docs/corpus-format.md` inside the **builder** repo. The builder is what produces the format, so the format spec lives with the producer. The [reader repo](https://github.com/dtiger1889-ops/hintforge-reader) links here for anyone who wants the detail. There is no separate corpus-format repo; an internal contract reference with no end-user audience does not warrant one.
+This file is `docs/corpus-format.md` inside the **builder** repo. The builder is what produces the format, so the format spec lives with the producer. The [reader repo](https://github.com/hintforge/reader) links here for anyone who wants the detail. There is no separate corpus-format repo; an internal contract reference with no end-user audience does not warrant one.

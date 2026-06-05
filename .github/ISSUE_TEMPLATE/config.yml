@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Runtime / reader-side bug
-    url: https://github.com/dtiger1889-ops/hintforge-reader/issues/new/choose
+    url: https://github.com/hintforge/reader/issues/new/choose
     about: For dial behavior, persona discipline, lookahead / backtrack / reachability bugs, or anything that happens at play time, file at hintforge-reader instead.
   - name: Game-specific guide content
-    url: https://github.com/dtiger1889-ops/hintforge-atomic-heart/issues/new
+    url: https://github.com/hintforge/atomic-heart/issues/new
     about: Issues with a specific game's guide content (e.g. "this puzzle solution is wrong") belong on the guide's own repo, not this one.
