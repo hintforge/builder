@@ -733,7 +733,7 @@ Drop zone: `<game>/research_inbox/p3/`.
 
 ---
 
-**Ingestion procedure** runs in a **fresh session** (per Step 10's handoff message) when the user types "ingest the research" or attaches a result file. The procedure lives in [`../hintforge/ingestion.md`](ingestion.md) -- its own file so the ingestion session loads only what it needs, not the wizard's first-run setup steps. Briefs are written here at setup; ingestion runs there later.
+**Ingestion procedure** runs in a **fresh session** (per Step 10's handoff message) when the user types "ingest the research" or attaches a result file. The procedure lives in [`ingestion.md`](ingestion.md) -- its own file so the ingestion session loads only what it needs, not the wizard's first-run setup steps. Briefs are written here at setup; ingestion runs there later.
 
 **Note for the user:**
 - The default `none` is fine. You can run research later by saying "research the puzzles" / "research everything you can" / etc.
