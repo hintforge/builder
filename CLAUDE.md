@@ -1,5 +1,5 @@
 # hintforge -- Game-Guide Framework
-<!-- v66 -- 2026-06-05 -->
+<!-- v66.1 -- 2026-06-05 -->
 
 Framework + templates for spoiler-controlled, persona-flavored, GitHub-distributable game guides. Per-game guides instantiated from these templates live in **`../Guides/<game>/`** (a sibling `Guides/` folder next to `hintforge/`), not inside this folder. hintforge contains only the framework -- no project state, no dev artifacts.
 
