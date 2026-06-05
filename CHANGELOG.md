@@ -4,7 +4,7 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
-### Framework path convention updated to `../../hintforge/builder/`; packaged SKILL.md trigger parity (v66 + v66.1, 2026-06-05)
+### Framework path convention updated to `../../hintforge/builder/`; packaged SKILL.md trigger parity (v66 + v66.1 + v66.2, 2026-06-05)
 
 **Builder changes.**
 
@@ -12,7 +12,9 @@ All notable, user-visible changes to the hintforge builder land here.
 - `templates/checkpoint.md`, `instantiation.md`, and `setup_wizard.md` (literal-path-discipline notes, incident reference, and the absolute-path leak-scanner's "correct form" guidance) updated to the `../../hintforge/builder/` convention so the wizard's self-checks stay consistent with what it writes.
 - The packaged skill entry point at `.agents/skills/hintforge/SKILL.md` (the copy Codex / OpenClaw / Claude Code install from) was missing the "Hintforge doctor, reddit sweep" activation trigger that the rest of the skill carries; restored so every install path exposes the same triggers.
 - `templates/dependencies.md` carried the same breadcrumb in the older single-`../` form (`../hintforge/stitch_and_zipper.md`, stale since guides moved under `Guides/<game>/`); corrected to `../../hintforge/builder/stitch_and_zipper.md` so both guide-facing templates use one convention (v66.1).
-- `CLAUDE.md` line 2 bumped v65→v66→v66.1.
+- `doctor.md` and `ingestion.md` referenced their own framework files via a stale single-segment `../hintforge/...` path (a leftover from the pre-`Guides/` layout). The operative reads -- `doctor.md` format-bump branch (`docs/corpus-format.md`, `CHANGELOG.md`) and `ingestion.md`'s claim-format read -- are now skill-relative, matching how the rest of the skill references its bundled files; orientation prose in both reworded to state framework files come from the running skill, not a guide-relative path. Two markdown links with stale display text (`ingestion.md`, `setup_wizard.md`) cleaned (v66.2).
+- `CHANGELOG.md` now ships with the installed skill (was repo-only). `doctor.md`'s format-bump branch reads it at runtime to find the per-version migration for each `corpus-core-version` step, so it must be present in the deployed skill, not only the source repo (v66.2).
+- `CLAUDE.md` line 2 bumped v65→v66→v66.1→v66.2.
 
 **Existing corpus impact.** No `corpus-core-version` bump and no change to corpus structure. Guides built before this version carry the old `../../hintforge/` breadcrumb in their `CLAUDE.md`; if your framework checkout places the builder under `hintforge/builder/`, update those breadcrumb paths to `../../hintforge/builder/...` (the `principles.md` reference becomes `../../hintforge/builder/CLAUDE.md`). Guides built after this version ship the corrected paths.
 

@@ -14,7 +14,7 @@ This procedure runs in a **fresh session, separate from setup**, when research r
 
 - The session is **fresh** -- Step 10 of the setup wizard tells the user to start a new chat before saying "ingest the research." If the current session shows wizard-setup activity above, ask the user to restart in a fresh session before continuing.
 - The session is **opened inside the game folder** (`Guides/<game>/`), not at workspace root or inside `hintforge/`. The agent's working directory determines which game's research gets ingested.
-- The framework lives at `../hintforge/` relative to the game folder.
+- Framework files this procedure reads (e.g. `templates/claim_format.md`) come from the running skill, not a path relative to the game folder.
 
 ## Blocked-source recovery
 
@@ -61,7 +61,7 @@ Read the corresponding phase brief from `<game>/research_briefs/` -- match by ph
 
 **Large result files (>25k tokens) must be read in chunks.** Check the file size first -- if Read errors with "exceeds maximum allowed tokens," fall back to repeated Read calls with `offset` and `limit` (e.g., lines 0-499, 499-998, …) to walk the whole file. Result files from external deep-research tools regularly land in the 30-50k-token range; treat single-Read success as a happy path, not the default.
 
-Read [`../hintforge/templates/claim_format.md`](templates/claim_format.md) to confirm the metadata convention before writing.
+Read [`templates/claim_format.md`](templates/claim_format.md) to confirm the metadata convention before writing.
 
 ### 2.5. Entity-scaffold check (mandatory at `corpus-core-version: 5` and later)
 
