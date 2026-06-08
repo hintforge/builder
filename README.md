@@ -204,7 +204,7 @@ The framework's response to this is structural, not instructional. Three tools e
 
 **Doctor** (`doctor.md`) is the corpus maintenance tool for everything else. It diagnoses stale claims after a patch, flags version-locked content after a DLC, repairs coverage gaps, and handles corpus-format migrations when the builder framework updates. Doctor is the tool you reach for when something in the guide is probably wrong but you are not sure where. Trigger: `hintforge doctor` in a fresh session inside the game folder. See the "Maintaining your guide" section below for the full list of doctor use cases.
 
-These three tools exist because the principles in `principles.md` require that every claim carry structured metadata (source, confidence, last-verified, tier) and that the corpus not contradict itself silently. Stitch and zipper enforce the non-contradiction requirement actively rather than relying on ingestion discipline alone. Doctor enforces temporal correctness: a claim that was accurate at the time of ingestion may not be accurate after a patch.
+These three tools exist because the [universal principles](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md) require that every claim carry structured metadata (source, confidence, last-verified, tier) and that the corpus not contradict itself silently. Stitch and zipper enforce the non-contradiction requirement actively rather than relying on ingestion discipline alone. Doctor enforces temporal correctness: a claim that was accurate at the time of ingestion may not be accurate after a patch.
 
 **Model for stitch, zipper, and doctor: Sonnet-class, extended thinking off.** All three are structural operations: read files, compare values, flag or resolve conflicts. None of them benefit from extended reasoning. Confirm your model before running any of them.
 
@@ -230,7 +230,7 @@ What the framework code itself contains (verifiable by reading the repo):
 - No privilege elevation -- no UAC, no `sudo`, no admin rights. Everything in user-writable space.
 - No silent auto-commit / auto-push baked into any script. Git is only used at explicit request.
 
-What the framework instructs the agent to do (relies on the agent following the rules in the [framework definition](CLAUDE.md)):
+What the framework instructs the agent to do (relies on the agent following the rules in [`SKILL.md`](SKILL.md)):
 - Confine filesystem changes to the declared scope (`~/Documents/hintforge/` and the per-game folder it creates).
 - Announce web fetches before running them.
 - Announce file-touching actions before doing them.
@@ -327,7 +327,7 @@ Even without a patch or DLC, a corpus built from a snapshot of web sources drift
 A full `CONTRIBUTING.md` lands alongside the multi-contributor aggregator -- see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the current stub (license inheritance + pointer back here). For now:
 
 - Found a missing template field, an OS that doesn't work for you, or a content-discipline gap? Open an issue.
-- PRs welcome -- the framework's hard rules (in the [framework definition](CLAUDE.md) and the [reader skill's `principles.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md)) are the bar. Anything that violates spoiler discipline, transparent operations, or token-aware execution is a regression.
+- PRs welcome -- the framework's hard rules (in [`SKILL.md`](SKILL.md) and the [reader skill's `principles.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md)) are the bar. Anything that violates spoiler discipline, transparent operations, or token-aware execution is a regression.
 
 ---
 

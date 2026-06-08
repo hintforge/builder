@@ -2,6 +2,7 @@
 name: hintforge
 description: Build OR maintain a Hintforge-format game guide. Use when starting a new spoiler-controlled companion for a published video game, ingesting research results, running stitch/zipper synthesis, or running the doctor procedure for post-instantiation maintenance (format bumps, game updates, targeted repair). Activates on triggers like "build a guide for X", "ingest the research", "run stitch", or "doctor hintforge" (post-instantiation maintenance).
 license: CC-BY-NC-SA-4.0
+version: 68
 ---
 
 # Hintforge builder
@@ -30,7 +31,12 @@ Do not activate for runtime player questions ("where do I go?", "hint for this p
 
 ## Setup flow
 
-1. **Setup wizard.** The author runs the wizard at [`setup_wizard.md`](setup_wizard.md). It collects game name, persona cast, dial defaults, game-type classification (which vector extensions to scaffold), source-language set, and other per-game answers. Output: a populated corpus root with the universal core plus the selected vector extensions, all files in `scaffold` state.
+When any build / setup / "guide for X" intent fires:
+
+- **If `../Guides/<game>/` already exists with corpus content from a prior wizard run**, the wizard has already run for that (user, game) pair -- answer the user's actual question directly using the guide's contents. The wizard runs once per pair.
+- **If the folder is empty or missing**, the first action is to **read [`setup_wizard.md`](setup_wizard.md) end-to-end**, then run the wizard from Step -1. Do not infer answers, do not scaffold files, do not write personas, do not skip Step 8. The wizard's Hard rule (every step DONE / DONE-VIA-PREFILL / ASKED ABOUT) is binding.
+
+1. **Setup wizard.** [`setup_wizard.md`](setup_wizard.md) collects game name, persona cast, dial defaults, game-type classification (which vector extensions to scaffold), source-language set, and other per-game answers. Output: a populated corpus root with the universal core plus the selected vector extensions, all files in `scaffold` state.
 2. **Manual alternative.** [`instantiation.md`](instantiation.md) documents the manual step-by-step alternative for authors who prefer not to run the wizard. Same end state.
 
 ## Research cascade
