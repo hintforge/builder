@@ -4,6 +4,18 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Platform-agnostic load-bearing files; version stamp relocated to SKILL.md frontmatter (v68, 2026-06-08)
+
+**Builder changes.**
+
+- `CLAUDE.md` is now a thin platform shim (matches the shape of `AGENTS.md`): identity line, skill location pointer, pointers to neutral homes (`SKILL.md` for all behavioral rules, reader's `principles.md` for universal runtime principles, `docs/corpus-format.md` for the format contract). All behavioral content that was in `CLAUDE.md` -- the setup-wizard routing rule, the "wizard already ran" guard, and the hard-rules block -- has been relocated to the neutral `SKILL.md` where it reaches all bots equally.
+- `SKILL.md` frontmatter now carries a `version:` field (`version: 68`). This is the canonical framework version home; the previous HTML comment on `CLAUDE.md` line 2 is retired. Both working-repo copies (`SKILL.md` and `.agents/skills/hintforge/SKILL.md`) are byte-identical.
+- `SKILL.md` "Setup flow" section now carries the two routing rules that were only in `CLAUDE.md`: (1) if the guide folder already exists, the wizard has already run -- answer directly; (2) if the folder is empty/missing, read `setup_wizard.md` end-to-end before acting, then run from Step -1.
+- Four stale bare references to `principles.md` (a file that lives in the reader skill, not the builder) are repointed to the reader's `principles.md` by full GitHub URL, matching the pattern already correct in `README.md`. Numbered `Principle #N` citations replaced with the rule name. Sites fixed: `os_compatibility.md` (inline prose), `setup_wizard.md` lines 36 and 301, `README.md` lines 207 and 233 and 330. `CLAUDE.md`'s folder-map entry was removed with the thinning.
+- `CONTRIBUTING.md` gains a "Platform-agnostic load-bearing files" section so outside contributors inherit the rule.
+
+**Existing corpus impact.** None. No `corpus-core-version` bump and no change to corpus structure. Guides built before this version are unaffected; the relocated rules govern future framework sessions, not corpus content.
+
 ### Framework path convention updated to `../../hintforge/builder/`; packaged SKILL.md trigger parity (v66 + v66.1 + v66.2, 2026-06-05)
 
 **Builder changes.**

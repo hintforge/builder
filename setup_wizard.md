@@ -33,7 +33,7 @@ The AI bot then:
 3. After setup, runs the auto-research bootstrap to populate game-specific content
 4. Hands off to normal use: "ask me anything about [GAME NAME]"
 
-Constraints derived from the first-user test (codified in [`principles.md`](principles.md) Principle #12 -- Transparent Operations):
+Constraints derived from the first-user test (codified in the [Transparent Operations principle](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md)):
 - **No shell required.** The user never opens a terminal. Everything happens through the AI bot's filesystem tools.
 - **No Python install required.** Save-watcher and similar Python optional add-ons are scaffolded only if the user has Python; otherwise skipped with a clear note.
 - **No UAC / sudo / admin elevation.** Everything writes to user-writable space (`~/Documents/`, `%USERPROFILE%\Documents\`).
@@ -298,7 +298,7 @@ If `Guides/` doesn't exist yet, create it as part of this step.
 
 ### Step 4 -- Assistance tier preferences (REQUIRED)
 
-This is the backbone (see `principles.md` Principle #1). Don't skip; don't default silently.
+This is the backbone (user-controlled assistance is Principle #1 in the [universal principles](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md)). Don't skip; don't default silently.
 
 **Explain first** (one short sentence each, then the question):
 - "Two independent dials control how much the guide volunteers before you ask. Higher = more help up-front; lower = more discovery on your own."
