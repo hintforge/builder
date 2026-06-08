@@ -16,7 +16,7 @@ Everything else is **untested but designed to be portable**. Surface gaps in you
 
 ### Universal (works anywhere)
 
-- **All markdown content** -- `principles.md`, templates, per-game guide files. Plain markdown, no OS assumptions.
+- **All markdown content** -- the [universal principles](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md), templates, per-game guide files. Plain markdown, no OS assumptions.
 - **The structured-claim convention** -- [`templates/claim_format.md`](templates/claim_format.md) is just markdown metadata. Any AI agent that reads markdown can parse it.
 - **The hint ladder + warning tier system** -- pure content discipline, no platform dependency.
 - **The tier filter logic** (`enemy-tier` and `puzzle-tier`) -- a future wiki generator could be written in any language for any OS.
