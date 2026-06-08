@@ -173,7 +173,7 @@ The recurring nature lives in the claim's `notes:` field, verbatim shape: `Recur
 
 **8. CHECKPOINT update for module sweep.** Step 9 below covers the standard CHECKPOINT changelog write. For reddit-sweep artifact ingestion, also set `module_sweep_reddit: complete YYYY-MM-DD` in `## Phase state` (add the field if absent at the corpus's CHECKPOINT). The recap entry names the artifact file, total findings ingested, originating sub(s), and any `status: partial-*` caveat carried in the artifact frontmatter.
 
-**9. Move-aside on completion.** Per step 11, move the ingested artifact to `research_inbox/module/_processed/` (create the subfolder if absent) so a future "ingest the research" run does not double-process it. The "Threads scanned" appendix moves with the file; it stays accessible for re-run reference inside `_processed/`.
+**9. Move-aside on completion.** Apply the **Dated move-aside** rules from step 11: rename and move the ingested artifact to `research_inbox/module/_processed/` (create the subfolder if absent) with the research date embedded in the filename. The "Threads scanned" appendix moves with the file; it stays accessible for re-run reference inside `_processed/`.
 
 ### 5. Tag each new section with inline metadata
 
@@ -329,11 +329,26 @@ This step exists because researchers receiving a stale downstream brief will red
 
 ### 11. Move the ingested file aside
 
-Move the ingested file out of `research_inbox/<phase>/` into `research_inbox/<phase>/_processed/` (create the subfolder if needed) so a future "ingest the research" run doesn't double-process it.
+Move the ingested file out of `research_inbox/<phase>/` into `research_inbox/<phase>/_processed/` (create the subfolder if needed), renaming it to embed the research date per the **Dated move-aside** rules below. Step 4b bullet 9 (module artifacts) uses the same rules.
+
+#### Dated move-aside
+
+The filename carries the date the research was captured, not the date ingestion ran -- a future maintainer reading `_processed/` should see a snapshot date, not a processing date.
+
+**Destination filename form:** `<original-stem>.<YYYY-MM-DD>.<ext>` (e.g. `compass_artifact_wf-0583e73b.2026-05-08.md`). Appending the date to the existing stem preserves the original name as a grep anchor and keeps files unique when multiple result files share one phase folder.
+
+**Date resolution -- stop at the first rung that yields a date:**
+
+1. **YYYY-MM-DD token already in the filename.** Test against `\d{4}-\d{2}-\d{2}`. If found, extract and re-use it -- the file is already-stamped. Do **not** append a second date token. Re-running ingestion must be a no-op on the name (idempotency).
+2. **Research-as-of date from `_source:` lines.** Use the date ingestion already stamps into the `_source: <tool> <YYYY-MM-DD>` metadata of the claims minted from this file -- that is the research-as-of date the operator supplied or the result file carried.
+3. **File's last-write timestamp (pre-move).** Read with PowerShell: `(Get-Item "<path>").LastWriteTime.ToString("yyyy-MM-dd")`. Uses the OS-recorded modification date, not the current time.
+4. **Processing date (`Get-Date -Format "yyyy-MM-dd"`)** -- last-resort only. If this rung is reached, flag it explicitly in the step-12 recap: "move-aside date fell back to processing time -- may not match research-as-of date."
+
+**Recap requirement:** the step-12 recap must name the move-aside destination filename (including the date token) so the operator can verify the stamped date is correct. Flag any processing-time fallback.
 
 ### 12. Show the user a recap
 
-One-screen summary: subfolders touched, sections added per subfolder, any `confidence: medium` flags, downstream briefs refreshed (with a one-line summary of changes per brief), corpus reconciliation actions (which prior-phase claims were dropped / rewritten / superseded -- with file paths), anything the brief asked for that the result didn't cover. **At `corpus-core-version: 5` and later**, also report: entity classes scaffolded this pass (list, or `none`), entity files written or promoted this pass (count + classes), late-emerging classes Stage 0 did not predict (list or `none`), v4 → v5 migration outcomes (`enemies/ → npcs/` rename: yes / no / n-a), and the cross-file consistency sweep outcome from step 8 (identifiers checked, disagreements found, disagreements reconciled). Also sanity-check the first line of every newly-created file to confirm the H1 header rendered cleanly (a class of Write-tool collision artifact that's invisible until a reader opens the file).
+One-screen summary: subfolders touched, sections added per subfolder, any `confidence: medium` flags, downstream briefs refreshed (with a one-line summary of changes per brief), corpus reconciliation actions (which prior-phase claims were dropped / rewritten / superseded -- with file paths), anything the brief asked for that the result didn't cover, and the move-aside destination filename (including the date token; flag if the processing-time fallback was used). **At `corpus-core-version: 5` and later**, also report: entity classes scaffolded this pass (list, or `none`), entity files written or promoted this pass (count + classes), late-emerging classes Stage 0 did not predict (list or `none`), v4 → v5 migration outcomes (`enemies/ → npcs/` rename: yes / no / n-a), and the cross-file consistency sweep outcome from step 8 (identifiers checked, disagreements found, disagreements reconciled). Also sanity-check the first line of every newly-created file to confirm the H1 header rendered cleanly (a class of Write-tool collision artifact that's invisible until a reader opens the file).
 
 **On Windows, run the multi-file sanity-check loop via PowerShell, not Bash.** Git Bash on Windows passes commands through cmd.exe escaping, which strips `$f`-style variable expansion in `for f in ...; do head -1 "$base/$f"; done` recipes -- the loop runs but every iteration reads the literal path `...$f` and errors. Use PowerShell instead: ``$base = "<corpus-path>"; foreach ($f in @("puzzles/chamber_00.md", …)) { Get-Content "$base/$f" -TotalCount 1 }``. (Linux/macOS Bash handles the original recipe fine; this constraint is Windows-only.)
 
