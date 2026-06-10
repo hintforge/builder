@@ -2,7 +2,7 @@
 name: hintforge
 description: Build OR maintain a Hintforge-format game guide. Use when starting a new spoiler-controlled companion for a published video game, ingesting research results, running stitch/zipper synthesis, or running the doctor procedure for post-instantiation maintenance (format bumps, game updates, targeted repair). Activates on triggers like "build a guide for X", "ingest the research", "run stitch", or "doctor hintforge" (post-instantiation maintenance).
 license: CC-BY-NC-SA-4.0
-version: 68
+version: 69
 ---
 
 # Hintforge builder

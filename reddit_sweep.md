@@ -88,7 +88,12 @@ The order favors a focused main-game sub first; broader coverage is the fallback
    - (c) genre / platform-aggregator sub if neither (a) nor (b) applies.
    Run the full sweep against the broader sub instead.
 4. **If the main game sub exists but is inactive:** run the full sweep on it first, then check total findings count. If the main-sub full sweep produces **20 or fewer findings**, **fall through to a broader sub** (per the candidate order above) and run a second full sweep against it, continuing until the global 300-posts-evaluated cap is hit. Findings from both sweeps accumulate in the same output file with the originating sub recorded per finding.
-5. **Confirmation.** State the chosen primary sub and the planned fallthrough policy to the user; ask for confirmation or override before crawling. This is the only required user touch during the autonomous sweep until the post-sweep ingestion gate.
+5. **Confirmation (structured).** State the chosen primary sub, then confirm the fallthrough policy via a structured `AskUserQuestion` call -- never an inline free-text prompt. Question text: "Fallthrough plan for the `<game>` sweep: `r/<sub>` runs first; if it produces 20 or fewer findings, the sweep continues against a broader sub within the same 300-post budget. Which fallthrough?" Options (closed set, exactly three):
+   - **Use `r/<sub2>`** -- the broader-sub candidate chosen per step 3's order. The default.
+   - **Pick a different broader sub** -- on selection, ask the user to name it. Do not propose further candidates yourself.
+   - **No fallthrough** -- accept a thin sweep if the main sub comes up short.
+
+   If the main game sub does not exist (step 3), the same three-option shape applies with the broader sub as the primary: run `r/<sub2>` / name a different sub / skip the sweep. **Do not ad-lib alternative subs inline if the user declines a candidate** -- only the user can judge whether a sub matches the corpus's purpose, and inline counter-proposals turn one closed decision into a multi-message back-and-forth. This is the only required user touch during the autonomous sweep until the post-sweep ingestion gate.
 
 ### Activity check (informational)
 
@@ -234,9 +239,9 @@ The procedure does **not** stop based on a total-findings count. Total-findings 
 
 ### Start
 
-> Identified `r/<sub>` as the primary subreddit for `<game>`. Activity level: `<active | moderate | quiet>`. [If main sub doesn't exist:] Main game sub not found; falling through to broader sub `r/<sub2>`. [If broader sub will be a fallthrough trigger:] If `r/<sub>` produces <=20 findings, I'll continue against `r/<sub2>` within the same 300-post budget. Confirm or specify an override.
+> Identified `r/<sub>` as the primary subreddit for `<game>`. Activity level: `<active | moderate | quiet>`. [If main sub doesn't exist:] Main game sub not found; the sweep would run against broader sub `r/<sub2>` instead.
 
-After confirmation:
+Then fire the structured fallthrough confirmation (Subreddit identification step 5) -- the closed three-option `AskUserQuestion`, not an inline "confirm or override" sentence. After the user answers:
 
 > Starting Reddit sweep. Traversing top-sorted posts across all-time, year, month, and week windows. Cap: 300 posts evaluated (meme/fan-art/cosplay titles skipped without counting; browse-to-search pivot after 5+ consecutive skips). Per-window floors: 15 / 10 / 7 / 0-5. Auth tier: `<anonymous | app-only | authenticated>` (paced for `<N>` req/min). I'll surface findings as I go and write the full results file when done.
 

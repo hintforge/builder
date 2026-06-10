@@ -22,22 +22,33 @@ This procedure runs on an existing, instantiated guide when something is wrong, 
 
 Read the corpus manifest before triage -- it tells you what game state the corpus was last reconciled against.
 
-Read `nav/architecture.md` -> `## Hintforge manifest`. Extract `game-version`, `game-version-platform`, and `game-version-as-of`. Surface these to the maintainer:
+Read `nav/architecture.md` -> `## Hintforge manifest`. Extract `game-version`, `game-version-platform`, and `game-version-as-of`.
 
-> "Corpus manifest: game-version `<value>` on `<platform>`, as of `<date>`. Has anything changed in the game since then -- a patch, a DLC, anything you've noticed in play?"
+**Fire the manifest-and-triage question (mandatory, structured).** Surface the manifest fields, then ask via a structured `AskUserQuestion` call with `multiSelect: true` -- never an inline prose question. An inline question gets self-answered under task momentum; a structured call physically separates "question fired" from "answer received." Question text: "Corpus manifest: game-version `<value>` on `<platform>`, as of `<date>`. Has anything changed in the game since then, and what prompted this doctor run?" Options (plain language, one idea each):
 
-Two routes:
+1. **Nothing has changed in the game** -> Route 2 below, then continue to any other selected branch.
+2. **A patch, DLC, or game update shipped** -> Branch B.
+3. **Something in the guide is wrong or missing** -> Branch C.
+4. **The reader showed a version warning** -> Branch A.
 
-1. **"Yes, something changed."** Proceed to §1 Triage. Branch B is the expected route; the maintainer still picks freely (B for patch/DLC, C for a specific gap).
-2. **"No, nothing has changed."** Accept and bump: update `game-version-as-of` to today in `nav/architecture.md`. No other content edits. Log one line in CHECKPOINT's harness changelog: "manifest date bumped <today>, maintainer confirmed no game change since <prior date>". Proceed to §1 Triage in case there are also Branch A or C needs.
+This one call doubles as §1 Triage for bare invocations. Multiple selections are legal and run in A -> B -> C order per §1. Selections 1 and 2 contradict each other; if both arrive, re-ask.
+
+Two routes for the date field:
+
+1. **"A patch, DLC, or game update shipped" selected.** Do not touch `game-version-as-of` here; Branch B owns the manifest update (its step 3).
+2. **"Nothing has changed in the game" selected.** Accept and bump: update `game-version-as-of` to today in `nav/architecture.md`. No other content edits. Log one line in CHECKPOINT's harness changelog: "manifest date bumped <today>, maintainer confirmed no game change since <prior date>".
+
+**The bump is downstream of the fired question -- no exceptions.** `game-version-as-of` may be edited, and the "maintainer confirmed" changelog line written, ONLY after the `AskUserQuestion` call above actually fired and the maintainer selected "Nothing has changed in the game." "Nothing in front of me indicates a change" is an inference, not a maintainer answer -- self-answering this gate is the exact defect this rule exists to block. The field means "the game build this corpus was authored against," not "last touched"; moving it without a human answer silently reconciles a possibly-stale corpus to "current." If the question cannot fire or goes unanswered, leave the date untouched and surface the manifest state in the recap instead.
 
 If `game-version-as-of` is missing or unparseable, say so and route to Branch A before triage.
 
 **Sweep bypass.** If the trigger phrase is `hintforge doctor, reddit sweep`, skip this step and proceed to §1 below, where the sweep trigger routes directly to [`reddit_sweep.md`](reddit_sweep.md).
 
+**Directed-invocation bypass.** If the trigger phrase already names the work (a specific repair, a format bump, generating a research brief, any cascade-continuation task), skip the question and route directly to the named branch -- and leave `game-version-as-of` untouched. A directed run has no authority over the manifest date: only Route 2's human "nothing changed" answer or Branch B's step 3 may move that field. "The maintainer named the work" licenses skipping triage, not self-answering the manifest gate.
+
 ### 1. Triage -- pick the branch
 
-Ask the user (or infer from their trigger phrase) which of three things prompted the doctor run. Do not start any branch's work until the branch is confirmed.
+For bare invocations, the Manifest check's structured question has already collected the answer -- the maintainer's selections pick the branch(es). For directed invocations, infer the branch from the trigger phrase. Do not start any branch's work until the branch is confirmed by one of those two signals.
 
 | Branch | Trigger | Scope |
 | --- | --- | --- |
@@ -45,7 +56,7 @@ Ask the user (or infer from their trigger phrase) which of three things prompted
 | **B. Game update** | A patch, DLC, or major content drop has shipped since the guide was built | Extend or refresh corpus to cover new game content. May require a research handoff. |
 | **C. Targeted repair** | The user (or playtest) found a gap, misclassification, or wrong fact in the existing corpus | Patch a specific area. May require a small targeted research brief. |
 
-If the user can't pick, ask three diagnostic questions: (1) Did the reader show a version warning? (2) Has the game itself been updated since the guide was built? (3) Did you hit something wrong or missing during play? First "yes" wins; multiple "yes" answers run branches sequentially in A -> B -> C order.
+If the maintainer's answer doesn't resolve to a branch, ask three diagnostic questions: (1) Did the reader show a version warning? (2) Has the game itself been updated since the guide was built? (3) Did you hit something wrong or missing during play? First "yes" wins; multiple "yes" answers run branches sequentially in A -> B -> C order. (These are the same three ideas as the Manifest check's options 4/2/3 -- the structured question usually settles this before §1 is reached.)
 
 **Reddit sweep is a recognized doctor invocation.** When the trigger phrase includes "reddit sweep" (canonical: **`hintforge doctor, reddit sweep`**, optionally `... for the <patch/DLC/gap>`), route directly to [`reddit_sweep.md`](reddit_sweep.md) and run the sweep as this session's dedicated task -- do not wrap a triage of branches A/B/C around it. The `hintforge doctor` anchor is simply what loads the skill; the `reddit sweep` qualifier is the work. The sweep procedure detects its own phase window (post-final-research/pre-stitch initial harvest, or post-cascade top-up) per `reddit_sweep.md` §Trigger conditions. If a Branch B game-update / DLC pass needs to scaffold architecture before the sweep can route findings to home files, that scaffolding is its own prior `hintforge doctor` session; the sweep is the subsequent `hintforge doctor, reddit sweep` session (the architectural-extension-before-sweep ordering in Branch B step 2 still holds -- across two sessions, not one).
 
@@ -92,6 +103,8 @@ Branch A does not invent content. If a bump introduced a new universal-core fiel
    - **Misclassification** (right facts, wrong vector tags or wrong spoiler tier) -> run the spoiler-classification sub-agent on the affected facts, move content per `ingestion.md` step 4's vector table.
 3. Reconcile downstream per `ingestion.md` step 7: grep destination subfolders (`sections/`, `items/`, `nav/`, `puzzles/`, `optional_zones/`, `controls.md`, `settings.md`, plus entity-class folders that exist -- `npcs/`, `factions/`, `crew/`, `reputation/` at `corpus-core-version: 5` and later) for orphans, fix them. No "DROPPED -- see CHECKPOINT" stubs in the corpus.
 4. Log each repair in `CHECKPOINT.md`.
+
+**Branch C never touches the `## Hintforge manifest` fields.** `game-version`, `game-version-platform`, and `game-version-as-of` are not repair targets: the date moves only via the Manifest check's Route 2 (human-confirmed "nothing changed") or Branch B step 3 (game update), and `corpus-core-version` only via Branch A. A repair fixes content; it does not re-stamp what game state the corpus was reconciled against.
 
 ### 6. Phase state updates + cascade re-runs
 
