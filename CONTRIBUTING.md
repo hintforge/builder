@@ -20,7 +20,7 @@ This is the **builder** repo. Open issues here for:
 - Templates (universal core, vector extensions, persona cast scaffolding)
 - Domain vocabulary (`CONTEXT.md`) gaps or wording
 
-Open issues at [`hintforge-reader`](https://github.com/hintforge/reader) for:
+Open issues at [`hintforge/reader`](https://github.com/hintforge/reader) for:
 
 - Dial behavior (graduated spoilers, escalation)
 - Runtime rules (lookahead, backtrack, reachability, locks-and-keys notifications)
@@ -28,9 +28,9 @@ Open issues at [`hintforge-reader`](https://github.com/hintforge/reader) for:
 - Vector-extension discovery, corpus-core-version mismatch warnings
 - Reader-side install / discovery problems on a specific runtime
 
-**Edge case.** A bug that looked like a corpus-format spec ambiguity but turns out to be a reader-side runtime rule should land in `hintforge-reader` instead. Move the issue across repos rather than re-filing -- triage labels and cross-repo references work fine.
+**Edge case.** A bug that looked like a corpus-format spec ambiguity but turns out to be a reader-side runtime rule should land in `hintforge/reader` instead. Move the issue across repos rather than re-filing -- triage labels and cross-repo references work fine.
 
-Game-specific guide content lives in the corresponding guide repo (e.g. `hintforge-<game-name>`), not here.
+Game-specific guide content lives in the corresponding guide repo (one repo per game under the `hintforge` org, named with the game's slug, e.g. `hintforge/<game-slug>`), not here.
 
 ## License inheritance
 

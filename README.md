@@ -4,7 +4,7 @@
 
 A guide for any game, on any system, where you choose how much help you want and it logs your progress so you can pick up easily even after a long time away. It's a loyal sidekick -- customized to your spoiler preferences and interaction style -- that tags along and helps you out. Markdown + structured-claim convention, OS- and agent-agnostic, consumed by a local AI agent that reads and writes files you control.
 
-> Want to **use** an existing guide rather than build one? Go to [`hintforge-reader`](https://github.com/hintforge/reader) -- the runtime hint-companion skill that pairs with any Hintforge-format guide.
+> Want to **use** an existing guide rather than build one? Go to [`hintforge/reader`](https://github.com/hintforge/reader) -- the runtime hint-companion skill that pairs with any Hintforge-format guide.
 >
 > [Pre-built guides coming soon.]
 
@@ -23,7 +23,7 @@ Per-runtime details in [`docs/install/`](docs/install/).
    - [Codex (CLI + desktop)](docs/install/codex.md)
    - [OpenClaw](docs/install/openclaw.md)
 2. **In your runtime,** ask: "build a guide for [GAME]". The wizard walks you through ~10 questions, then scaffolds `~/Documents/Guides/<game>/` with the universal core directories, the vector extensions your game needs, and a `research_brief.txt` ready for a deep-research handoff.
-3. **Install the [`hintforge-reader`](https://github.com/hintforge/reader) skill** to play with the guide once it's built.
+3. **Install the [`hintforge/reader`](https://github.com/hintforge/reader) skill** to play with the guide once it's built.
 
 **You'll know it's working when** the wizard greets you and starts asking setup questions (game name, persona cast, dial defaults) before touching any files.
 
@@ -127,9 +127,9 @@ Independent of tiers, you can always escalate a specific puzzle by asking: "Lvl 
 
 Hintforge ships as two separate skills in two separate repos.
 
-**This repo (hintforge) is the builder.** It handles everything involved in creating and maintaining a guide: the setup wizard, the research cascade, ingestion of results into the corpus, stitch-and-zipper cross-referencing, doctor corpus maintenance, and the reddit sweep optional module. You run the builder when you are building or updating a guide, not when you are playing.
+**This repo (`hintforge/builder`) is the builder.** It handles everything involved in creating and maintaining a guide: the setup wizard, the research cascade, ingestion of results into the corpus, stitch-and-zipper cross-referencing, doctor corpus maintenance, and the reddit sweep optional module. You run the builder when you are building or updating a guide, not when you are playing.
 
-**The reader (hintforge-reader) is a separate repo and a separate skill.** It is the session-time companion: it reads the corpus you built, enforces your spoiler dials, tracks your position, and fires point-of-no-return warnings. You install it once and open it when you sit down to play.
+**The reader (`hintforge/reader`) is a separate repo and a separate skill.** It is the session-time companion: it reads the corpus you built, enforces your spoiler dials, tracks your position, and fires point-of-no-return warnings. You install it once and open it when you sit down to play.
 
 The split matters for a few reasons. Each skill can be installed independently and updated on its own cadence. A reader update does not require a builder rebuild. A corpus-format change (tracked by `corpus-core-version` in `architecture.md`) is the only event that requires coordination across both, and even then the reader will warn rather than hard-stop on a mismatch.
 
@@ -184,7 +184,7 @@ It runs in its own fresh session, after the research cascade has completed and b
 
 **External dependency: reddit-mcp-buddy.** The sweep uses the `reddit-mcp-buddy` MCP server. The sweep checks for reachability before crawling and aborts cleanly if the server is not available.
 
-**Rate limits and auth tiers.** The sweep paces itself against the configured Reddit auth tier: anonymous (10 req/min), app-only (60 req/min), authenticated (100 req/min). Anonymous is the default and works without credentials. If you want faster sweeps, configure an app-only or authenticated credential in reddit-mcp-buddy. The sweep surfaces the detected tier and estimated wallclock before crawling and asks for confirmation.
+**Rate limits and auth tiers.** Reddit's anonymous JSON API is no longer usable for the sweep -- it returns HTTP 403 to unauthenticated clients -- so reddit-mcp-buddy must be configured with a registered Reddit "script" app before the sweep can run. Create one at reddit.com/prefs/apps and set its client ID/secret in reddit-mcp-buddy for app-only OAuth (60 req/min); add a username/password for the higher authenticated rate (100 req/min). The sweep surfaces the detected tier and estimated wallclock before crawling and asks for confirmation; if no working credential is configured it aborts cleanly rather than crawling.
 
 **Why a separate session.** The sweep's failure modes (MCP unreachability, rate-limit hits, subreddit gone private) are distinct from ingestion's failure modes. Running both in the same session risks one failure contaminating the other's state. The sweep writes its findings file before asking whether to ingest, so a sweep failure after file-write doesn't block ingestion from running against a completed file.
 
@@ -253,7 +253,7 @@ Full portability matrix in [`os_compatibility.md`](os_compatibility.md). Per-run
 
 ## Folder map
 
-This repo is the **builder** skill (authoring side). The runtime **reader** skill is a sibling repo at [`hintforge-reader`](https://github.com/hintforge/reader).
+This repo is the **builder** skill (authoring side). The runtime **reader** skill is a sibling repo at [`hintforge/reader`](https://github.com/hintforge/reader).
 
 | File | Purpose |
 |---|---|
@@ -306,7 +306,7 @@ Trigger: `hintforge doctor`, describe the gap ("the reader can't answer question
 
 Small gaps can often be filled without a full deep-research handoff: tell doctor what you know and it will write the claim directly with appropriate source metadata and confidence flags.
 
-### After a reader (hintforge-reader) update
+### After a reader update
 
 Reader updates occasionally change how the corpus is interpreted: new dial behavior, new warning tiers, updated persona rules. These changes do not invalidate the corpus unless the `corpus-core-version` increments.
 
