@@ -218,7 +218,7 @@ These three tools exist because the [universal principles](https://github.com/hi
 
 ## Principles -- what shapes the framework
 
-Load-bearing rules summarized. Full set (16 principles + rationale) in the [reader skill's `principles.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md).
+Load-bearing rules summarized. Full set (17 principles + rationale) in the [reader skill's `principles.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md).
 
 **User-controlled assistance is the backbone, not a feature.** The two tiers are first-class state, not a setting hidden in a config screen. Every other rule (spoiler discipline, the hint ladder, persona constraints) only makes sense in service of reader agency over information flow. Inverting the fan-wiki "spoil-everything-by-default" model is what hintforge exists to do.
 
