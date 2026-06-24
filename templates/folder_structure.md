@@ -104,7 +104,7 @@ Both flavors share the same `_processed/` move-aside convention -- ingested file
 
 ## Files at game-folder root
 
-- `CLAUDE.md` -- folder rules (≤30 lines hard cap)
+- `CLAUDE.md` / `AGENTS.md` -- **optional** platform auto-load shims that point at the hintforge-reader skill. Thin pointers, no rules of their own; not part of the required universal core (since `corpus-core-version: 6`). A corpus is valid with neither.
 - `CHECKPOINT.md` -- playthrough state (≤80 lines)
 - `controls.md` -- **universal** (every game has input). Keybindings + control remaps (PC keyboard/mouse, controller, accessibility rebinds), with a "common remaps players make" section sourced from Stage 0.
 - `settings.md` -- **standard for any PC/console game with a settings menu** (i.e. nearly all). **Organize by the game's actual in-game menu tabs** (one `##` heading per tab), not by industry-standard categories like "Graphics" / "Audio" / "Accessibility." Games have wildly different settings menus and reorganize them across patches -- the file structure must mirror what the player actually sees when they open Settings, so the persona can give accurate menu paths. If research doesn't confirm the exact tab names, flag them as unverified and correct from live observation.
@@ -137,4 +137,4 @@ Canonical persona-voice cold-post explainer for social-media sharing. Written so
 
 ## When to add a new folder type
 
-If a game has a content category that doesn't fit any of the above, add a folder. Document in the game's CLAUDE.md folder map. If the new category looks generalizable to other games, propose adding it to this template via PR.
+If a game has a content category that doesn't fit any of the above, add a folder. Document it in `nav/architecture.md`'s `## Vector extensions` list so the reader discovers it at session start. If the new category looks generalizable to other games, propose adding it to this template via PR.
