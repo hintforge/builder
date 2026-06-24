@@ -796,18 +796,19 @@ This failsafe is broader than compaction. If earlier steps fell apart for any re
 
 If yes (and headroom is sufficient), the AI agent:
 1. Creates `[WORKSPACE_ROOT]/[GAME_FOLDER]/`
-2. **Extracts `[HINTFORGE_VERSION]` from `hintforge/CLAUDE.md`.** Read the second line of that file and pull the version token via the regex `v(\d+)`. Set `[HINTFORGE_VERSION]` to the matched `v<N>` string (e.g. `v14`). If the file is missing, the line is malformed, or the regex doesn't match, fall back to `v?` and warn the user once: *"Couldn't read the hintforge framework version -- your guide will be stamped `v?`. File an issue at github.com/hintforge/builder so we can fix the framework."* Don't block setup. The breadcrumb is set once at instantiation and is never updated by future framework version bumps.
+2. **(No framework-version watermark.)** Guides no longer carry a `[HINTFORGE_VERSION]` breadcrumb -- it was removed when the per-game `CLAUDE.md` became an optional platform shim (`corpus-core-version: 6`). Nothing to extract here; proceed to template copy.
 3. Copies + fills templates from `hintforge/templates/`:
 
    > **Do not enumerate `templates/`.** Read each template by name as listed in this sub-step (`claude_md.md`, `checkpoint.md`, `persona.md`, `warning_tiers.md`, `limitations.md`, and the universal-core files referenced in sub-step 4). Do NOT call `Glob('templates/**/*', path='<skill-root>')`, `Bash(ls templates/)`, or similar enumeration steps -- the template list is fixed by this spec, not discovered at runtime. The Glob tool also does not resolve patterns with a literal subdirectory prefix relative to `path` (e.g. `templates/*.md` with `path='<skill-root>'` returns zero results); if a future step legitimately needs to list a subdirectory, set Glob's `path` argument to that subdirectory directly and use `*.md` or `**/*.md` as the pattern, or use PowerShell `Get-ChildItem`. Enumeration-via-Glob in this step burns 2-3 turns on fallback attempts (Bash `ls` has a Windows trailing-backslash escape bug; PowerShell `Get-ChildItem` works) and adds no value over the named-list approach.
 
    > **Literal-path discipline.** When copying any template, the strings `../../hintforge/builder/` are **literal content**, not placeholders to resolve. Do NOT substitute them with absolute paths (e.g. `C:\Users\<name>\.claude\skills\hintforge\` or `~/.claude/skills/hintforge/`), even when the wizard is running from an installed-skill location. The skill base directory is metadata for `Read` operations, never a path source for content written into the guide. Published per-game guides must reference the framework via relative path so cloned repos remain portable on machines that don't have the maintainer's skill install. Only `[BRACKETED_PLACEHOLDERS]` get substituted; everything else in templates is verbatim content. Same discipline class as the v33 `[WORKSPACE_ROOT]` cascade -- both surfaces enforce "skill base is read-only metadata."
    >
-   > **Incident reference.** A prior wizard run transformed `../../hintforge/builder/templates/claim_format.md` in CLAUDE.md line 12 into an absolute path like `C:\Users\<name>\.claude\skills\hintforge\templates\claim_format.md`, baking the maintainer's username + skill-install path into a guide that's supposed to be cleanly publishable. A parallel run on the same input copied verbatim. Non-deterministic. The sanity scan in sub-step 11 catches this post-write.
+   > **Incident reference.** A prior wizard run transformed a `../../hintforge/builder/...` reference in a generated guide file into an absolute path like `C:\Users\<name>\.claude\skills\hintforge\templates\claim_format.md`, baking the maintainer's username + skill-install path into a guide that's supposed to be cleanly publishable. A parallel run on the same input copied verbatim. Non-deterministic. The sanity scan in sub-step 11 catches this post-write.
    >
    > **Literal-prose discipline (the player's name is not a slot).** The phrase "the player" in templates is **verbatim content, not a slot.** Do NOT substitute `[PLAYER_NAME]` for it anywhere in prose, headings, or section titles. The ONLY place the player's name is written is `CHECKPOINT.md`'s `**Name:** [PLAYER_NAME]` field (the single sanctioned `[PLAYER_NAME]` insertion site). Every other "the player" stays literal -- substituting it binds the guide to one player and is the prose analogue of the absolute-path leak above. The sub-step 11 player-name scan catches strays post-write.
 
-   - `claude_md.md` → `<game>/CLAUDE.md` with **`[BRACKETED_PLACEHOLDERS]` filled** (including `[HINTFORGE_VERSION]` from the previous step -- line 3 of the rendered file is the framework breadcrumb, immutable). `../../hintforge/builder/` references stay verbatim per the discipline rule above.
+   - `claude_md.md` → `<game>/CLAUDE.md` -- the **optional** Claude Code platform shim, with `[GAME NAME]`/`[PERSONA1]`/`[PERSONA2]` filled. It carries no framework paths and no version watermark.
+   - `agents_md.md` → `<game>/AGENTS.md` -- the **optional** shim for Codex CLI / OpenClaw, same placeholder fills. Ship both so the corpus auto-activates the reader on any host.
    - `checkpoint.md` → `<game>/CHECKPOINT.md` (records research preference)
    - `persona.md` → `<game>/persona.md` (**unconditional** -- see Step 5 branch logic. Branch A: copy `templates/persona.md` and fill `[PERSONA1]`/`[PERSONA2]`/`[DEFAULT_PERSONA]`. Branch B: write the inline plain-assistant body verbatim from Step 5 Branch B; do NOT copy `templates/persona.md` for this branch. Skipping the file is a bug.)
    - `warning_tiers.md` → `<game>/warning_tiers.md` with the chosen tiers
@@ -826,7 +827,7 @@ If yes (and headroom is sufficient), the AI agent:
 10. **Update `## Phase state` in CHECKPOINT.** Set `setup: complete YYYY-MM-DD`. If P1 brief was generated (sub-step 8), set `p1_brief: written YYYY-MM-DD`. If P2/P3 briefs were generated, set their fields likewise. All other fields remain at their template defaults (`not started` / `not run`).
 11. **Post-write sanity scans (required gate).** Two scans run after all template Writes complete and before the Step 10 handoff -- an absolute-path scan (v37) and a player-name scan (v65). Either failing blocks the handoff.
 
-    **Absolute-path scan.** Read `<game>/CLAUDE.md` and scan for any of these absolute-path patterns: `C:\Users\`, `/Users/`, `/home/`, `~/.claude/`, `.claude/skills/`. If any pattern matches, **the wizard has not completed sub-step 3's literal-path discipline** -- stop, do NOT print the Step 10 handoff message. Surface every match to the user with file + line number, e.g.:
+    **Absolute-path scan.** Read `<game>/CLAUDE.md` and `<game>/AGENTS.md` (the optional shims, if present) and scan for any of these absolute-path patterns: `C:\Users\`, `/Users/`, `/home/`, `~/.claude/`, `.claude/skills/`. If any pattern matches, **the wizard has not completed sub-step 3's literal-path discipline** -- stop, do NOT print the Step 10 handoff message. Surface every match to the user with file + line number, e.g.:
 
     > ⚠️ Absolute-path leak detected in `<game>/CLAUDE.md`:
     >   line 12: `C:\Users\<name>\.claude\skills\hintforge\templates\claim_format.md`
@@ -836,7 +837,7 @@ If yes (and headroom is sufficient), the AI agent:
 
     Then rewrite the offending lines using the relative form (`../../hintforge/builder/<path>`) and re-scan. If a second scan still surfaces matches, escalate to the user with: *"Couldn't resolve the absolute-path leak automatically. Please file an issue at github.com/hintforge/builder with the contents of your generated CLAUDE.md."* Don't block setup at this point -- the guide will work locally, it just isn't cleanly publishable. Note the leak in `<game>/CHECKPOINT.md` under a "Setup warnings" line so the maintainer can fix before any publish flip.
 
-    The absolute-path scan covers `CLAUDE.md` only -- other generated files (CHECKPOINT.md, persona.md, warning_tiers.md, limitations.md) don't reference framework paths.
+    The absolute-path scan covers the `CLAUDE.md` / `AGENTS.md` shims only -- other generated files (CHECKPOINT.md, persona.md, warning_tiers.md, limitations.md) don't reference framework paths. The shims carry no `../../hintforge/builder/` paths post-v6, so this scan rarely trips; it stays as cheap insurance.
 
     **Player-name scan (corpus-wide).** After all writes, scan every wizard-authored corpus file for the literal `[PLAYER_NAME]` value occurring **outside** `CHECKPOINT.md`'s `**Name:**` field. Templates use the literal phrase "the player" and are already name-neutral, so any baked-in name is an unsanctioned substitution (see the Literal-prose discipline note in sub-step 3). Surface each hit with file + line number -- same escalation shape as the absolute-path branch above -- then rewrite the offending occurrence back to "the player" before printing the Step 10 handoff. The player's name belongs in exactly one place, the `**Name:**` field; a guide that bakes one player's name into prose, headings, or section titles is bound to that player and isn't cleanly shareable.
 
@@ -869,7 +870,7 @@ After the files are written, the wizard's final message to the user is the hando
 >
 > **In Claude Code (CLI):** `cd` into `[WORKSPACE_ROOT]/[GAME_FOLDER]/` and run `claude` from there. The new session will read the guide automatically.
 >
-> If you're not sure how to switch folders, just paste this into the new chat and the AI will help: *"Please open the folder `[WORKSPACE_ROOT]/[GAME_FOLDER]/` and read the CLAUDE.md there -- that's my guide for [GAME_NAME]."*
+> If you're not sure how to switch folders, just paste this into the new chat and the AI will help: *"Please open the folder `[WORKSPACE_ROOT]/[GAME_FOLDER]/` -- it's my Hintforge guide for [GAME_NAME]. Load the hintforge-reader skill to use it."*
 >
 > Have fun, [PLAYER_NAME].
 >
@@ -879,7 +880,7 @@ After the files are written, the wizard's final message to the user is the hando
 >
 > | File / folder | What it's for |
 > |---|---|
-> | `CLAUDE.md` | The guide's instructions -- the AI reads this first, every session. |
+> | `CLAUDE.md` / `AGENTS.md` | Tiny shim files that tell the AI "this is a guide -- load the hintforge-reader skill." Optional; the guide works without them. |
 > | `CHECKPOINT.md` | Tracks where you are and what you've done; updates as you play. |
 > | `persona.md` | How the AI talks to you (voice / character settings). |
 > | `warning_tiers.md` | Your spoiler-control settings. |
