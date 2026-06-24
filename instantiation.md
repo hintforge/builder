@@ -34,7 +34,8 @@ Announce the resolved `<workspace>` value before any Write -- even when running 
 
 | Template | Destination | What to do |
 |---|---|---|
-| `templates/claude_md.md` | `<game>/CLAUDE.md` | Fill `[GAME]`, `[PLATFORM]`, `[PERSONA1]`, `[PERSONA2]`, and `[HINTFORGE_VERSION]` placeholders. Trim to ≤30 lines. |
+| `templates/claude_md.md` | `<game>/CLAUDE.md` | **Optional** platform auto-load shim (Claude Code). Fill `[GAME NAME]`, `[PERSONA1]`, `[PERSONA2]`. No framework-version watermark. |
+| `templates/agents_md.md` | `<game>/AGENTS.md` | **Optional** platform auto-load shim (Codex CLI / OpenClaw). Same fills as `CLAUDE.md`. |
 | `templates/checkpoint.md` | `<game>/CHECKPOINT.md` | Set initial status (just-starting / mid-playthrough), goal, current location. |
 | `templates/persona.md` OR inline plain-assistant body (see `setup_wizard.md` Step 5 Branch B) | `<game>/persona.md` | **`persona.md` is unconditional -- skipping it is a bug.** Two character voices picked → copy `templates/persona.md`, fill `[PERSONA1]`/`[PERSONA2]`/`[DEFAULT_PERSONA]`. No characters selected (user opted out, said "not sure", `personas = none` prefill, or game has no suitable in-world voice) → write the inline plain-assistant body verbatim from `setup_wizard.md` Step 5 Branch B. The file is the hook PTT/TTS modules and the future `add a persona` toggle register against. |
 | `templates/warning_tiers.md` | `<game>/warning_tiers.md` | Set initial enemy & puzzle tiers. Default: enemies 0, puzzles 1. |
@@ -42,10 +43,6 @@ Announce the resolved `<workspace>` value before any Write -- even when running 
 | `templates/limitations.md` | `<game>/limitations.md` | Skeleton, fill as research blocks appear. |
 | `templates/dependencies.md` | `<game>/dependencies.md` | Created on first stitch run, not at instantiation. Listed here for awareness. |
 | `templates/claim_format.md` | _read, don't copy_ | Convention for how to write facts. Apply throughout content. |
-
-### Resolving `[HINTFORGE_VERSION]`
-
-Read line 2 of `hintforge/CLAUDE.md` (the framework's own version stamp, e.g. `<!-- v14 -- 2026-05-02 -->`). Extract the `v<N>` token and substitute that string into `[HINTFORGE_VERSION]` on line 3 of the new guide's `CLAUDE.md`. The breadcrumb is set once at instantiation and stays fixed across future framework version bumps -- it records *which version this guide was forged from*, not what's current. If the framework's version line is missing or malformed, stamp `v?` and note the discrepancy in the new guide's CHECKPOINT so it can be backfilled later.
 
 ## Step 3 -- Initialize subfolder scaffold
 

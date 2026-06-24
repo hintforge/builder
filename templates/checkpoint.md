@@ -51,7 +51,7 @@ The `lookahead_cache` block lets the reader skip the zone-graph walk at session 
 - [ ] **NEXT:** [What's queued up]
 
 ## Files that matter
-- `CLAUDE.md` -- folder rules, hint-ladder format, spoiler discipline
+- `warning_tiers.md` -- spoiler tiers; `persona.md` -- voice; `CLAUDE.md` / `AGENTS.md` -- optional platform shims pointing at the hintforge-reader skill (no rules of their own)
 - `mechanics.md` -- core game-system rules, mechanics, modes (stable)
 - `limitations.md` -- blocked sources
 - `puzzles/index.md` / `[areas]/index.md` / `items/` / `sections/` -- lookup hubs

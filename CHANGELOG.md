@@ -4,6 +4,30 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Per-game `CLAUDE.md` dissolved from the universal core; optional platform shims; corpus-core-version 6 (v70, 2026-06-24)
+
+**Format change (`corpus-core-version: 5 → 6`).**
+
+- The universal-core file set no longer includes a per-game `CLAUDE.md`. It drops from ten required files to nine: `CHECKPOINT.md`, `controls.md`, `settings.md`, `mechanics.md`, `limitations.md`, `warning_tiers.md`, `persona.md`, `dependencies.md`, `achievements.md`. A corpus is now agent-agnostic on disk -- no required file is named after any one host.
+- `CLAUDE.md` (Claude Code) and `AGENTS.md` (Codex CLI / OpenClaw) become **optional** per-platform auto-load shims: thin pointers that say "this is a Hintforge corpus, load the hintforge-reader skill," with no rules of their own. A corpus is valid with neither, one, or both.
+- The per-game harness facts the old `CLAUDE.md` carried already live in neutral homes and stay there: platform in the `game-version-platform` manifest field, persona default in `persona.md`, spoiler-tier semantics in `warning_tiers.md`, spoiler/hint/cite discipline in the reader skill (`principles.md` / `persona_universal.md`). No new required file is introduced.
+- The forge watermark (`<!-- forged with hintforge ... -->`) is removed from the shim template; the guide's own `<!-- vN -- date -->` version stamp stays. The `[HINTFORGE_VERSION]` extraction/fill apparatus in the wizard and the instantiation flow is removed with it.
+- `docs/corpus-format.md` §1 reconciled: states nine universal files, names the reader's cheap-detection subset, and is the single authority for the universal-file list.
+
+**Builder changes.**
+
+- `templates/claude_md.md` rewritten as the optional Claude Code shim; new `templates/agents_md.md` is the Codex/OpenClaw twin. `setup_wizard.md` and `instantiation.md` copy both, fill `[GAME NAME]`/`[PERSONA1]`/`[PERSONA2]` only, and no longer extract a framework-version watermark. The post-write absolute-path scan covers both shims.
+- `templates/checkpoint.md`, `templates/folder_structure.md`, and `CONTEXT.md` updated to describe `CLAUDE.md`/`AGENTS.md` as optional shims and the universal core as nine files.
+
+**Existing corpus impact + migration (doctor Branch A, v5 → v6).** A v1-v5 corpus stays fully readable -- the reader keeps `MIN_SUPPORTED_CORE: 1` and still reads a present `CLAUDE.md` as the harness file on those corpora. To bring an existing corpus to v6, run `doctor hintforge` (Branch A) or migrate by hand:
+
+1. Relocate any unique content from the per-game `CLAUDE.md` to its neutral home -- platform → the `game-version-platform` manifest field; persona default → `persona.md`; any game-specific spoiler-tier note → `warning_tiers.md`. Spoiler/hint/cite discipline needs no relocation (it is reader-side).
+2. Replace the `CLAUDE.md` body with the optional-shim shape from `templates/claude_md.md` (identity line + "load the hintforge-reader skill" + neutral-home pointers), and strip the forge watermark from line 3.
+3. Optionally add an `AGENTS.md` twin from `templates/agents_md.md` so non-Claude hosts auto-activate the reader too.
+4. Bump `corpus-core-version` to 6 in the `## Hintforge manifest` block.
+
+A corpus that skips migration simply stays a readable v5 corpus; nothing breaks.
+
 ### Platform-agnostic load-bearing files; version stamp relocated to SKILL.md frontmatter (v68, 2026-06-08)
 
 **Builder changes.**
