@@ -22,8 +22,6 @@ Already installed? Paste this to get the latest version:
 
 > Update the hintforge skill from github.com/hintforge/builder
 
-Your AI does the fetching -- no terminal, no manual download.
-
 ## Get started
 
 1. **Install the skill on your AI runtime.** Pick your runtime:
