@@ -1,6 +1,6 @@
 # Context: Hintforge glossary
 
-Plain-language definitions for the project-specific vocabulary. This is a glossary, not a specification -- for the on-disk format contract, see [`docs/corpus-format.md`](docs/corpus-format.md); for the runtime behavior, see the [`hintforge-reader`](https://github.com/hintforge/reader) skill.
+Plain-language definitions for the project-specific vocabulary. This is a glossary, not a specification -- for the on-disk format contract, see [`docs/corpus-format.md`](docs/corpus-format.md); for the runtime behavior, see the [`hintforge/reader`](https://github.com/hintforge/reader) skill.
 
 ## Core concepts
 
