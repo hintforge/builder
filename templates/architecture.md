@@ -11,7 +11,7 @@ Cross-zone structural primitives. The persona reads this file for all cross-zone
 <!-- Read by the reader at session start (see docs/corpus-format.md §3). Bump corpus-core-version only when a change to docs/corpus-format.md would break an older reader; see the Versioning subsection in that doc. game-version-* fields describe the game build the corpus was authored against (player-supplied at setup; required as of v3); they are orthogonal to corpus-core-version (which is the schema axis). -->
 
 ```
-corpus-core-version: 5
+corpus-core-version: 6
 game-version: "[freeform version string the player named at setup -- semver, patch name, build number, all acceptable]"
 game-version-platform: "[platform the player named at setup, e.g. PC / Steam, PS5, Switch -- required even for single-platform-today games]"
 game-version-as-of: YYYY-MM-DD
