@@ -583,7 +583,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 
      # [GAME_FOLDER]_[BRIEF_PHASE].result.md
 
-     This is the file Daniel saves to disk; do not paraphrase the filename,
+     This is the file the author saves to disk; do not paraphrase the filename,
      do not move it to a footer, do not omit it. Begin the document with
      this header line before any other content.
      ```

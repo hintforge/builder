@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Corpus manifest template aligned with corpus-core-version 6 (v72, 2026-07-29)
+
+**Builder changes.**
+
+- `templates/architecture.md` now stamps new corpora with `corpus-core-version: 6`, matching the current format contract. The v6 format change had updated the contract and migration instructions but left the scaffold template at version 5.
+
+**Existing corpus impact.** Corpora created with the v6 optional-shim layout but stamped as version 5 should update their architecture manifest to `corpus-core-version: 6`. Genuine v1-v5 corpora should keep their existing stamp until they complete the v5-to-v6 migration documented below.
+
 ### Per-game `CLAUDE.md` dissolved from the universal core; optional platform shims; corpus-core-version 6 (v70, 2026-06-24)
 
 **Format change (`corpus-core-version: 5 → 6`).**
