@@ -6,7 +6,7 @@ A guide for any game, on any system, where you choose how much help you want and
 
 > Want to **use** an existing guide rather than build one? Go to [`hintforge/reader`](https://github.com/hintforge/reader) -- the runtime hint-companion skill that pairs with any Hintforge-format guide.
 >
-> [Pre-built guides coming soon.]
+> **Pre-built guides are available now:** browse the public guide repositories in the [`hintforge` organization](https://github.com/orgs/hintforge/repositories).
 
 ## Install
 
