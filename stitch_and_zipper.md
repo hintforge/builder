@@ -3,7 +3,7 @@
 
 This procedure runs in a **fresh session inside the game folder** after at least P1 ingestion is complete. Triggered by the user typing "run stitch", "run zipper", or "run stitch and zipper."
 
-> 🧠 **Run on a mid-tier model (Sonnet-class) with extended thinking OFF.** Same cost discipline as ingestion. Each phase targets $0.50-1.00; both together under $2.
+> 🧠 **Run on a mid-tier model (Sonnet-class) at modest reasoning effort.** Same discipline as ingestion: low effort where your assistant offers graduated levels, thinking off where it only offers a toggle. These are structural passes -- cost scales with effort level and corpus size, so the expensive case to avoid is a maxed-out flagship run.
 
 > **Compaction expectation:** EXPECTED for stitch on large corpora (100+ files); UNEXPECTED for zipper (zipper is short by design -- compacting zipper means scope is wrong). See [`compaction_policy.md`](compaction_policy.md). Stitch's count-from-disk summary rule (Stitch session sub-step 5) is one of this procedure's compaction handlers; the per-edge convergence audit in Phase B is the other (it catches sources-cited-but-contradicting bugs that survive post-compact recomposition).
 
