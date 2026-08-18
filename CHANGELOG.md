@@ -4,12 +4,13 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
-### TTS module repaired (dash filter, voice lookup, session guard); toggle renamed `/tts`; native-voice guidance (v73, 2026-08-18)
+### TTS module repaired (dash filter, voice lookup, session guard); toggle renamed `/tts`; native-voice guidance (v73-v74, 2026-08-18)
 
 **Builder changes.**
 
 - `templates/tts/windows/tts_hook.ps1` -- three behavioral fixes:
   - The em/en-dash-to-comma filter is now functional. Prior variants either matched plain hyphens only or relied on encodings/escapes that Windows PowerShell 5.1 cannot process; the filter now uses .NET-regex `\uXXXX` escapes, which keep the script pure ASCII and behave identically under PowerShell 5.1 and 7. The script's ASCII-only + 5.1-compatibility constraint is documented in the module README's "Known sharp edges".
+  - The persona-extraction regex now matches multi-word persona names (`[^*]+` instead of a single-word match), so personas like a first-plus-last-name pair resolve their mapped voice instead of silently falling back to the default (v74).
   - Voice selection now reads `<game>/tts_voices.txt` (`PersonaName = VoiceID[,RatePercent]`) as the README always documented, instead of a hardcoded two-persona branch. Unmatched personas fall back to `en-US-AvaNeural`.
   - New transcript-project guard: the hook now also requires the session's own project folder (from the transcript path) to be an allowlisted game folder, so a session opened elsewhere that merely `cd`s into a game folder no longer speaks.
 - The TTS toggle slash command is renamed **`/voice` → `/tts`** (`commands/voice.md` → `commands/tts.md`) because Claude Code now ships a built-in `/voice` command (native voice dictation) that collides with the old name. All module docs and scripts updated; the reader's TTS constraint block references `/tts`.
