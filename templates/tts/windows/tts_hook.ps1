@@ -176,14 +176,15 @@ try {
     if ($text.Length -gt 1500) { $text = $text.Substring(0, 1500) + '...' }
 
     # Select voice based on active persona (read from the active game folder's persona.md),
+    # Persona regex uses [^*]+ (not \w+) so multi-word persona names match.
     # looked up dynamically in tts_voices.txt -- format "PersonaName = VoiceID[,RatePercent]".
     # Falls back to en-US-AvaNeural if persona.md is missing/unparseable or has no matching entry.
     $persona = $null
     $personaFile = Join-Path $activeGameFolder "persona.md"
     if (Test-Path $personaFile) {
         $personaContent = Get-Content $personaFile -Raw
-        if ($personaContent -match '(?s)## Current active persona\s*\n+\s*\*\*(\w+)\*\*') {
-            $persona = $Matches[1]
+        if ($personaContent -match '(?s)## Current active persona\s*\n+\s*\*\*([^*]+)\*\*') {
+            $persona = $Matches[1].Trim()
         }
     }
 
