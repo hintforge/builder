@@ -7,9 +7,9 @@ Stop-hook based TTS that speaks each Claude Code reply through your speakers in 
 | File | Where it goes in a per-game folder | Purpose |
 |---|---|---|
 | `tts_hook.ps1` | `<game>/.claude/tts_hook.ps1` | Stop hook. Reads transcript, strips markdown, synthesizes via `edge-tts`, plays MP3. Path-guards against running outside allowlisted game folders. |
-| `toggle_tts.ps1` | `<game>/.claude/toggle_tts.ps1` | Toggle script for `/voice`. Self-resolves its own path; safe to move. |
+| `toggle_tts.ps1` | `<game>/.claude/toggle_tts.ps1` | Toggle script for `/tts`. Self-resolves its own path; safe to move. |
 | `tts_voices.txt` | `<game>/tts_voices.txt` | Persona → voice mapping. Edit per game. |
-| `commands/voice.md` | `<game>/.claude/commands/voice.md` | `/voice` slash command. |
+| `commands/tts.md` | `<game>/.claude/commands/tts.md` | `/tts` slash command. |
 | `settings.json` | `<game>/.claude/settings.json` | Claude Code settings to register the Stop hook. If `<game>/.claude/settings.json` already exists, **merge** (don't overwrite); the hook block goes under the `hooks` key. |
 
 ## Prerequisites (Windows)
@@ -31,7 +31,7 @@ Edge-TTS uses Microsoft's free neural voices via a public endpoint -- no API key
 3. Edit `<game>/tts_voices.txt` to map your game's persona names to edge-tts voice IDs. The default `en-US-AvaNeural` is used when no mapping matches.
 4. Restart Claude Code (the Stop hook is loaded at session start).
 5. Ask Claude anything in the per-game folder. The reply should be spoken aloud.
-6. Toggle off with `/voice` if you need silence; same command toggles back on.
+6. Toggle off with `/tts` if you need silence; same command toggles back on.
 
 ## Installation (via the wizard)
 
@@ -81,6 +81,8 @@ The wizard's TTS-opt-in path costs ~3-5 messages (copy files, install `edge-tts`
 
 ## Known sharp edges
 
+- **The toggle command is `/tts`, not `/voice`.** Claude Code ships a built-in `/voice` command (native voice *dictation* -- speech-to-text input). A corpus-level command named `voice.md` would collide with it, so this module's toggle is named `tts.md` / `/tts`. Do not rename it back. Note the built-in `/voice` is input-only: Claude Code does not speak responses aloud, which is exactly the gap this module fills. (Claude Desktop and claude.ai have a native two-way voice mode, but that doesn't reach Claude Code CLI sessions.)
+- **`tts_hook.ps1` must stay ASCII-only and PowerShell 5.1-compatible.** The launcher invokes `powershell` (5.1 on stock Windows), which decodes a BOM-less UTF-8 `.ps1` as Windows-1252 -- any literal Unicode (em/en dashes, curly quotes) becomes mojibake and silently changes behavior. PS 5.1 also lacks the PS6+ `` `u{} `` string escape. Non-ASCII characters the script must match (like the dash filter) are written as .NET-regex `\uXXXX` escapes, which keep the source pure ASCII and behave identically under 5.1 and 7. Keep any edits to this file under both constraints.
 - **Stop hook needs a fresh session start.** Claude Code reads `.claude/settings.json` once at session start. If you `/resume` an old session, the hook won't be active -- start a new chat instead. (This is also why we recommend registering the hook in `~/.claude/settings.json` globally rather than per-game `<game>/.claude/settings.json`: the global registration survives `/resume` reliably, and the path-guard in `tts_hook.ps1` keeps it from speaking outside game folders. The framework's `windows/settings.json` template ships as a project-level example, but for daily-driver use, global is more reliable.)
 - **Schema gotcha (silent failure).** The hooks JSON schema only accepts `type`, `command`, `timeout`, `statusMessage`, `once`. Fields like `shell: "powershell"` and `async: true` look reasonable but are silently dropped; `command` must contain the full shell invocation, e.g. `powershell -NoProfile -ExecutionPolicy Bypass -File "..."`. Don't write `command: "& '...\\script.ps1'"` -- cmd.exe doesn't understand `&` and the hook will silently fail with no log entries.
 - **The hook is global.** It fires on every assistant turn in every project, but path-guards itself to allowlisted folders. The path-guard is the security boundary; do not remove it.

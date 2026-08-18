@@ -7,7 +7,7 @@ This file is an **agent prompt**. The setup wizard invokes it when a non-Windows
 ## Reading order (for the agent)
 
 1. **Read `windows/README.md` first.** It's the source of truth for the module's contract: file map, prerequisites, install steps, persona detection, voice-list mechanics.
-2. **Read every file under `windows/`** -- `tts_hook.ps1`, `toggle_tts.ps1`, `tts_voices.txt`, `commands/voice.md`, `settings.json`. Understand each file's job before translating.
+2. **Read every file under `windows/`** -- `tts_hook.ps1`, `toggle_tts.ps1`, `tts_voices.txt`, `commands/tts.md`, `settings.json`. Understand each file's job before translating.
 3. **Read this file** for translation guidance and known pitfalls.
 4. **Detect target platform tools** on the user's machine before writing anything (e.g., `which say`, `which espeak`, `which piper`, check that `edge-tts` Python package is installable, confirm an audio output device exists). Surface what's missing to the user before proceeding.
 5. **Emit a port subfolder** named `mac/` or `linux/` at `templates/tts/<platform>/` (or directly into the user's per-game folder if the wizard is operating in scaffold mode). Mirror the Windows structure: hook script + toggle script + voices file + `commands/` subfolder + `settings.json` + a platform README.
@@ -19,9 +19,9 @@ The Windows module has five files. Each has a logical equivalent on Mac/Linux:
 | Windows file | Job | Mac equivalent | Linux equivalent |
 |---|---|---|---|
 | `windows/tts_hook.ps1` | Stop hook. Reads transcript, strips markdown, synthesizes via `edge-tts`, plays MP3 via WPF MediaPlayer. Path-guards against running outside allowlisted folders. | **`tts_hook.sh`** (bash) -- read transcript, strip markdown, then either: (a) shell out to `say -v <voice> "$text"` (built-in, no `edge-tts` needed); OR (b) call `edge-tts --voice ... --text ... --write-media out.mp3 && afplay out.mp3` for parity with Windows. **Recommend (a) for first-run simplicity, (b) for voice parity with Windows.** | **`tts_hook.sh`** -- same pattern, but tools change: `espeak "$text"` for built-in (basic quality) OR `piper --model <path> < text \| aplay` for neural local OR `edge-tts ... && mpg123 out.mp3` for cloud-neural. **Recommend `piper` for quality, `espeak` for zero-setup.** |
-| `windows/toggle_tts.ps1` | Toggle script for `/voice`. Touches/removes a `tts_disabled.flag` file. | **`toggle_tts.sh`** -- same logic, `touch` / `rm` for the flag. | **`toggle_tts.sh`** -- same as Mac. |
+| `windows/toggle_tts.ps1` | Toggle script for `/tts`. Touches/removes a `tts_disabled.flag` file. | **`toggle_tts.sh`** -- same logic, `touch` / `rm` for the flag. | **`toggle_tts.sh`** -- same as Mac. |
 | `windows/tts_voices.txt` | Persona → voice mapping. Default `en-US-AvaNeural`. | **Same file with adjusted voice IDs.** If using `say`: voice IDs come from `say -v ?` (e.g., `Samantha`, `Daniel`, `Karen`). If using `edge-tts`: same Microsoft voice IDs as Windows. | **Same file with adjusted voice IDs.** If using `espeak`: voice IDs from `espeak --voices` (e.g., `en`, `en-us`, `en-gb-x-rp`). If using `piper`: model file paths. If using `edge-tts`: same as Windows. |
-| `windows/commands/voice.md` | `/voice` slash command. | **Same file with two adjustments:** the example commands inside change from `.ps1` to `.sh`, and the example `pwsh` invocation becomes `bash`. The Markdown shape stays identical. | Same as Mac. |
+| `windows/commands/tts.md` | `/tts` slash command. | **Same file with two adjustments:** the example commands inside change from `.ps1` to `.sh`, and the example `pwsh` invocation becomes `bash`. The Markdown shape stays identical. | Same as Mac. |
 | `windows/settings.json` | Claude Code settings registering the Stop hook. | **Same shape**, but the hook command changes from `pwsh -File ...tts_hook.ps1` to `bash .../tts_hook.sh`. **If the user already has a `~/.claude/settings.json` or `<game>/.claude/settings.json`, MERGE -- don't overwrite.** | Same as Mac. |
 
 ## Translation guidance
@@ -94,7 +94,7 @@ The user runs these manual tests to confirm the port works.
 2. **Synthesis works in isolation.** Manually run `echo "Hello world" | bash tts_hook.sh` (or whatever the manual-trigger interface is). You should hear "Hello world" through the default audio output. If silent, debug audio routing first.
 3. **Allowlist enforcement.** Add the per-game folder absolute path to `~/.claude/tts_game_folders.txt`. From a folder NOT on the allowlist, trigger Claude -- should NOT speak. From a folder ON the allowlist, trigger Claude -- SHOULD speak. The path-guard is the single most important behavior to verify.
 4. **Persona detection.** Edit `<game>/persona.md` and set the active persona to `Persona1`. Edit `<game>/tts_voices.txt` and map `Persona1` to a distinctive voice. Trigger Claude -- verify that voice is used. Switch persona, trigger again -- verify voice changes.
-5. **`/voice` toggle.** In Claude Code, type `/voice`. Confirm a `tts_disabled.flag` file appears in `.claude/`. Trigger Claude -- should be silent. Type `/voice` again -- flag goes away, speech resumes.
+5. **`/tts` toggle.** In Claude Code, type `/tts`. Confirm a `tts_disabled.flag` file appears in `.claude/`. Trigger Claude -- should be silent. Type `/tts` again -- flag goes away, speech resumes.
 6. **Markdown stripping.** Ask Claude something that produces a code-heavy reply (with backticks, lists, headings). Verify the spoken version sounds clean -- no "asterisk asterisk", no read-aloud URLs, no code-block contents.
 7. **Speech preemption.** Trigger Claude with a long reply, then trigger again before the first finishes. The first should cut off; the second should start cleanly.
 

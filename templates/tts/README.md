@@ -26,7 +26,7 @@ The full Windows install lives in [`windows/README.md`](windows/README.md). Quic
 3. Add the per-game folder's absolute path to `~/.claude/tts_game_folders.txt` (the allowlist the Stop hook checks before speaking).
 4. Edit `<game>/tts_voices.txt` to map your game's persona names to `edge-tts` voice IDs.
 5. Restart Claude Code (the Stop hook is loaded at session start).
-6. Ask Claude anything in the per-game folder. The reply should be spoken aloud. Toggle with `/voice`.
+6. Ask Claude anything in the per-game folder. The reply should be spoken aloud. Toggle with `/tts`.
 
 The setup wizard's TTS-opt-in step (Step 6) can scaffold all of this automatically. See `../optional_modules.md`.
 

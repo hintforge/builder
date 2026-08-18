@@ -4,6 +4,21 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### TTS module repaired (dash filter, voice lookup, session guard); toggle renamed `/tts`; native-voice guidance (v73, 2026-08-18)
+
+**Builder changes.**
+
+- `templates/tts/windows/tts_hook.ps1` -- three behavioral fixes:
+  - The em/en-dash-to-comma filter is now functional. Prior variants either matched plain hyphens only or relied on encodings/escapes that Windows PowerShell 5.1 cannot process; the filter now uses .NET-regex `\uXXXX` escapes, which keep the script pure ASCII and behave identically under PowerShell 5.1 and 7. The script's ASCII-only + 5.1-compatibility constraint is documented in the module README's "Known sharp edges".
+  - Voice selection now reads `<game>/tts_voices.txt` (`PersonaName = VoiceID[,RatePercent]`) as the README always documented, instead of a hardcoded two-persona branch. Unmatched personas fall back to `en-US-AvaNeural`.
+  - New transcript-project guard: the hook now also requires the session's own project folder (from the transcript path) to be an allowlisted game folder, so a session opened elsewhere that merely `cd`s into a game folder no longer speaks.
+- The TTS toggle slash command is renamed **`/voice` → `/tts`** (`commands/voice.md` → `commands/tts.md`) because Claude Code now ships a built-in `/voice` command (native voice dictation) that collides with the old name. All module docs and scripts updated; the reader's TTS constraint block references `/tts`.
+- PTT and TTS docs now point users at Claude's native voice features first: Claude Code's built-in `/voice` dictation (free speech-to-text input) and Claude Desktop/claude.ai voice mode (two-way). The modules' remaining niches -- speaking while the game window is focused, local-only transcription, and spoken output inside Claude Code -- are stated explicitly (`templates/ptt/README.md`, `templates/optional_modules.md`).
+- `setup_wizard.md`: the Step 9 completion check gains a **Stage 0 artifact gate** -- when Stage 0 ran, `research_briefs/stage0_priors.md` (and `achievement_stubs.md` when the game has achievements) must exist on disk before the closing handoff prints, same read-by-known-name discipline as the brief gate. The P1 brief must cite `achievement_stubs.md`, never `achievements.md`, as the achievement-coverage target.
+- `setup_wizard.md` handoff copy corrected: Claude Research is available on **every paid Claude plan (Pro, Max, Team, Enterprise)** and is now listed alongside Gemini/ChatGPT/Perplexity at every handoff-target site. Optional-module prompts no longer assert usage frequencies ("most users skip"); they state recommendations with their actual cost rationale, and message-count figures are labeled as estimates.
+
+**Existing corpus impact.** Corpora with the TTS module installed should re-instantiate `tts_hook.ps1` from the updated template (or apply the same three fixes) and rename `.claude/commands/voice.md` to `tts.md` so the toggle stops colliding with Claude Code's built-in `/voice`.
+
 ### Corpus manifest template aligned with corpus-core-version 6 (v72, 2026-07-29)
 
 **Builder changes.**

@@ -62,12 +62,37 @@ try {
         "$(Get-Date -Format o) skipped: cwd not in any allowlisted game folder (cwd=$resolvedCwd)" | Out-File -FilePath $logPath -Append -Encoding utf8
         exit 0
     }
+
+    # Transcript-project guard: the shell cwd persists across shell calls, so a session opened
+    # OUTSIDE a game folder that merely cd's into one (e.g. a search sweep) would pass the cwd
+    # gate above and speak. Require the SESSION's own project folder -- encoded in the transcript
+    # path's parent dir name (Claude Code encodes the project root by replacing every
+    # non-alphanumeric char with '-') -- to also be an allowlisted game folder (or a subfolder
+    # of one). Both gates must pass.
+    $projDirName = Split-Path (Split-Path $tp -Parent) -Leaf
+    $projectIsGameFolder = $false
+    foreach ($folder in $gameFolders) {
+        try {
+            $resolvedFolder = (Resolve-Path -LiteralPath $folder -ErrorAction SilentlyContinue).Path
+            if (-not $resolvedFolder) { continue }
+            $encoded = ($resolvedFolder -replace '[^A-Za-z0-9]', '-')
+            if ($projDirName.Equals($encoded, [System.StringComparison]::OrdinalIgnoreCase) -or
+                $projDirName.StartsWith("$encoded-", [System.StringComparison]::OrdinalIgnoreCase)) {
+                $projectIsGameFolder = $true
+                break
+            }
+        } catch { }
+    }
+    if (-not $projectIsGameFolder) {
+        "$(Get-Date -Format o) skipped: session project is not a game folder (projDir=$projDirName)" | Out-File -FilePath $logPath -Append -Encoding utf8
+        exit 0
+    }
     "$(Get-Date -Format o) active game folder: $activeGameFolder" | Out-File -FilePath $logPath -Append -Encoding utf8
 
-    # Disable flag: per-folder. /voice slash command toggles this file's existence.
+    # Disable flag: per-folder. /tts slash command toggles this file's existence.
     $flagPath = Join-Path $activeGameFolder ".claude\tts_disabled.flag"
     if (Test-Path $flagPath) {
-        "$(Get-Date -Format o) skipped: disabled by /voice in $activeGameFolder" | Out-File -FilePath $logPath -Append -Encoding utf8
+        "$(Get-Date -Format o) skipped: disabled by /tts in $activeGameFolder" | Out-File -FilePath $logPath -Append -Encoding utf8
         exit 0
     }
 
@@ -132,23 +157,28 @@ try {
     # Strip markdown noise that sounds awful when spoken.
     $text = [regex]::Replace($text, '```[\s\S]*?```', ' ')          # code fences
     $text = [regex]::Replace($text, '`[^`]*`', ' ')                  # inline code
-    $text = [regex]::Replace($text, '\[([^\]]+)\]\([^\)]+\)', '$1')  # markdown links → label
+    $text = [regex]::Replace($text, '\[([^\]]+)\]\([^\)]+\)', '$1')  # markdown links -> label
     $text = [regex]::Replace($text, 'https?://\S+', ' ')             # bare URLs
     $text = [regex]::Replace($text, '[*_#>~]', '')                   # markdown emphasis chars
     # Defensive TTS-output strip: replace em/en dashes with commas. Neural voices read the
     # raw character as either an awkward overlong pause or the literal word "dash". Lower-effort
     # models don't always honor the persona's "no em dash" rule -- belt-and-suspenders.
-    $text = [regex]::Replace($text, '[---]', ', ')          # en dash, em dash → comma
+    # The dash characters are matched via .NET-regex \u escapes, NOT literal Unicode and NOT
+    # PowerShell `u{} escapes: this file must stay ASCII-only (Windows PowerShell 5.1 decodes
+    # BOM-less UTF-8 as Windows-1252, turning literal dashes into mojibake) and must run under
+    # 5.1 (which lacks the PS6+ `u{} string escape). \uXXXX is resolved by the regex engine,
+    # so the source stays pure ASCII and behaves identically under 5.1 and 7.
+    $text = [regex]::Replace($text, '[\u2013\u2014]', ', ')          # en dash, em dash -> comma
     $text = [regex]::Replace($text, '\s+', ' ').Trim()
     if ([string]::IsNullOrWhiteSpace($text)) { exit 0 }
 
     # Cap length so a runaway message can't tie up the speech engine forever.
     if ($text.Length -gt 1500) { $text = $text.Substring(0, 1500) + '...' }
 
-    # Select voice based on active persona (read from the active game folder's persona.md).
-    # NORA → Ava (US neural female, Copilot voice).
-    # Charles → Ryan (UK neural male, slowed for condescending pace).
-    $persona = 'NORA'  # default
+    # Select voice based on active persona (read from the active game folder's persona.md),
+    # looked up dynamically in tts_voices.txt -- format "PersonaName = VoiceID[,RatePercent]".
+    # Falls back to en-US-AvaNeural if persona.md is missing/unparseable or has no matching entry.
+    $persona = $null
     $personaFile = Join-Path $activeGameFolder "persona.md"
     if (Test-Path $personaFile) {
         $personaContent = Get-Content $personaFile -Raw
@@ -156,11 +186,23 @@ try {
             $persona = $Matches[1]
         }
     }
+
     $voice = 'en-US-AvaNeural'
     $rateArg = $null
-    if ($persona -eq 'Charles') {
-        $voice = 'en-GB-RyanNeural'
-        $rateArg = '--rate=-8%'
+    $voicesFile = Join-Path $activeGameFolder "tts_voices.txt"
+    if ($persona -and (Test-Path $voicesFile)) {
+        $voiceLines = Get-Content $voicesFile -ErrorAction SilentlyContinue |
+            Where-Object { $_ -and $_.Trim() -ne '' -and -not $_.Trim().StartsWith('#') }
+        foreach ($line in $voiceLines) {
+            if ($line -match '^\s*([^=]+?)\s*=\s*([^,\s]+)\s*(?:,\s*(-?\d+%))?\s*$') {
+                $name = $Matches[1].Trim()
+                if ($name -eq $persona) {
+                    $voice = $Matches[2].Trim()
+                    if ($Matches[3]) { $rateArg = "--rate=$($Matches[3])" }
+                    break
+                }
+            }
+        }
     }
     "$(Get-Date -Format o) persona=$persona voice=$voice" | Out-File -FilePath $logPath -Append -Encoding utf8
 

@@ -157,7 +157,7 @@ together:
 7. Puzzle tier 0-3? (0 = silent, 3 = full solutions on entry)
 8. Save-watcher? (skip / set up -- skip recommended on Pro)
 9. Read-aloud? (skip / persona-matched / generic -- skip recommended on Pro)
-10. Research mode? (none / minimal / standard / deep / handoff -- none recommended on Pro; handoff externalizes cost to Gemini/ChatGPT/Perplexity)
+10. Research mode? (none / minimal / standard / deep / handoff -- none recommended on Pro; handoff moves research to a deep-research tool: Claude Research, Gemini, ChatGPT, or Perplexity)
 ```
 
 (Omit lines for variables already pre-filled in `setup_answers.txt`.)
@@ -276,11 +276,11 @@ If `Guides/` doesn't exist yet, create it as part of this step.
 ### Step 3 -- Game install / save locations (REQUIRED to ASK -- answer is usually "skip"; ⚠️ token-intensive)
 
 > **⚠️ Heads-up for Claude Pro users -- strongly consider skipping this step.**
-> Setting up the save-watcher (a small script that reads your save file so the guide knows where you are in the game) typically takes **10-30 messages** to get right. Save-file formats vary per game and often need trial-and-error reads. On the Pro tier (~45 messages per 5-hour window), this can eat most of your budget before you even start playing.
+> Setting up the save-watcher (a small script that reads your save file so the guide knows where you are in the game) is estimated to take **10-30 messages** to get right (varies a lot by game). Save-file formats vary per game and often need trial-and-error reads. On the Pro tier (~45 messages per 5-hour window), this can eat most of your budget before you even start playing.
 > The guide works fine without save-watcher integration -- you'll just tell it where you are when it matters. Skip unless you're on Max / Team or you specifically want live save-state awareness.
 
 **Ask (optional -- and clearly marked as skippable):**
-- "Want me to set up a save-file watcher? It lets me know where you are in the game without you telling me, but it takes 10-30 messages to set up and many games make this hard. Most users should skip. (yes / **skip**)"
+- "Want me to set up a save-file watcher? It lets me know where you are in the game without you telling me, but it's the most expensive optional module to set up (estimate: 10-30 messages, varies a lot by game) and many games make this hard. Recommended: skip -- you can add it any time later. (yes / **skip**)"
 - If user chooses skip → record `[SAVE_DIR] = skipped` and move on.
 - If user chooses yes → "Where does the game save your progress?" and "Where is the game installed (optional, helps research)?"
 
@@ -377,7 +377,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 > **For technical users who want the full setup** (TTS + push-to-talk voice input): see [`templates/optional_modules.md`](templates/optional_modules.md) -- the spec for three opt-in capability modules (PTT, TTS, save-state). Code-intensive (requires Python + pip + manual settings edits) but produces a hands-free voice-conversation experience. The wizard does NOT install these; the spec describes the contract that future drop-in templates will fulfill, with the in-tree reference impl as the worked example.
 
 **Ask:**
-- "Want me to read responses out loud through your speakers? Most users skip this. (yes / **skip**)"
+- "Want me to read responses out loud through your speakers? Recommended: skip -- it needs extra dependencies, and you can add it any time later. (If you play through Claude Desktop or claude.ai rather than Claude Code, the app's built-in voice mode already speaks replies -- you don't need this module.) (yes / **skip**)"
 
 **If skip (default):**
 - Record `[TTS_ENABLED] = false`. Move on.
@@ -403,8 +403,10 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 > **⚠️ Heads-up for Claude Pro users -- strongly consider skipping this step.**
 > Setting up PTT requires Python + faster-whisper + sounddevice + numpy + AutoHotkey v2. The wizard's PTT-opt-in path costs ~3-5 messages assuming all dependencies are already installed; up to 10-15 if Python packages need installing. Save it for later if you're not sure.
 
+> **Claude Code users: try the built-in `/voice` dictation first.** Claude Code ships native voice dictation (run `/voice`, hold `Space` to speak; free, no token cost, needs a Claude.ai sign-in + local mic). For most users it replaces this module with zero setup. This module's remaining niche is talking while the *game* window is focused (global hotkey + auto-refocus) or local-only transcription -- see `templates/ptt/README.md` "Before you install".
+
 **Ask:**
-- "Want me to set up push-to-talk? Hold a key to talk; release to transcribe and send. Most users skip; you can add it later. (yes / **skip**)"
+- "Want me to set up push-to-talk? Hold a key to talk; release to transcribe and send. If you're in Claude Code, the built-in `/voice` dictation covers most of this with zero setup. Recommended: skip -- this module has the heaviest install footprint, and you can add it later. (yes / **skip**)"
 
 **If skip (default):**
 - Record `[PTT_ENABLED] = false`. Move on.
@@ -535,7 +537,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
   - **Minimal** -- 1 top source per category, stub a few claims. ~5 messages. Skips source-diversity floor and non-English sources.
   - **Standard** -- apply the brief's source-diversity floor (3 source classes, non-English when applicable) at one source per class per category; flag conflicts. ~20 messages.
   - **Deep** -- apply the full handoff-brief spec in-house: 5+ sources per topic, exception-finding, mechanism-not-inventory, video transcription, datamining sweep. Spoiler-classification pass still runs after. ~50+ messages. (Only pick this on Max/Team or if you're OK with heavy spend.)
-  - **Handoff** -- I write you a research brief to paste into Gemini Deep Research / ChatGPT Deep Research / Perplexity. You bring the results back; I ingest them. ~2 messages here, ~5-10 to ingest results later. Cost externalized off your Pro cap.
+  - **Handoff** -- I write you a research brief to paste into a deep-research tool (Claude Research / Gemini Deep Research / ChatGPT Deep Research / Perplexity). You bring the results back; I ingest them. ~2 messages here, ~5-10 to ingest results later. The heavy research runs in that tool instead of this chat -- and a non-Claude tool spends none of your Claude budget.
 
 **Capture:**
 - `[RESEARCH_MODE]` -- one of `none` / `minimal` / `standard` / `deep` / `handoff`
@@ -665,9 +667,14 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
    P1 drop zone:  <game>/research_inbox/p1/
 
    Recommended tool by your Claude tier:
-     Max / Team / Enterprise   Claude Research on claude.ai
-     Pro                       Gemini Deep Research (free tier)
-     Free / no Claude sub      Perplexity Deep Research (5/day free)
+     Pro / Max / Team / Enterprise   Claude Research on claude.ai
+                                     (included in every paid Claude plan)
+     Free / no Claude sub            Gemini Deep Research or Perplexity
+                                     Deep Research (free tiers)
+
+   Any of these works -- if you'd rather keep research spend off your
+   Claude subscription entirely, use one of the non-Claude tools on
+   whatever tier you have.
 
    Steps:
      1. Upload p1.txt to the tool above. The brief is self-executing --
@@ -738,7 +745,7 @@ Drop zone: `<game>/research_inbox/p3/`.
 **Note for the user:**
 - The default `none` is fine. You can run research later by saying "research the puzzles" / "research everything you can" / etc.
 - Per-question research happens automatically and is cheap (1-3 messages per question) -- that's normal use.
-- Pick `handoff` if you have access to a separate deep-research tool (Gemini, ChatGPT, Perplexity) and want to spend its tokens instead of yours.
+- Pick `handoff` if you have access to a deep-research tool (Claude Research -- included in every paid Claude plan -- or Gemini, ChatGPT, Perplexity) and want the heavy research to run there instead of in this chat.
 
 ### Step 9 -- Confirmation + execution (REQUIRED)
 
@@ -803,9 +810,9 @@ If yes (and headroom is sufficient), the AI agent:
 
    > **Literal-path discipline.** When copying any template, the strings `../../hintforge/builder/` are **literal content**, not placeholders to resolve. Do NOT substitute them with absolute paths (e.g. `C:\Users\<name>\.claude\skills\hintforge\` or `~/.claude/skills/hintforge/`), even when the wizard is running from an installed-skill location. The skill base directory is metadata for `Read` operations, never a path source for content written into the guide. Published per-game guides must reference the framework via relative path so cloned repos remain portable on machines that don't have the maintainer's skill install. Only `[BRACKETED_PLACEHOLDERS]` get substituted; everything else in templates is verbatim content. Same discipline class as the v33 `[WORKSPACE_ROOT]` cascade -- both surfaces enforce "skill base is read-only metadata."
    >
-   > **Incident reference.** A prior wizard run transformed a `../../hintforge/builder/...` reference in a generated guide file into an absolute path like `C:\Users\<name>\.claude\skills\hintforge\templates\claim_format.md`, baking the maintainer's username + skill-install path into a guide that's supposed to be cleanly publishable. A parallel run on the same input copied verbatim. Non-deterministic. The sanity scan in sub-step 11 catches this post-write.
+   > **Incident reference.** A prior wizard run transformed a `../../hintforge/builder/...` reference in a generated guide file into an absolute path like `C:\Users\<name>\.claude\skills\hintforge\templates\claim_format.md`, baking the maintainer's username + skill-install path into a guide that's supposed to be cleanly publishable. A parallel run on the same input copied verbatim. Non-deterministic. The sanity scan in sub-step 12 catches this post-write.
    >
-   > **Literal-prose discipline (the player's name is not a slot).** The phrase "the player" in templates is **verbatim content, not a slot.** Do NOT substitute `[PLAYER_NAME]` for it anywhere in prose, headings, or section titles. The ONLY place the player's name is written is `CHECKPOINT.md`'s `**Name:** [PLAYER_NAME]` field (the single sanctioned `[PLAYER_NAME]` insertion site). Every other "the player" stays literal -- substituting it binds the guide to one player and is the prose analogue of the absolute-path leak above. The sub-step 11 player-name scan catches strays post-write.
+   > **Literal-prose discipline (the player's name is not a slot).** The phrase "the player" in templates is **verbatim content, not a slot.** Do NOT substitute `[PLAYER_NAME]` for it anywhere in prose, headings, or section titles. The ONLY place the player's name is written is `CHECKPOINT.md`'s `**Name:** [PLAYER_NAME]` field (the single sanctioned `[PLAYER_NAME]` insertion site). Every other "the player" stays literal -- substituting it binds the guide to one player and is the prose analogue of the absolute-path leak above. The sub-step 12 player-name scan catches strays post-write.
 
    - `claude_md.md` → `<game>/CLAUDE.md` -- the **optional** Claude Code platform shim, with `[GAME NAME]`/`[PERSONA1]`/`[PERSONA2]` filled. It carries no framework paths and no version watermark.
    - `agents_md.md` → `<game>/AGENTS.md` -- the **optional** shim for Codex CLI / OpenClaw, same placeholder fills. Ship both so the corpus auto-activates the reader on any host.
@@ -824,8 +831,14 @@ If yes (and headroom is sufficient), the AI agent:
 7. Adds the project to the workspace ledger (`<WORKSPACE_ROOT>/CLAUDE.md`)
 8. **Only if `[RESEARCH_MODE]` ≠ `none`:** runs the chosen research bundle (in-house) or generates the handoff briefs (handoff mode), announcing each URL or brief file as it's written. For in-house modes (`minimal` / `standard` / `deep`) stops when the budget is consumed.
 9. **Brief-artifact gate (handoff/deep modes only).** If `[RESEARCH_MODE]` is `handoff` or `deep`, verify on disk that `<game>/research_briefs/p1.txt` exists and is non-empty. If `[RUN_P2]` is yes, verify `<game>/research_briefs/p2.txt`. If `[RUN_P3]` is yes, verify `<game>/research_briefs/p3.txt`. **If any required brief is missing, do NOT print the Step 10 handoff message. Stop and report the missing artifact, then back up to the brief-generation sub-procedure of Step 8.** A handoff-mode setup that doesn't ship a P1 brief has not completed Step 8 even if the Step 9 summary table looks fully filled -- the variable-must-have-value enforcement catches missing answers but not missing artifacts; this gate catches the latter.
-10. **Update `## Phase state` in CHECKPOINT.** Set `setup: complete YYYY-MM-DD`. If P1 brief was generated (sub-step 8), set `p1_brief: written YYYY-MM-DD`. If P2/P3 briefs were generated, set their fields likewise. All other fields remain at their template defaults (`not started` / `not run`).
-11. **Post-write sanity scans (required gate).** Two scans run after all template Writes complete and before the Step 10 handoff -- an absolute-path scan (v37) and a player-name scan (v65). Either failing blocks the handoff.
+
+10. **Stage 0 artifact gate (whenever `[STAGE0] = done`, all research modes).** Verify by per-file `Read` (same discipline as the brief gate -- never directory enumeration) that Step 6.7's two mandated artifacts landed on disk:
+    - `<game>/research_briefs/stage0_priors.md` -- always required when Stage 0 ran.
+    - `<game>/research_briefs/achievement_stubs.md` -- required when `[ACHIEVEMENT_STUB_COUNT]` > 0.
+
+    **If either required file is missing, do NOT print the Step 10 handoff message. Name the missing file and back up to the corresponding Step 6.7 sub-step.** Consuming Stage 0's output inline (pre-populating Step 7, hard-coding the P1 brief's categories) is not a substitute for the files: `stage0_priors.md` is what a Step 8 re-run reads instead of redoing the web search, and `achievement_stubs.md` is P1 ingestion's completeness-check input -- `achievements.md` cannot serve that role because P1 ingestion rewrites it. For the same reason, the P1 brief's achievement-coverage section must cite `research_briefs/achievement_stubs.md` as the coverage target, never `achievements.md`.
+11. **Update `## Phase state` in CHECKPOINT.** Set `setup: complete YYYY-MM-DD`. If P1 brief was generated (sub-step 8), set `p1_brief: written YYYY-MM-DD`. If P2/P3 briefs were generated, set their fields likewise. All other fields remain at their template defaults (`not started` / `not run`).
+12. **Post-write sanity scans (required gate).** Two scans run after all template Writes complete and before the Step 10 handoff -- an absolute-path scan (v37) and a player-name scan (v65). Either failing blocks the handoff.
 
     **Absolute-path scan.** Read `<game>/CLAUDE.md` and `<game>/AGENTS.md` (the optional shims, if present) and scan for any of these absolute-path patterns: `C:\Users\`, `/Users/`, `/home/`, `~/.claude/`, `.claude/skills/`. If any pattern matches, **the wizard has not completed sub-step 3's literal-path discipline** -- stop, do NOT print the Step 10 handoff message. Surface every match to the user with file + line number, e.g.:
 
@@ -841,9 +854,9 @@ If yes (and headroom is sufficient), the AI agent:
 
     **Player-name scan (corpus-wide).** After all writes, scan every wizard-authored corpus file for the literal `[PLAYER_NAME]` value occurring **outside** `CHECKPOINT.md`'s `**Name:**` field. Templates use the literal phrase "the player" and are already name-neutral, so any baked-in name is an unsanctioned substitution (see the Literal-prose discipline note in sub-step 3). Surface each hit with file + line number -- same escalation shape as the absolute-path branch above -- then rewrite the offending occurrence back to "the player" before printing the Step 10 handoff. The player's name belongs in exactly one place, the `**Name:**` field; a guide that bakes one player's name into prose, headings, or section titles is bound to that player and isn't cleanly shareable.
 
-12. **Manifest-artifact gate (required gate).** After all template Writes complete, verify on disk that EITHER `<game>/nav/architecture.md` OR `<game>/architecture_manifest.md` exists and contains a `corpus-core-version:` line. Read the file by its known path -- per the nav decision, `nav/architecture.md` if `nav/` was created, `architecture_manifest.md` if `nav/` was skipped (same read-by-known-name discipline as the brief gate; do NOT enumerate the directory). If neither exists, **the manifest write was skipped -- do NOT print the Step 10 handoff message. Stop, report the missing manifest, and write it now** from [`templates/architecture.md`](templates/architecture.md) into the correct location. A nav-skip setup that ships no manifest has not completed the Step 7 Manifest section even if the Step 9 summary looks complete -- same "the artifact is the gate" discipline as the brief gate and the absolute-path scan above. The reader's session-start discovery reads this manifest; without it the corpus has no machine-readable core-version / game-version.
+13. **Manifest-artifact gate (required gate).** After all template Writes complete, verify on disk that EITHER `<game>/nav/architecture.md` OR `<game>/architecture_manifest.md` exists and contains a `corpus-core-version:` line. Read the file by its known path -- per the nav decision, `nav/architecture.md` if `nav/` was created, `architecture_manifest.md` if `nav/` was skipped (same read-by-known-name discipline as the brief gate; do NOT enumerate the directory). If neither exists, **the manifest write was skipped -- do NOT print the Step 10 handoff message. Stop, report the missing manifest, and write it now** from [`templates/architecture.md`](templates/architecture.md) into the correct location. A nav-skip setup that ships no manifest has not completed the Step 7 Manifest section even if the Step 9 summary looks complete -- same "the artifact is the gate" discipline as the brief gate and the absolute-path scan above. The reader's session-start discovery reads this manifest; without it the corpus has no machine-readable core-version / game-version.
 
-13. Prints the setup-complete message + fresh-session handoff (see Step 10).
+14. Prints the setup-complete message + fresh-session handoff (see Step 10).
 
 **Output formatting -- backtick filenames and paths.** When the wizard prints any "what was installed" recap or refers to created files in chat, every filename and path must be wrapped in backticks: write `` `CLAUDE.md` `` and `` `.claude/settings.json` ``, not bare `CLAUDE.md` or `.claude/settings.json`. Reason: Claude Code's chat renderer (and several other markdown renderers) auto-linkifies bare `name.ext` strings as if they were domain names -- `CLAUDE.md` becomes a clickable `http://CLAUDE.md` link in the rendered output, which is broken and confusing for non-tech users. Backticks defuse the auto-linkifier. The same rule applies to file tables: wrap each filename cell in backticks.
 
