@@ -27,6 +27,8 @@ The setup wizard's relevant steps:
 
 A guide can have any combination installed -- none, one, two, or all three. PTT and TTS pair particularly well (voice in + voice out → hands-free game companion).
 
+**Native voice features first.** Claude's own surfaces now cover part of this ground: Claude Code ships built-in `/voice` dictation (speech-to-text input; free, needs Claude.ai sign-in + local mic), and Claude Desktop / claude.ai have a full two-way voice mode. The modules' remaining niches: PTT works while the *game* window is focused and transcribes locally (see `ptt/README.md` "Before you install"); TTS gives Claude Code spoken output, which the built-in dictation does not do. The TTS toggle command is `/tts` -- `/voice` is reserved by Claude Code's built-in dictation command.
+
 ## Why these three, why now
 
 These three emerged from a fully-equipped reference guide built during framework development -- PTT for voice in, TTS for voice out, save-watcher for live state. Templates capture the working patterns so new guides don't rebuild from scratch.

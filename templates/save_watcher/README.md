@@ -70,7 +70,7 @@ Then look for known keys (`World`, `Sublevel_*`, persona names, equipped slot na
 ### Pattern 3 -- Encrypted / proprietary binary
 
 Hardest case. Some games encrypt the entire save (no plain header). Options:
-- **Skip.** Just tell Claude your location at session start. Honest answer for most users.
+- **Skip.** Just tell Claude your location at session start. This is the recommended answer for this case -- the cost/benefit rarely justifies the other two options.
 - **Find a community decrypter.** Mod scenes for popular games often have one. Cite the source in your save_watcher.py.
 - **Reverse-engineer.** Big project. Don't do this for a guide -- only if you're already modding the game.
 

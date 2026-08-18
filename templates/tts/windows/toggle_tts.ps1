@@ -1,5 +1,5 @@
 # Toggle the TTS hook on/off and silence any in-progress speech.
-# Invoked by the /voice slash command.
+# Invoked by the /tts slash command.
 #
 # Path-relative: this script lives in <game>/.claude/ and writes flag/pid/log
 # files to its own directory. Move the per-game folder anywhere; this script
@@ -24,10 +24,10 @@ if (Test-Path $pidFile) {
 
 if (Test-Path $flagPath) {
     Remove-Item $flagPath -Force
-    "$(Get-Date -Format o) /voice: enabled" | Out-File -FilePath $logPath -Append -Encoding utf8
+    "$(Get-Date -Format o) /tts: enabled" | Out-File -FilePath $logPath -Append -Encoding utf8
     Write-Output "TTS ON"
 } else {
-    "$(Get-Date -Format o) disabled by /voice" | Out-File -FilePath $flagPath -Encoding utf8
-    "$(Get-Date -Format o) /voice: disabled" | Out-File -FilePath $logPath -Append -Encoding utf8
+    "$(Get-Date -Format o) disabled by /tts" | Out-File -FilePath $flagPath -Encoding utf8
+    "$(Get-Date -Format o) /tts: disabled" | Out-File -FilePath $logPath -Append -Encoding utf8
     Write-Output "TTS OFF"
 }

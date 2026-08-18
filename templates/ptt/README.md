@@ -4,6 +4,18 @@ A long-running Whisper daemon + a hotkey daemon that lets you hold a key to talk
 
 Pairs naturally with the **TTS module** (`../tts/`) for full voice in + voice out.
 
+## Before you install: Claude Code now has native voice dictation
+
+Claude Code ships built-in voice dictation: run `/voice` in the CLI, then hold `Space` (or `/voice tap` for tap-to-toggle) to speak your prompt. It's free (transcription doesn't consume messages or tokens), streams to Anthropic's servers, and needs a Claude.ai sign-in plus a local microphone. **Try that first** -- for most users it replaces this module with zero setup.
+
+This module still earns its install in specific cases:
+
+- **You want to talk while the game window is focused.** Native dictation only records while the Claude Code prompt input is focused. This module's global hotkey works from inside the game, pastes the transcript into the Claude window, presses Enter, and refocuses the game -- the hands-on-controller flow it was built for.
+- **Local-only transcription.** Native dictation uploads audio to Anthropic's servers; this module runs Whisper locally and nothing leaves your machine.
+- **Native dictation is unavailable to you.** API-key / Bedrock / Vertex auth (no Claude.ai account), or an organization policy that disables voice.
+
+If none of those apply, skip this module and use `/voice`.
+
 ## Supported platforms
 
 | Platform | Status | Where to look |

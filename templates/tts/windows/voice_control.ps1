@@ -1,6 +1,6 @@
 # Voice control script -- start, stop, toggle, or status the TTS hook.
-# Invoked by the /voice slash command. Models its action interface on
-# ptt_control.ps1 so /voice and /ptt have symmetric verbs.
+# Invoked by the /tts slash command. Models its action interface on
+# ptt_control.ps1 so /tts and /ptt have symmetric verbs.
 #
 # State is encoded by the presence/absence of tts_disabled.flag in this
 # script's directory. The Stop hook (tts_hook.ps1) checks for that flag
@@ -37,15 +37,15 @@ function Stop-InProgressSpeech {
 function Enable-Voice {
     Stop-InProgressSpeech
     if (Test-Path $flagPath) { Remove-Item $flagPath -Force -ErrorAction SilentlyContinue }
-    "$(Get-Date -Format o) /voice: enabled" | Out-File -FilePath $logPath -Append -Encoding utf8
+    "$(Get-Date -Format o) /tts: enabled" | Out-File -FilePath $logPath -Append -Encoding utf8
 }
 
 function Disable-Voice {
     Stop-InProgressSpeech
     if (-not (Test-Path $flagPath)) {
-        "$(Get-Date -Format o) disabled by /voice" | Out-File -FilePath $flagPath -Encoding utf8
+        "$(Get-Date -Format o) disabled by /tts" | Out-File -FilePath $flagPath -Encoding utf8
     }
-    "$(Get-Date -Format o) /voice: disabled" | Out-File -FilePath $logPath -Append -Encoding utf8
+    "$(Get-Date -Format o) /tts: disabled" | Out-File -FilePath $logPath -Append -Encoding utf8
 }
 
 switch ($Action) {
