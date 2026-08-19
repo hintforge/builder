@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Save-watcher module: a test for "is this really encrypted?" before writing off save parsing (v79, 2026-08-18)
+
+**Builder changes.**
+
+- `templates/save_watcher/README.md` Pattern 3 ("encrypted / proprietary binary") now opens with four checks that must run before a save format is classified that way. The trigger: a guide had written off its save as encrypted on the evidence "no readable strings in the first 16 KB and no zlib/gzip/PK magic" -- which distinguishes *not plaintext* from *plaintext* and nothing else. The format turned out to be plain XML under a fixed XOR keystream, readable in a single session, and the guide had permanently given up chapter, day, location and loadout reporting on the strength of an unsound test. The checks (clean UTF-8 decode of the whole file; XOR two saves and look for an all-sub-0x80 result; look for byte-identical runs across saves, which rule out per-save key material; autocorrelate the high bit to recover a key period) separate obfuscation from encryption in minutes.
+
+**Existing corpus impact.** Corpora whose save-watcher was set to file-freshness-only because the save "looked encrypted" are worth re-checking against these four tests -- obfuscation is far more common than encryption in single-player titles, and a pass turns a freshness-only watcher into a state-reporting one.
+
 ### PTT daemon launcher picks the interpreter that has the packages (v78, 2026-08-18)
 
 **Builder changes.**

@@ -69,7 +69,14 @@ Then look for known keys (`World`, `Sublevel_*`, persona names, equipped slot na
 
 ### Pattern 3 -- Encrypted / proprietary binary
 
-Hardest case. Some games encrypt the entire save (no plain header). Options:
+**Run these four checks before you classify a save as Pattern 3.** "No readable strings in the first N KB, and the header matches no compression magic" is the usual reason a save gets filed here, and it is not sufficient: it separates *not plaintext* from *plaintext*, and says nothing about encrypted vs obfuscated vs compressed. Obfuscation (a fixed XOR keystream, a byte rotation, a counter) is far more common than encryption in single-player games, and it is readable in an afternoon. Each check is minutes of work and any one of them can settle it:
+
+1. **Does the whole file decode as UTF-8 (or ASCII)?** A multi-megabyte file that decodes cleanly is a *text* file -- the game wrote its payload as a string. Real ciphertext and compressed data fail this almost immediately.
+2. **XOR two different saves together.** If the result is overwhelmingly below `0x80` and uses far fewer than 256 distinct values, you have two 7-bit-ASCII plaintexts sharing one keystream -- obfuscation, and crackable. Independent encryption or compression gives ~50% of bytes at or above `0x80` and all 256 values.
+3. **Compare two saves byte for byte.** Long identical runs mean there is no per-save key material (no IV, no nonce). Encryption worth the name never does that; a fixed keystream always does.
+4. **If the plaintext is 7-bit ASCII, the top bit of each stored byte IS the keystream's top bit.** Autocorrelate that bit sequence to recover the key period, then solve one key byte per column by maximizing printable characters. A perfect correlation spike at multiples of some N hands you the key length directly.
+
+A save that passes all four -- no text decode, no shared keystream, no identical runs, no periodicity -- is genuinely Pattern 3. Then, and only then:
 - **Skip.** Just tell Claude your location at session start. This is the recommended answer for this case -- the cost/benefit rarely justifies the other two options.
 - **Find a community decrypter.** Mod scenes for popular games often have one. Cite the source in your save_watcher.py.
 - **Reverse-engineer.** Big project. Don't do this for a guide -- only if you're already modding the game.
