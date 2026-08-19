@@ -24,6 +24,8 @@ Pairs naturally with the **TTS module** (`../tts/`) for full voice in + voice ou
   - `numpy` (audio buffer math)
 - **AutoHotkey v2** (NOT v1) -- [autohotkey.com/v2](https://www.autohotkey.com/v2/). Required for the hotkey layer; v1 will fail to parse `ptt.ahk`.
 
+> **If you have more than one Python install, check which one has the packages.** `start_ptt.bat` resolves the interpreter as `%PYTHONW%` -> `pyw -3` (the py launcher's registered default) -> `pythonw` on PATH. The failure this ordering exists to prevent: the packages get pip installed into one interpreter while a different one sits first on PATH, so the windowless daemon exits instantly with `ModuleNotFoundError` and you see nothing -- `/ptt status` just reports `daemon: not running` forever. Diagnose by running `python ptt_daemon.py` in a console from the `ptt/` folder (the traceback names the missing package); `py -0p` lists every installed interpreter. Force one by setting `PYTHONW` to a full `pythonw.exe` path.
+
 First daemon run downloads the `small.en` Whisper model (~244 MB). This happens transparently on first start.
 
 ## Installation (manual)
