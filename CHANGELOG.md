@@ -4,6 +4,15 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### PTT daemon launcher picks the interpreter that has the packages (v78, 2026-08-18)
+
+**Builder changes.**
+
+- `templates/ptt/windows/start_ptt.bat` launched the daemon with a bare `pythonw`, taking whatever Python sat first on PATH. On a machine with more than one Python install -- common, since the Windows Store, python.org, and the `py` launcher's default can all differ -- that is frequently *not* the interpreter the packages were installed into. The daemon then exits immediately with `ModuleNotFoundError`, and because it is launched windowless there is no visible error at all: the hotkey is registered, `/ptt status` reports `daemon: not running`, and nothing ever becomes ready. Resolution order is now `%PYTHONW%` (explicit override) -> `pyw -3` (the py launcher's registered default) -> `pythonw` on PATH, with the diagnosis steps in a comment block at the point of failure.
+- The module README documents the same failure mode and its two diagnostic commands (`python ptt_daemon.py` in a console for the traceback, `py -0p` to list interpreters).
+
+**Existing corpus impact.** Corpora with the PTT module installed should re-instantiate `ptt/start_ptt.bat` from the template if PTT starts but never reaches ready.
+
 ### `/tts` command repaired; TTS control script renamed; PTT no longer moves the cursor (v77, 2026-08-18)
 
 **Builder changes.**
