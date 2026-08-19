@@ -7,7 +7,7 @@ Stop-hook based TTS that speaks each Claude Code reply through your speakers in 
 | File | Where it goes in a per-game folder | Purpose |
 |---|---|---|
 | `tts_hook.ps1` | `<game>/.claude/tts_hook.ps1` | Stop hook. Reads transcript, strips markdown, synthesizes via `edge-tts`, plays MP3. Path-guards against running outside allowlisted game folders. |
-| `toggle_tts.ps1` | `<game>/.claude/toggle_tts.ps1` | Toggle script for `/tts`. Self-resolves its own path; safe to move. |
+| `tts_control.ps1` | `<game>/.claude/tts_control.ps1` | Control script behind `/tts`. Takes `-Action start|stop|toggle|status` (defaults to `toggle`) and always silences any in-progress speech, so `/tts` doubles as a stop-talking button. Self-resolves its own path; safe to move. **The filename must match the path inside `commands/tts.md`** -- if you rename one, rename both. |
 | `tts_voices.txt` | `<game>/tts_voices.txt` | Persona → voice mapping. Edit per game. |
 | `commands/tts.md` | `<game>/.claude/commands/tts.md` | `/tts` slash command. |
 | `settings.json` | `<game>/.claude/settings.json` | Claude Code settings to register the Stop hook. If `<game>/.claude/settings.json` already exists, **merge** (don't overwrite); the hook block goes under the `hooks` key. |

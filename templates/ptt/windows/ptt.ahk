@@ -129,26 +129,33 @@ KillTts() {
         }
     }
 
-    ; --- Ensure Electron DOM focus lands on the input field ---
-    ; WinActivate puts the OS-level focus on the window, but Chromium's
-    ; internal focus state may still be on whatever element had it before
-    ; (or nowhere). A single click on the input area at the bottom of
-    ; the window guarantees the text field gets DOM focus before we paste.
-    ; Claude Desktop layout: input bar is always at ~90% height, centered.
-    Sleep(40)
-    try {
-        WinGetPos(&wx, &wy, &ww, &wh, "ahk_id " . claudeHwnd)
-        clickX := wx + (ww // 2)
-        clickY := wy + Round(wh * 0.92)
-        DllCall("SetCursorPos", "Int", clickX, "Int", clickY)
-        Sleep(30)
-        Click(clickX, clickY)
-    }
-    Sleep(50)
+    ; There is deliberately NO cursor-moving click-to-focus step here.
+    ; An earlier version clicked the input field (SetCursorPos + Click at ~92%
+    ; of window height) to force Electron DOM focus after activation. On a
+    ; multi-monitor setup -- a game fullscreen on one screen, the assistant
+    ; window on another -- that flings the cursor off-screen mid-session and
+    ; is untrackable during gameplay, which is the exact context this module
+    ; exists for. It was removed after testing showed WinActivate alone lands
+    ; DOM focus reliably on current desktop-app builds, including the
+    ; fullscreen-game case it was originally added to fix.
+    ;
+    ; If paste ever lands nowhere, capture the exact conditions BEFORE
+    ; re-adding any cursor-moving fix. The escalation path is UIA SetValue
+    ; against the Chromium input element (writes to the accessibility tree,
+    ; sends no input events) -- not another click.
+
+    Sleep(250)
     Send("^v")
-    Sleep(60)
+    Sleep(150)
     Send("{Enter}")
-    Sleep(60)
-    if (prevHwnd && prevHwnd != claudeHwnd)
+    Sleep(150)
+
+    ; Refocus whatever was in front before (usually the game). The 1px mouse
+    ; nudge is empirical: kept because the refocus is more reliable with it.
+    if (prevHwnd && prevHwnd != claudeHwnd) {
         WinActivate("ahk_id " . prevHwnd)
+        Sleep(150)
+        MouseMove(1, 0, , "R")
+        MouseMove(-1, 0, , "R")
+    }
 }

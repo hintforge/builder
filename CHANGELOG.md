@@ -4,6 +4,16 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### `/tts` command repaired; TTS control script renamed; PTT no longer moves the cursor (v77, 2026-08-18)
+
+**Builder changes.**
+
+- **`/tts` was dead on arrival in every corpus instantiated since the v73 rename.** `commands/tts.md` invokes `.claude/tts_control.ps1`, but the module shipped its control script as `voice_control.ps1` -- the v73 `/voice` -> `/tts` rename updated the command file and every doc reference and never renamed the script itself. The script is now `tts_control.ps1`, matching the command. The module README's file map, which had listed the wrong script (`toggle_tts.ps1`, which takes no arguments and would fail on the `-Action` the command passes) and omitted the real one, now documents `tts_control.ps1` and its `start|stop|toggle|status` verbs, with an explicit note that the filename must match the path inside `commands/tts.md`.
+- **`toggle_tts.ps1` removed.** It was a toggle-only predecessor fully superseded by `tts_control.ps1` (same flag file, plus the other three verbs and in-progress-speech silencing), and nothing referenced it except the incorrect README row. The non-Windows porting guide now targets `tts_control` as well.
+- **`templates/ptt/windows/ptt.ahk` no longer moves the mouse cursor to force input focus.** The click-to-focus step (`SetCursorPos` + `Click` at ~92% of window height) flings the cursor across screens on a multi-monitor setup with a fullscreen game -- the module's primary use case -- and testing showed window activation alone lands input focus reliably on current desktop-app builds, including the fullscreen-game case the click was added for. The paste/refocus timings from the validated configuration ship with it. The file documents the escalation path (UIA `SetValue` against the accessible element) so the removed approach is not re-added reflexively.
+
+**Existing corpus impact.** Corpora with the **TTS module** installed must rename `.claude/voice_control.ps1` to `.claude/tts_control.ps1` (or re-instantiate from the template) -- until then `/tts` reports that the script does not exist. Any `.claude/toggle_tts.ps1` left over is unused and can be deleted. Corpora with the **PTT module** installed should re-instantiate `ptt/ptt.ahk` from the template if their copy still contains the `SetCursorPos` block.
+
 ### TTS module repaired (dash filter, voice lookup, session guard); toggle renamed `/tts`; native-voice guidance (v73-v74, 2026-08-18)
 
 **Builder changes.**
