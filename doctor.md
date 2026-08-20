@@ -14,7 +14,7 @@ This procedure runs on an existing, instantiated guide when something is wrong, 
 
 - The session is **fresh** and opened **inside the game folder** (`Guides/<game>/`), not at workspace root or inside the framework folder. Framework files this procedure reads (`docs/corpus-format.md`, `CHANGELOG.md`, templates) come from the running skill, not a path relative to the guide.
 - The guide has already been instantiated (`architecture.md` exists, `CHECKPOINT.md` exists, at least one content subfolder has been populated). If those aren't present, redirect the user to `setup_wizard.md` or `ingestion.md` and stop.
-- Run on a Sonnet-class (or equivalent) model at high reasoning effort (the level named `high`: Anthropic `effort: high` -- Sonnet's default in Claude Code; Codex/GPT-5 `model_reasoning_effort: high`; NOT your runtime's maximum where it exposes `xhigh` / `max` / adaptive -- high, not maxed). Doctor makes real judgment calls -- diagnosing drift, reconciling conflicts, deciding what to repair.
+- Run on a mid-tier, cost-efficient model (Sonnet-class or equivalent) at reasoning effort `high` (the level named `high`: Anthropic `effort: high` -- Sonnet's default in Claude Code; Codex/GPT-5 `model_reasoning_effort: high`; NOT your runtime's maximum where it exposes `xhigh` / `max` / adaptive). Capable enough, not overkill: keep the model mid-tier (not a flagship) and the effort at `high`, not maxed -- a bigger model or a higher rung over-reasons and costs more without improving the repair. Doctor makes real judgment calls -- diagnosing drift, reconciling conflicts, deciding what to repair.
 
 ## Procedure
 
