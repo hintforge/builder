@@ -3,7 +3,7 @@
 
 This procedure runs in a **fresh session inside the game folder** after at least P1 ingestion is complete. Triggered by the user typing "run stitch", "run zipper", or "run stitch and zipper."
 
-> 🧠 **Run on a Sonnet-class (or equivalent) model at high reasoning effort.** Same discipline as ingestion: use the high end of your assistant's effort ladder (Anthropic `effort: high`; Codex/GPT-5 `model_reasoning_effort: high`; the top graduated level otherwise). Reconciling conflicts and writing edges are judgment calls -- give them the reasoning headroom.
+> 🧠 **Run on a Sonnet-class (or equivalent) model at high reasoning effort.** Same discipline as ingestion: run at reasoning effort **`high`** -- the level named `high` (Anthropic `effort: high`, Sonnet's default in Claude Code; Codex/GPT-5 `model_reasoning_effort: high`), NOT your runtime's maximum where it exposes higher rungs (`xhigh` / `max` / adaptive). High, not maxed. Reconciling conflicts and writing edges are judgment calls -- give them the reasoning headroom.
 
 > **Compaction expectation:** EXPECTED for stitch on large corpora (100+ files); UNEXPECTED for zipper (zipper is short by design -- compacting zipper means scope is wrong). See [`compaction_policy.md`](compaction_policy.md). Stitch's count-from-disk summary rule (Stitch session sub-step 5) is one of this procedure's compaction handlers; the per-edge convergence audit in Phase B is the other (it catches sources-cited-but-contradicting bugs that survive post-compact recomposition).
 

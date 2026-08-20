@@ -4,7 +4,7 @@ Structured spec any markdown-aware AI agent executes when a user first instantia
 
 > **Compaction expectation:** UNEXPECTED. See [`compaction_policy.md`](compaction_policy.md). Setup produces structurally fragile output (scaffolded corpus + briefs). If you observe context pressure mid-wizard -- or if earlier steps burned excess context for any reason -- follow the step 9 handoff failsafe (hand the user the captured parameters + verification block for a fresh session) rather than proceeding into post-compact file writes.
 
-> 🧠 **Run the wizard on a Sonnet-class (or equivalent) model at high reasoning effort.** The wizard gathers answers, writes files from templates, and generates research briefs from a fixed schema -- decisions that benefit from full reasoning. Give it the high end of your assistant's effort ladder (Anthropic `effort: high`; Codex/GPT-5 `model_reasoning_effort: high`; the top graduated level otherwise). Confirm your model and effort setting before triggering.
+> 🧠 **Run the wizard on a Sonnet-class (or equivalent) model at high reasoning effort.** The wizard gathers answers, writes files from templates, and generates research briefs from a fixed schema -- decisions that benefit from full reasoning. Run it at reasoning effort **`high`** -- the level named `high` (Anthropic `effort: high`, which is Sonnet's default in Claude Code; Codex/GPT-5 `model_reasoning_effort: high`), NOT your runtime's maximum where it exposes higher rungs like `xhigh` / `max` / adaptive. High, not maxed. Confirm your model and effort setting before triggering.
 
 ## When the wizard runs
 
