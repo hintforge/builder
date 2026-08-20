@@ -14,7 +14,7 @@ This procedure runs on an existing, instantiated guide when something is wrong, 
 
 - The session is **fresh** and opened **inside the game folder** (`Guides/<game>/`), not at workspace root or inside the framework folder. Framework files this procedure reads (`docs/corpus-format.md`, `CHANGELOG.md`, templates) come from the running skill, not a path relative to the guide.
 - The guide has already been instantiated (`architecture.md` exists, `CHECKPOINT.md` exists, at least one content subfolder has been populated). If those aren't present, redirect the user to `setup_wizard.md` or `ingestion.md` and stop.
-- Run on a mid-tier model at modest reasoning effort (low effort where your assistant offers graduated levels; thinking off where it only offers a toggle). This is structural work, not deep-reasoning work.
+- Run on a Sonnet-class (or equivalent) model at high reasoning effort (Anthropic `effort: high`; Codex/GPT-5 `model_reasoning_effort: high`; the top graduated level otherwise). Doctor makes real judgment calls -- diagnosing drift, reconciling conflicts, deciding what to repair.
 
 ## Procedure
 

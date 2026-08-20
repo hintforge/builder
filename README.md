@@ -33,7 +33,7 @@ Already installed? Paste this to get the latest version:
 
 **You'll know it's working when** the wizard greets you and starts asking setup questions (game name, persona cast, dial defaults) before touching any files.
 
-> **Model recommendation.** Use a mid-tier model (Sonnet-class or equivalent) at a modest reasoning-effort level for all builder operations: setup, ingestion, stitch, zipper, doctor, and reddit sweep. The builder's work is structural: reading files, routing facts, writing formatted output. It does not benefit from deep reasoning chains, and a top-tier model at high effort tends to over-reason and drift off the procedure, adding cost without improving outcomes. Keep the reasoning effort low: where your assistant exposes graduated effort levels, use one toward the low end (not the maximum); where it only offers a thinking on/off toggle, off is fine for structural work. The only exception is the research cascade itself (P1, P2, P3 brief generation), which is the one builder step that benefits from depth, and for which the handoff path to an external deep-research tool is the recommended default anyway. Confirm your model and effort setting before starting a session.
+> **Model recommendation.** Use a Sonnet-class (or equivalent) model at high reasoning effort for all builder operations: setup, ingestion, stitch, zipper, doctor, and reddit sweep. The builder's work involves real judgment -- spoiler-tier classification, confidence calibration, conflict reconciliation, deciding how facts route and connect -- which benefits from full reasoning. Set the effort lever to the high end: Anthropic `effort: high`; Codex/GPT-5 `model_reasoning_effort: high`; the top graduated level otherwise. The research cascade itself (P1, P2, P3 brief generation) is best handed off to an external deep-research tool (the recommended default). Confirm your model and effort setting before starting a session.
 
 ---
 
@@ -155,16 +155,16 @@ The research cascade (P1, P2, P3) is the most token-intensive part of building a
 
 Supported handoff targets: Claude's built-in Research mode, Gemini Deep Research, ChatGPT Deep Research, Perplexity. Any tool that accepts a structured brief and returns a detailed result file works.
 
-**Why this is the recommended path:** External deep-research tools are optimized for broad multi-source synthesis. Running P1, P2, and P3 inside a local agent session using a top-tier model is significantly more expensive for equivalent or worse coverage. Use the handoff path. Use a mid-tier model (Sonnet-class) locally for everything except the research itself.
+**Why this is the recommended path:** External deep-research tools are optimized for broad multi-source synthesis. Running P1, P2, and P3 inside a local agent session using a top-tier model is significantly more expensive for equivalent or worse coverage. Use the handoff path. Use a Sonnet-class (or equivalent) model at high reasoning effort locally for everything except the research itself.
 
 **Round-trip:**
 1. The setup wizard generates a research brief and writes it to `<game>/research_brief.txt`.
 2. You paste the brief into your external deep-research tool of choice.
 3. Save the result file into `<game>/research_inbox/p1/` (or p2, p3 as appropriate).
 4. In a fresh session inside the game folder, say: `ingest the research`.
-5. The agent (running Sonnet-class at modest reasoning effort) distributes facts from the result file into the corpus with source tags, spoiler classification, and structured-claim metadata.
+5. The agent (running Sonnet-class at high reasoning effort) distributes facts from the result file into the corpus with source tags, spoiler classification, and structured-claim metadata.
 
-The ingestion step is handled by `ingestion.md`. It runs best on a mid-tier model at modest reasoning effort: the work is structural routing, not deep reasoning.
+The ingestion step is handled by `ingestion.md`. It runs best on a Sonnet-class (or equivalent) model at high reasoning effort: routing facts and classifying spoilers are judgment calls.
 
 ## Research phases: P1, P2, P3
 
@@ -178,7 +178,7 @@ Building a guide for a new game runs through three research phases. The setup wi
 
 After each phase, run ingestion in a fresh session: say `ingest the research` with the result file present in `research_inbox/`. Each ingestion pass is independent. A failed or partial P2 ingestion does not invalidate P1.
 
-**Model for ingestion: Sonnet-class at modest reasoning effort.** Ingestion is the most context-heavy local session you will run. A top-tier model at high effort adds cost without improving file routing or spoiler classification. Confirm your model and effort setting before triggering ingestion.
+**Model for ingestion: Sonnet-class at high reasoning effort.** Ingestion is the most context-heavy local session you will run, and its spoiler classification and file-routing are judgment calls that benefit from full reasoning. Confirm your model and effort setting before triggering ingestion.
 
 The setup wizard (`setup_wizard.md`) manages brief generation for all three phases and tracks which phases have completed via `CHECKPOINT.md`. Refer to `ingestion.md` for the full ingestion procedure.
 
@@ -212,7 +212,7 @@ The framework's response to this is structural, not instructional. Three tools e
 
 These three tools exist because the [universal principles](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md) require that every claim carry structured metadata (source, confidence, last-verified, tier) and that the corpus not contradict itself silently. Stitch and zipper enforce the non-contradiction requirement actively rather than relying on ingestion discipline alone. Doctor enforces temporal correctness: a claim that was accurate at the time of ingestion may not be accurate after a patch.
 
-**Model for stitch, zipper, and doctor: Sonnet-class at modest reasoning effort.** All three are structural operations: read files, compare values, flag or resolve conflicts. None of them benefit from deep reasoning chains. Confirm your model and effort setting before running any of them.
+**Model for stitch, zipper, and doctor: Sonnet-class at high reasoning effort.** All three make judgment calls: compare values, flag and resolve conflicts, decide what to repair. Confirm your model and effort setting before running any of them.
 
 ---
 
@@ -286,7 +286,7 @@ This repo is the **builder** skill (authoring side). The runtime **reader** skil
 
 A guide built from the research cascade reflects the game as it existed at research time. Games patch. DLC ships. The reader framework updates. This section describes the ongoing use cases for `doctor.md` and how to handle each.
 
-**Model for all maintenance operations: Sonnet-class at modest reasoning effort.** Doctor, stitch, zipper, and ingestion are all structural. Confirm your model and effort setting before starting.
+**Model for all maintenance operations: Sonnet-class at high reasoning effort.** Doctor, stitch, zipper, and ingestion all make judgment calls. Confirm your model and effort setting before starting.
 
 ### After a game patch
 

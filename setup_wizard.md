@@ -4,7 +4,7 @@ Structured spec any markdown-aware AI agent executes when a user first instantia
 
 > **Compaction expectation:** UNEXPECTED. See [`compaction_policy.md`](compaction_policy.md). Setup produces structurally fragile output (scaffolded corpus + briefs). If you observe context pressure mid-wizard -- or if earlier steps burned excess context for any reason -- follow the step 9 handoff failsafe (hand the user the captured parameters + verification block for a fresh session) rather than proceeding into post-compact file writes.
 
-> 🧠 **Run the wizard on a mid-tier model at modest reasoning effort.** The wizard is structural: gather answers, write files from templates, generate research briefs from a fixed schema. None of the steps benefit from deep reasoning chains, and a top-tier model at high effort tends to over-reason and drift off the procedure. Keep the reasoning effort low -- where your assistant exposes graduated effort levels, use one toward the low end (not the maximum); where it only offers a thinking on/off toggle, turn it off. `[RESEARCH_MODE] = handoff` already externalizes the deep reasoning to whichever deep-research tool the user routes the brief through, so keep effort as low as your runtime allows there (off where the toggle exists). Confirm your model and effort setting before triggering.
+> 🧠 **Run the wizard on a Sonnet-class (or equivalent) model at high reasoning effort.** The wizard gathers answers, writes files from templates, and generates research briefs from a fixed schema -- decisions that benefit from full reasoning. Give it the high end of your assistant's effort ladder (Anthropic `effort: high`; Codex/GPT-5 `model_reasoning_effort: high`; the top graduated level otherwise). Confirm your model and effort setting before triggering.
 
 ## When the wizard runs
 
@@ -799,7 +799,7 @@ The handoff:
 
 3. Stop the current session. Do NOT print the Step 10 handoff message; the wizard isn't done.
 
-This failsafe is broader than compaction. If earlier steps fell apart for any reason -- looping research, scope creep, repeated re-asks, persona-research transcript bloat, accidental large reads -- the same handoff applies. Setup must remain recoverable from arbitrary mid-procedure context exhaustion; the summary table is the recovery checkpoint. The Sonnet-minimum + extended-thinking-OFF rule + `[RESEARCH_MODE] = handoff/none` defaults exist partly to make this failsafe rarely needed, but the failsafe exists for the cases where they're not enough.
+This failsafe is broader than compaction. If earlier steps fell apart for any reason -- looping research, scope creep, repeated re-asks, persona-research transcript bloat, accidental large reads -- the same handoff applies. Setup must remain recoverable from arbitrary mid-procedure context exhaustion; the summary table is the recovery checkpoint. The Sonnet-minimum rule + `[RESEARCH_MODE] = handoff/none` defaults exist partly to make this failsafe rarely needed, but the failsafe exists for the cases where they're not enough.
 
 If yes (and headroom is sufficient), the AI agent:
 1. Creates `[WORKSPACE_ROOT]/[GAME_FOLDER]/`
