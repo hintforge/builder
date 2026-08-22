@@ -345,7 +345,7 @@ kind: reddit_sweep
 game: <game-name>
 sweep_date: <ISO 8601 timestamp>
 auth_tier: <anonymous | app-only | authenticated>
-scope_query: <optional -- present only for doctor invocations>
+scope_query: <optional -- present only when the trigger phrase named a scope>
 subreddits:
   primary:
     name: r/<sub>

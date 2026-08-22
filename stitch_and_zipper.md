@@ -205,6 +205,26 @@ The flag resets to `false` when stitch completes.
    ```
    PowerShell equivalent uses `Get-Content | ForEach-Object` with `Split('|').Count`. Run per `## ` section to scope each table; tables in different sections legitimately have different schemas.
 
+   **Row-locality check (same step, same file).** A row can carry the correct cell count and still sit outside the table it belongs to -- appended after a closing HTML comment or a blank line instead of inserted into the table body. An empty table (header + separator, no data rows yet) reads as already closed, so an edit lands after the section rather than between. Column counting cannot catch this: the schema is right and the placement is wrong. For each `|`-delimited line, confirm it is contiguous with the table above it -- either the previous line is also a `|` line, or the line itself is a header followed by a separator row. Report orphan rows with file:line alongside the column-count mismatches, under the same no-auto-fix rule.
+
+   ```
+   awk '{l[NR]=$0} END{for(i=1;i<=NR;i++) if(l[i]~/^\|/ && l[i-1]!~/^\|/ && l[i+1]!~/^\|[ :|-]*-[ :|-]*$/) print FILENAME":"i": row outside a table body"}' dependencies.md
+   ```
+
+3c. **Corpus cross-reference lint (mandatory).** Two classes of reference are asserted outside `dependencies.md` and so are invisible to the per-edge audit, which reads edge *content* in that one file. Both resolve to the same defect -- the corpus points at something that does not exist -- and both survive repeated passes silently.
+
+   - **Dangling file references.** A prose pointer of the shape ``see corpus `<path>.md` ``, ``full <topic> in `<path>.md` ``, or a bare inline `` `<subfolder>/<file>.md` `` can name a file that was never written. Grep the corpus for the cross-reference shapes it actually uses, resolve each hit relative to the corpus root, and report the targets with no file on disk. Keep the pattern set deliberately narrow: matching every `.md`-shaped string (including link examples and fenced code) produces more false positives than the check is worth. Grow the set as new shapes appear rather than widening it to a catch-all.
+   - **Declared-edge endpoints.** A node file can declare an outgoing edge to an id that appears in no node list and no edge-table row in the architecture file (`nav/architecture.md`, or the root architecture manifest in a nav-skip corpus). Collect the endpoints declared across the node files, collect the ids the architecture knows, and report the endpoints present in neither its node list nor its edge table. A missing endpoint is a broken graph rather than a stylistic problem: the reader can route a player toward an id with nothing behind it.
+
+   ```
+   grep -rnoE '(see corpus|[Ff]ull [a-z ]+ in) `[a-z0-9_/-]+\.md`' . | while IFS= read -r hit; do t=$(printf '%s' "$hit" | grep -oE '`[a-z0-9_/-]+\.md`' | tr -d '`'); [ -f "$t" ] || echo "$hit -> MISSING $t"; done
+   grep -rhoE '\([a-z0-9_-]+, *[a-z0-9_-]+\)' nav/ | tr -d '() ' | sort -u | while IFS=, read -r from to; do if grep -q "$from" nav/architecture.md && ! grep -q "$to" nav/architecture.md; then echo "endpoint '$to' declared from '$from' but absent from architecture"; fi; done
+   ```
+
+   Anchoring the pair on its origin is what makes the endpoint check usable: only report a target when the id it was declared *from* is one the architecture already knows. Without that anchor an ordinary parenthetical in prose reads as an edge declaration and the check drowns in false positives.
+
+   Report both classes with file:line in the same chat surface as 3b, and do not auto-fix: a dangling reference is either a missing file (content work) or a stale pointer (repair work), and stitch cannot tell which. Hand them to the user or to a doctor branch C repair. **Why this step exists:** without it a corpus can pass a full zipper survey and a full stitch pass, be declared finished, and still carry a reference that resolves to nothing -- the defect surfaces only later, when a player asks about the target and the lookup comes back empty.
+
 4. Model reads corpus files per scope. Two sub-passes:
    - **Re-audit existing edges:** For each row already in `dependencies.md`, run the per-edge convergence audit (open cited sources, verify specific values). Surface contradictions to `## Corpus inconsistencies`.
    - **Find new edges:** For each new convergence meeting the **write threshold** (2+ files, 2+ topic directories): run the per-edge convergence audit, then write to `dependencies.md` and inline cross-refs, no chat surface. Edges that do not meet the threshold are skipped silently -- never proposed in chat.

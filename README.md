@@ -196,7 +196,7 @@ It runs in its own fresh session, after the research cascade has completed and b
 
 **Output and ingestion gate.** The sweep writes findings to `<game>/research_inbox/module/reddit_sweep.<game>.<ISO-date>1.md` and pauses before ingesting. You can review the file first, ingest immediately, or skip ingestion and ingest later. Every claim from the sweep routes through the same spoiler-classification pass as P1/P2/P3 claims.
 
-**Doctor integration.** Doctor (see below) can invoke the reddit sweep with a scope-query parameter for targeted top-ups: post-patch, post-DLC, or gap-fill sweeps. See `reddit_sweep.md` for the full procedure and `doctor.md` for how doctor passes the scope-query.
+**Doctor integration.** Doctor recommends a sweep; it never runs one itself. When a patch, DLC, or a specific gap calls for community findings, doctor tells you to type `hintforge doctor, reddit sweep for the <patch/DLC/gap>` in a fresh session. The sweep always runs in its own session, never chained from the doctor run that recommended it -- that keeps the reddit-MCP failure surface isolated and the context scoped. See `reddit_sweep.md` for the full procedure and `doctor.md` Branches B and C for when doctor raises the recommendation.
 
 ## Corpus integrity: why discrepancies happen and how to fix them
 
@@ -294,7 +294,7 @@ Patches can change stat values, fix or break mechanics, alter drop rates, or ren
 
 Trigger: `hintforge doctor` in a fresh session inside the game folder, then tell it a patch shipped and give it the patch notes or patch version. Doctor reads `architecture.md` for the current game-version manifest, flags claims that reference content the patch notes touch, and produces a repair plan before changing anything. You confirm the plan before repairs run.
 
-If the patch is large, doctor may invoke the reddit sweep with a scope-query to pull post-patch community findings. That sweep runs in its own subsequent session.
+If the patch is large, doctor recommends a post-patch reddit sweep to pull community findings. You run it by typing `hintforge doctor, reddit sweep for the <patch>` in a fresh session; doctor does not chain the sweep itself.
 
 ### After a DLC ships
 
