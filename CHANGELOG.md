@@ -4,6 +4,15 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Cross-reference lint corrected after a real-corpus trial (v86, 2026-08-22)
+
+**Builder changes.**
+
+- The v85 dangling-file-reference check resolved every pointer from the corpus root, which reports a pointer written inside a topic folder to its own sibling -- the ordinary way those are written -- as missing. It now resolves against the referencing file's own directory first and the corpus root second, and it skips the research inbox and archive folders, whose files are raw inputs carrying references from outside sources rather than corpus claims.
+- The v85 declared-edge-endpoint check matched any `(a, b)` parenthetical, so descriptive prose read as an edge declaration. It now matches only a marked-up edge pair as a node file actually writes one, and compares ids on word boundaries. Across every corpus available for the trial this took the check from a false positive in three of four down to none, while still catching the one genuinely broken edge.
+
+**Existing corpus impact.** None beyond v85's. Anyone who ran a stitch pass on v85 should re-run 3c: the findings it produced were dominated by these two false-positive classes.
+
 ### Stitch gains cross-reference and row-placement lints (v85, 2026-08-22)
 
 **Builder changes.**
