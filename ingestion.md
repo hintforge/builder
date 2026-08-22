@@ -131,7 +131,7 @@ This step replaces step 4's standard P1 / P2 / P3 distribution when the result f
 
 - `auth_tier`, `subreddits.primary.name`, `subreddits.broader.name` (if present): informational, record in CHECKPOINT recap.
 - `status`: if `partial-mcp-failure` or `partial-budget-exhausted`, surface to the user and ask whether to proceed before continuing. The user may opt to wait for a re-sweep instead.
-- `scope_query` (present only for doctor-invoked sweeps): record in CHECKPOINT recap so future maintainers know the sweep was scoped.
+- `scope_query` (present only for scoped sweeps -- a `hintforge doctor, reddit sweep for the <scope>` session): record in CHECKPOINT recap so future maintainers know the sweep was scoped.
 
 **2. Run the spoiler-classification sub-agent (step 3) with reddit-specific evidence.** Spawn the standard `general-purpose` Agent per step 3, but pass two additional pieces of evidence beyond the raw text:
 

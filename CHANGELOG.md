@@ -4,6 +4,15 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Stitch gains cross-reference and row-placement lints (v85, 2026-08-22)
+
+**Builder changes.**
+
+- `stitch_and_zipper.md` Phase B step 3b extends the dependencies-table lint with a **row-locality check**. A row can carry the correct cell count and still sit outside its table -- appended after a closing HTML comment or a blank line rather than inserted into the body. An empty table (header plus separator, no data rows) reads as closed, so an edit lands after the section. Column counting cannot see this, because the schema is right and only the placement is wrong.
+- New Phase B step 3c, a **corpus cross-reference lint**, covers two reference classes the per-edge audit never reads because they live outside `dependencies.md`: prose pointers naming a corpus file that was never written, and edges declared in a node file whose endpoint appears in neither the architecture's node list nor its edge table. Both mean the corpus points at something that does not exist, and both had been surviving repeated passes silently -- a build could pass a full zipper survey and a full stitch pass, be declared finished, and still route a player toward an id with nothing behind it. Findings are reported with file:line and never auto-fixed: a dangling reference is either a missing file or a stale pointer, and stitch cannot tell which.
+
+**Existing corpus impact.** No format change, and no migration required. The next stitch pass over an existing corpus will surface references and rows these lints did not previously check, so expect findings on corpora built before this version; each is either content work (write the missing file) or a doctor branch C repair (fix the stale pointer). The endpoint check reports a target only when the id it was declared from is one the architecture already knows, which keeps ordinary parenthetical prose from reading as an edge declaration.
+
 ### Per-folder `AGENTS.md` reach corrected for OpenClaw-native (v84, 2026-08-22)
 
 **Builder changes.**
