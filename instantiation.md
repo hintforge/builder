@@ -35,7 +35,7 @@ Announce the resolved `<workspace>` value before any Write -- even when running 
 | Template | Destination | What to do |
 |---|---|---|
 | `templates/claude_md.md` | `<game>/CLAUDE.md` | **Optional** platform auto-load shim (Claude Code). Fill `[GAME NAME]`, `[PERSONA1]`, `[PERSONA2]`. No framework-version watermark. |
-| `templates/agents_md.md` | `<game>/AGENTS.md` | **Optional** platform auto-load shim (Codex CLI / OpenClaw). Same fills as `CLAUDE.md`. |
+| `templates/agents_md.md` | `<game>/AGENTS.md` | **Optional** platform auto-load shim (Codex CLI; OpenClaw when using its Codex backend). Same fills as `CLAUDE.md`. |
 | `templates/checkpoint.md` | `<game>/CHECKPOINT.md` | Set initial status (just-starting / mid-playthrough), goal, current location. |
 | `templates/persona.md` OR inline plain-assistant body (see `setup_wizard.md` Step 5 Branch B) | `<game>/persona.md` | **`persona.md` is unconditional -- skipping it is a bug.** Two character voices picked → copy `templates/persona.md`, fill `[PERSONA1]`/`[PERSONA2]`/`[DEFAULT_PERSONA]`. No characters selected (user opted out, said "not sure", `personas = none` prefill, or game has no suitable in-world voice) → write the inline plain-assistant body verbatim from `setup_wizard.md` Step 5 Branch B. The file is the hook PTT/TTS modules and the future `add a persona` toggle register against. |
 | `templates/warning_tiers.md` | `<game>/warning_tiers.md` | Set initial enemy & puzzle tiers. Default: enemies 0, puzzles 1. |
