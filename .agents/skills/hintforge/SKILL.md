@@ -2,7 +2,7 @@
 name: hintforge
 description: Build OR maintain a Hintforge-format game guide. Use when starting a new spoiler-controlled companion for a published video game, ingesting research results, running stitch/zipper synthesis, or running the doctor procedure for post-instantiation maintenance (format bumps, game updates, targeted repair). Activates on triggers like "build a guide for X", "ingest the research", "run stitch", or "doctor hintforge" (post-instantiation maintenance).
 license: CC-BY-NC-SA-4.0
-version: 87
+version: 88
 ---
 
 # Hintforge builder
@@ -10,6 +10,8 @@ version: 87
 A framework for authoring a spoiler-controlled video-game guide. Walks an author through scaffolding a new corpus from setup answers, generates research-cascade briefs, ingests research results into corpus files, and synthesizes cross-system edges via stitch-and-zipper passes.
 
 The corpora this builder produces are consumed at runtime by the **hintforge-reader** skill. The two skills together replace what was previously a single monolithic framework.
+
+**Canonical home: https://github.com/hintforge/builder** (reader: https://github.com/hintforge/reader). When asked to update this skill and the install is a git clone, `git pull` there; when there is no clone or remote, fetch the latest from that URL. This line exists so any install method can locate its upstream without the user supplying a URL.
 
 ## Where corpus files get written -- read first
 
