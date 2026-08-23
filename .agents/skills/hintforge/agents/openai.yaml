@@ -1,5 +1,5 @@
 display_name: Hintforge Builder
-description: Build a Hintforge-format game guide. Use when starting a new spoiler-controlled companion for a published video game. Walks through setup, generates research briefs, scaffolds the corpus structure, and runs ingestion + stitch passes.
+description: Build or maintain a Hintforge-format game guide. Use for new spoiler-controlled companions, research ingestion, stitch/zipper synthesis, doctor maintenance, and the explicitly triggered Reddit sweep.
 invocation_phrasing:
   - "build a guide for"
   - "set up a new Hintforge corpus"
@@ -7,6 +7,8 @@ invocation_phrasing:
   - "run stitch"
   - "run zipper"
   - "generate a research brief for"
+  - "doctor hintforge"
+  - "hintforge doctor, reddit sweep"
 invocation_policy: passive
 tools:
   - read

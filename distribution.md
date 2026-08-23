@@ -1,6 +1,6 @@
 # Distribution Model -- GitHub-First
 
-Long-term vision. The current implementation treats per-game guides as local folders the bot reads on every session. Everything below is **not yet built** -- captured so future work has a reference target and today's templates encode the right constraints.
+The builder and reader frameworks are already published as public GitHub repositories with per-runtime installation instructions. Per-game guides still operate as folders the reader loads each session. The multi-contributor aggregator, generated wiki, turnkey installer, and other expansion work below remain a long-term vision.
 
 ## The vision
 
@@ -81,14 +81,15 @@ Does a long-time accurate contributor's claim outweigh a first-timer's? If yes:
 - How do we prevent gaming? (Sock-puppets that all agree won't help if claims still need source-quality evidence.)
 - Does weighting compound? (A new contributor who mirrors a trusted contributor's claims -- do they get free reputation?)
 
-## Concrete first steps
+## Distribution foundations and next steps
 
-Three coupled deliverables -- publish, install, auto-research:
+The public framework repositories are shipped. Installation simplification and the multi-contributor distribution model remain open.
 
-### Publish hintforge to a public GitHub repo
-1. Scrub-check that no specific-game references remain in shared docs.
-2. Add a top-level `README.md` aimed at non-technical readers (what hintforge is, the user-test entry path, the trust/transparency promise).
-3. Push a public repo. Solo contributor, no aggregator yet.
+### Public framework repositories -- shipped
+
+- The builder is published at [`hintforge/builder`](https://github.com/hintforge/builder).
+- The runtime reader is published separately at [`hintforge/reader`](https://github.com/hintforge/reader).
+- Both repositories carry public READMEs and per-runtime installation instructions. The aggregator and generated wiki described above are not implied by this foundation and remain unbuilt.
 
 ### Turnkey installer for the wizard
 The acceptance bar (the "first-user test"): a non-technical user receives a single pastable natural-language message from someone they trust, pastes it into their Claude Desktop, and gets a working tier-aware guide for an arbitrary game. No terminal. No UAC. No Python install. No covert behavior. See [`setup_wizard.md`](setup_wizard.md) for the trigger flow.
@@ -132,7 +133,7 @@ The user can also do **per-topic research on demand**: "research the puzzles", "
 - How is research re-run when the game patches? (Manual user invocation: "refresh my [GAME] guide.")
 - Should research progress be persistable across sessions so a Pro user can do `minimal` today and `add another 10 messages of research` tomorrow without restarting? (Probably yes -- track a `research_log.md` in the per-game folder with what's been covered.)
 
-### After publish + installer + research
+### After installer simplification + broader adoption
 
 4. Wait for / recruit a second contributor; observe friction points firsthand.
 5. Build the aggregator only after we've felt the pain of doing manual reconciliation for ≥1 month.

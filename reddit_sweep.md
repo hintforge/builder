@@ -1,12 +1,12 @@
 # Reddit Sweep -- Manual Community Knowledge Harvest (MCP module)
 
-This procedure runs as a **manual module sweep** at one of two phase-bounded entry points: **(a) post-final-research-phase, pre-stitch** (initial harvest after the deep-research cascade completes); **(b) doctor Branch B/C** (post-cascade top-ups for patches, DLC, or targeted gap repair). It browses the game's subreddit(s) via the `reddit-mcp-buddy` MCP server, surfaces community-confirmed gameplay findings (mechanics, dev posts, undocumented interactions, "is this a bug" threads, build discussions), and writes them to a findings file in the research inbox at `<game>/research_inbox/module/reddit_sweep.<game>.<ISO-date><N>.md`. The file does not auto-ingest -- it is gated behind explicit user confirmation. The user triggers the sweep manually ("run the reddit sweep") or invokes it via doctor with an optional `scope-query` parameter.
+This procedure runs as a **manual module sweep** at one of two phase-bounded entry points: **(a) post-final-research-phase, pre-stitch** (initial harvest after the deep-research cascade completes); **(b) doctor Branch B/C** (post-cascade top-ups for patches, DLC, or targeted gap repair). It browses the game's subreddit(s) via the `reddit-mcp-buddy` MCP server, surfaces community-confirmed gameplay findings (mechanics, dev posts, undocumented interactions, "is this a bug" threads, build discussions), and writes them to a findings file in the research inbox at `<game>/research_inbox/module/reddit_sweep.<game>.<ISO-date><N>.md`. The file does not auto-ingest -- it is gated behind explicit user confirmation. The only trigger is `hintforge doctor, reddit sweep`, optionally followed by a `scope-query`; the standalone phrase `run the reddit sweep` is not a supported trigger.
 
 > **Why this is its own file + own session.** Setup, ingestion, stitch-and-zipper, and doctor all assume the corpus is the unit of work; this is the first framework procedure where an external **MCP server** is the unit of work, with its own reachability prereqs, auth-tier pacing, and budget shape. Folding it into ingestion would conflate two failure surfaces -- a partial reddit-sweep file (MCP rate limit, sub doesn't exist) is a different recovery situation than a partial ingestion (claim format violation, missing brief). Beyond the file separation, the sweep runs in its **own session** (not chained from P1 ingestion): a fresh context window keeps the sweep's MCP-pacing and crawl-budget reasoning uncontaminated by the ingestion session's token load, and a sweep failure (MCP unreachable, sub gone) doesn't taint a successful ingestion's state.
 
 > **Compaction expectation:** UNEXPECTED during the sweep itself -- it's a single bounded crawl, capped at 300 posts evaluated, with no sub-agent calls. A compacting sweep (before the findings file is written) means either the cap is wrong or the traversal logic is looping. The combined sweep + user-confirmed ingestion flow that follows (user types `yes` at the ingestion gate, triggering the spoiler-classification sub-agent + corpus distribution) is denser; a compaction during that downstream ingestion phase is acceptable -- the sweep's findings file is on disk before the ingestion gate fires, so the artifact survives any compaction in the post-write phase. See [`compaction_policy.md`](compaction_policy.md).
 
-> **First framework procedure with an external dependency.** All prior framework procedures are file-based; this one requires `reddit-mcp-buddy` to be reachable from the **Claude Code runtime** (not just Claude Desktop -- the two carry distinct MCP configs). Per the transparent-operations hard rule in [`CLAUDE.md`](CLAUDE.md), the sweep aborts cleanly before crawling if MCP is unreachable; it does not silently fall back to direct web fetch or any other path.
+> **First framework procedure with an external dependency.** All prior framework procedures are file-based; this one requires `reddit-mcp-buddy` to be reachable from the **current runtime session**. Per the transparent-operations hard rule in [`CLAUDE.md`](CLAUDE.md), the sweep aborts cleanly before crawling if MCP is unreachable; it does not silently fall back to direct web fetch or any other path.
 
 ## Trigger conditions
 
@@ -42,18 +42,18 @@ Before any crawl runs, verify all four conditions. If any fail, abort and surfac
 
 The session is **opened inside the game folder** (`Guides/<game>/`), not at workspace root or inside `hintforge/`. The agent's working directory determines which game's research inbox receives the artifact.
 
-### 2. MCP reachability (Claude Code runtime, not Desktop)
+### 2. MCP reachability in the current runtime
 
-Verify `reddit-mcp-buddy` is reachable from the current Claude Code runtime. CC and Claude Desktop carry **distinct MCP configs**; reachability from one does not imply reachability from the other. Verification:
+Verify `reddit-mcp-buddy` is reachable from the current session. Availability in another runtime or an earlier session does not prove that this session loaded it. Verification:
 
-1. Confirm the MCP server is listed in CC's available tools. If absent, the server is not wired into CC's config.
+1. Confirm the MCP server is listed among the current session's available tools. If absent, it is not available to this session.
 2. Attempt a low-cost ping call (e.g. `browse_subreddit` against a known-existent sub like `r/announcements` with a small page size). If the call errors with a connection / not-found / unavailable response, the server is unreachable.
 
 **On unreachable, abort and instruct.** Surface to the user:
 
-- The server is not reachable from this CC runtime.
-- Common causes: (a) MCP server not running on this machine; (b) wired into Claude Desktop's config but not CC's config (two distinct files); (c) sandbox CC instance that did not inherit the user-level MCP config (sandbox instances inherit only when explicitly wired).
-- How to verify: have the user list CC's available MCP tools and confirm `reddit-mcp-buddy` is among them. Refer to the `reddit-mcp-buddy` documentation for the CC-side config path.
+- The server is not reachable from this runtime session.
+- Common causes: the server is not installed or running, the current runtime has not been connected to it, or this session did not inherit the connection.
+- How to verify: have the user list the current runtime's available MCP tools and confirm `reddit-mcp-buddy` is among them. Refer to the server and runtime documentation for connection instructions.
 - Offer: retry (after user confirms wiring) or skip the phase (proceed to the next step of the caller without running the sweep).
 
 Do not fall back to direct `web_fetch` against `reddit.com` -- the Reddit ladder in [`ingestion.md`](ingestion.md) is for per-thread citations during P2/P3 result-file ingestion, not for autonomous community-knowledge harvest.

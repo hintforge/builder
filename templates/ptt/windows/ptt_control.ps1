@@ -81,7 +81,7 @@ switch ($Action) {
         $stopOut    = & $PSCommandPath -Action stop
         Start-Sleep -Milliseconds 300
         $startOut   = & $PSCommandPath -Action start
-        Write-Output "$stopOut → $startOut"
+        Write-Output "$stopOut -> $startOut"
     }
 
     'status' {
