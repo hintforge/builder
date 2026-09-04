@@ -20,6 +20,10 @@ Spoiler-controlled playthrough on [PLATFORM]. Cowork acts as live reference for 
 ## Open threads
 - [Things the player is stuck on, tracking, flagged for follow-up. One bullet each. Include the question + the closest known answer + what's still uncertain.]
 
+## Session intent
+<!-- The player's own note to themselves, newest line first, at most three lines. Written ONLY from the player's answer to the single closeout question the reader asks at session end; the reader never authors a line here and never infers one from the session. Surfaced on a resume opener ("where was I", "pick up where I left off"). Delete a line once the player says it is done. Full contract: the reader skill's `persona_universal.md`, "Session-goal closeout". -->
+- [YYYY-MM-DD -- what the player said they wanted to do next -- what it belongs with (a character, a build, an area, an open thread)]
+
 ## Inventory (if relevant)
 - **Carried:** [...]
 - **Stored:** [...]

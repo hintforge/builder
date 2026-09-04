@@ -4,6 +4,20 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Player-authored session-goal closeout (v90, 2026-09-04)
+
+**Reader changes.**
+
+- At the session close the reader now asks one question -- what did you want to pick up next, and what does it belong with -- and records the player's own words in the corpus `CHECKPOINT.md` under a new `## Session intent` heading, newest line first, three lines at most. If the player has nothing, nothing is written; the question is never re-asked mid-session.
+- The reader may not author or infer a session goal, and may no longer append "to do next" / "next steps" sections to per-entity files, character or build cards, or published artifacts. Those unsolicited additions were the behaviour this replaces.
+- On a resume opener ("where was I", "pick up where I left off", "boot up the game") the newest session-intent line leads the answer, ahead of the position recap. Other openers are unaffected.
+
+**Builder changes.**
+
+- `templates/checkpoint.md` gains the `## Session intent` section, placed after `## Open threads`.
+
+**Existing corpus impact.** No format-version change and no migration required. A corpus without the heading is fine: the reader adds it after `## Open threads` the first time a player answers the closeout question.
+
 ### Cross-reference lint corrected after a real-corpus trial (v86, 2026-08-22)
 
 **Builder changes.**
