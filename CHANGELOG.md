@@ -4,6 +4,24 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Reader sourcing, gap, and first-session discipline; the reader may modify the corpus freely (v91, 2026-09-05)
+
+**Reader changes.**
+
+- **Availability is never claimed.** Build / pick / option advice is now delivered as a generic ranked reference with its gating stated (tier, prerequisite, class, unlock), mapped to "whatever is on your screen" -- the reader may no longer state that a specific option is available to you right now, because it cannot see your screen or save unless it read one this turn.
+- **No lean dressed as an answer.** When the guide and a web check are both inconclusive, the reader says so plainly and up front, or hands you the test to run, rather than delivering a low-confidence guess styled as a conclusion.
+- **Documented direction is not your decision.** The reader will not call a build or path "yours" unless you said so, and will not write a player-decision (a chosen pick, a hire, a taken choice) into the corpus from its own recommendation -- only from what you reported or an artifact it read.
+- **Gaps get the web-offer before any request for input.** A "share a screenshot / tell me your options" request never replaces the mandatory web-search offer on an admitted gap; the offer comes first (or alongside), never as the substitute.
+- **First-session orientation.** On a guide's first-ever session the reader confirms your dials, position, and persona in one turn before answering cold; when unsure of your position it asks rather than naming a not-yet-reached landmark to disambiguate. Returning sessions are unaffected.
+- **Gate names default to landmarks, not lore.** When naming a gate to work out where you are, the reader uses the observable landmark / mechanic name over the character / story name whenever both point at the same thing.
+- **The reader owns the corpus.** The reader may now freely add, correct, restructure, and scaffold corpus content within the format contract -- not only append under new headings -- keeping correct tags and conservative spoiler gating; a maintainer's later `doctor` / ingestion pass re-verifies. It still does not change the `corpus-core-version`, run a full ingestion / stitch pass, or stand up a new corpus from nothing.
+
+**Builder changes.**
+
+- `templates/save_watcher/README.md`: the "spoiler-safe" guarantee is now scoped explicitly to the curated summary. A raw-field / full-dump mode is outside the guarantee -- raw save fields are untagged and inherit the reader's default-deny discipline for both spoilers and data-semantics.
+
+**Existing corpus impact.** No format-version change and no migration required. Reader behavior only, plus a template-README clarification.
+
 ### Player-authored session-goal closeout (v90, 2026-09-04)
 
 **Reader changes.**

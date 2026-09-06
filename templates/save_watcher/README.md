@@ -4,6 +4,10 @@ A small Python script that reads the most-recently-modified save file from your 
 
 **Unlike PTT and TTS, save-watcher is not a copy-paste template** -- every game's save format is different. This template provides a *skeleton* and *patterns*; you have to fill in the per-game parsing.
 
+## The "spoiler-safe" guarantee covers the curated summary only
+
+The spoiler-safe promise above applies to the **curated summary** this skeleton produces -- the handful of player-verifiable fields you deliberately surface (location, equipped gear, a collectibles count). It does **not** extend to raw save contents. If you add a full-dump / `--all` / raw-field mode, or otherwise print fields straight out of the save with no curation, that output is **outside** the guarantee: raw save fields are untagged, carry no spoiler classification, and routinely hold hidden-story state (secret identities, unreached-branch flags) and misleading values (base-vs-current stats). The reader skill treats any such raw field as unsafe until it is confirmed against the corpus's tagged claims (the reader's "Untagged raw data is unsafe until proven" rule) -- for spoilers *and* for data-semantics. Keep the curated summary curated; label any raw-dump mode as raw, never as spoiler-safe.
+
 ## What's in this template
 
 | File | Where it goes | Purpose |
