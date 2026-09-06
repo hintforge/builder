@@ -2,7 +2,7 @@
 name: hintforge
 description: Build OR maintain a Hintforge-format game guide. Use when starting a new spoiler-controlled companion for a published video game, ingesting research results, running stitch/zipper synthesis, or running the doctor procedure for post-instantiation maintenance (format bumps, game updates, targeted repair). Activates on triggers like "build a guide for X", "ingest the research", "run stitch", or "doctor hintforge" (post-instantiation maintenance).
 license: CC-BY-NC-SA-4.0
-version: 91
+version: 92
 ---
 
 # Hintforge builder
@@ -28,6 +28,7 @@ Activate on author-style intents:
 - **"Doctor hintforge"** (primary trigger for post-instantiation maintenance: format bumps, game updates, targeted repair). Aliases that also work: "doctor my guide", "doctor the corpus". **Do not** trigger on the bare "run the doctor" -- that phrasing collides with Claude Code's built-in `/doctor` CLI health-check command and routes to the wrong place.
 - **"Hintforge doctor, reddit sweep"** (the community-knowledge sweep; canonical phrase, runs via the doctor anchor). Optionally scoped: "hintforge doctor, reddit sweep for the [patch / DLC / gap]". Routes to [`reddit_sweep.md`](reddit_sweep.md) as a dedicated session. There is no standalone "run the reddit sweep" trigger -- the `hintforge doctor` anchor is what reliably loads the skill.
 - "Generate a research brief for [game / topic]"
+- **"Build me a save-state tracker" / "add a save watcher" / "set up voice-in / voice-out"** -- a player-phrased request to stand up an optional module. Route it through the optional-module catalog ([`templates/optional_modules.md`](templates/optional_modules.md)); do not freelance a parallel implementation. The deployed artifact takes the module's canonical name -- `save_watcher.<ext>`, `ptt.<ext>`, `tts_hook.<ext>` -- regardless of the phrasing the request used, output to the module's canonical folder; override only on an explicit user decision to name it otherwise (see the optional-module "Naming canon").
 
 Do not activate for runtime player questions ("where do I go?", "hint for this puzzle"). Those belong to the `hintforge-reader` skill.
 

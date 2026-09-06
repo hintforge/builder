@@ -17,6 +17,18 @@ Three opt-in modules extend the core with voice in, voice out, and live game-sta
 5. **Token-cost honest.** Per Principle #13, every module's README states real token cost -- manual install vs. wizard-assisted, normal-use cost vs. setup cost.
 6. **Transparent operations.** Per Principle #12 / Hard Rule #6, no covert behavior, no telemetry, no out-of-scope writes. Local processes only. The only network call any module makes is TTS's call to Microsoft's Edge TTS endpoint (documented in `tts/README.md`).
 
+## Naming canon
+
+The deployed artifact for each module takes a fixed, canonical name regardless of how the request was phrased:
+
+| Module | Canonical artifact stem | Output folder |
+|---|---|---|
+| save-watcher | `save_watcher.<ext>` | `save_state/` |
+| PTT | `ptt.<ext>` | `ptt/` + `.claude/` |
+| TTS | `tts_hook.<ext>` | `.claude/` |
+
+The stem is fixed; only the extension follows the implementation language (`.py` per the skeleton, `.ps1` for a PowerShell port, `.sh` for bash). A player asking for "a save tracker" or "a save editor" still gets `save_watcher.<ext>` -- the phrasing does not set the filename. Override the canonical name only on an explicit user decision to use a different one (the bar is a clear "no, name it X instead," not a passing mention). A non-canonical artifact name is a procedure miss and should be renamed. This is what routes player-phrased tool requests through the catalog instead of a freelanced parallel build.
+
 ## Wizard opt-in flow
 
 The setup wizard's relevant steps:

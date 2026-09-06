@@ -105,6 +105,14 @@ The maintainer judgment call sits at the boundary between single-encounter named
 
 `mainline` claims are visible to any reader past the spoiler dials. `easter-egg` claims cover hidden / optional / side-objective content and are visible by default but tagged so the aggregator can group them. `lore` claims (worldbuilding, codex entries, narrative backstory not required for play) are **hidden by default** -- the reader must explicitly opt in (e.g., "show me the lore stuff") before the renderer surfaces them. Authors don't need to set `category: mainline` explicitly; it's the default.
 
+### Mixed mechanic + lore content -- split, don't bundle
+
+A single `category` field forces one bucket onto a claim that carries two registers. A progression gate is the common case: the *mechanic* ("this gate exists; the choice here has three branches") is `mainline` and should surface at the default dials; the *lore wrapper* ("the gate is the manifestation of a dead character's spirit") is `lore` and should stay hidden until the reader opts in. Tagging the whole thing `mainline` leaks the lore at tier 0; tagging it `lore` hides the mechanic the player needs. Neither is right, and it is a data-model trap, not a bad author's judgment.
+
+**The rule: split mixed content into separate adjacent claims, each with its own `category`.** One claim for the mechanic (`category: mainline`), one for the lore (`category: lore`). The reader shows the mechanic and filters the lore by default. This needs no parser change and gives authors a clear pattern to follow.
+
+**Author gate descriptions terse; push character / event / lore to their own opt-in claims.** Describe a gate by what the player must *do* -- the mechanic, the choice, the requirement -- not by the story around it. A parenthetical source label ("Helmet of the Devoted (found on a fallen ally)") leaks far less than a full narrative write-up of who that ally was and how they died. The terse form is the framework's conservative default *even when community walkthroughs describe the beat openly* -- community baseline is looser than hintforge's spoiler-free default, so following a walkthrough's phrasing tends to over-tag lore as `mainline`. When in doubt, split, and tag the lore half `lore`.
+
 Optional fields once distribution ships:
 - **game-version** -- which patch/version this was verified against (e.g. `1.5.0`, `pre-DLC2`, `post-launch-patch-2`).
 - **platform** -- if the claim is platform-specific (e.g. PC-only mod compatibility).

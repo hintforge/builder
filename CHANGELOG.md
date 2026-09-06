@@ -4,6 +4,16 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Save-watcher discoverability, mixed-tag authoring discipline, and step-7 corpus audit (v92, 2026-09-05)
+
+**Builder changes.**
+
+- **Optional-module naming canon.** A player-phrased request to stand up a module ("build me a save-state tracker", "add a save watcher", "set up voice-in / voice-out") now routes through the optional-module catalog and takes the module's canonical artifact name -- `save_watcher.<ext>`, `ptt.<ext>`, `tts_hook.<ext>` -- regardless of the phrasing, output to the canonical folder; override only on an explicit user decision. A new `## Naming canon` section in `templates/optional_modules.md` locks the stems; `templates/folder_structure.md` notes that other implementation languages keep the `save_watcher` stem and change only the extension; the builder `SKILL.md` activation list routes these requests through the catalog instead of a freelanced parallel build.
+- **Mixed mechanic + lore claims must be split.** `templates/claim_format.md` gains a "Mixed mechanic + lore content -- split, don't bundle" rule: a fact that carries both a mechanic (`mainline`) and a lore wrapper (`lore`) is written as two adjacent claims with their own `category` tags, not one bundled `mainline` claim that leaks the lore at tier 0. Author gate descriptions terse; push character / event / lore to opt-in claims -- the conservative default even where community walkthroughs describe the beat openly. `ingestion.md` step 5 carries the matching authoring note.
+- **Step 7 audits the whole corpus; step 8 is not a proxy for it.** `ingestion.md` step 7 now requires, for every supersession this phase asserts, a Grep for the affected identifier across ALL claim-bearing files (not just files edited this pass) plus a **supersession ledger** (identifier, files grepped, stale matches, disposition) before recap. Step 8 gains an explicit caveat: a file's `research-integrated` status answers "was this file integrated?", not "did this phase's supersessions reach it?" -- a clean step-8 sweep is never evidence that step 7 ran on an untouched file.
+
+**Existing corpus impact.** No format-version change and no migration required. Authoring / procedure discipline plus a template naming canon.
+
 ### Reader sourcing, gap, and first-session discipline; the reader may modify the corpus freely (v91, 2026-09-05)
 
 **Reader changes.**
