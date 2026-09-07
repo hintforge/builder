@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Achievement completeness is verified against the live platform list (v93, 2026-09-07)
+
+**Builder changes.**
+
+- **Fresh platform recount before any coverage claim.** `ingestion.md` step 8's `achievements.md` aggregation now requires, at end of phase, a re-fetch of the platform's live achievement list and a name-set comparison against the corpus: every corpus entry must match a live name, every live name must be present, and the totals must agree. Any mismatch is a hard stop (remove what the platform does not have, add what is missing as `deferred`), and the header records the fetch date and live count. When the live list cannot be fetched, the coverage line says `unverified against live platform list` instead of claiming resolution. The Stage 0 stub file and the id-set self-check are both products of the same run, so checking only against them could certify entries that do not exist on the platform.
+
+**Existing corpus impact.** No format-version change. Maintainers should re-verify each existing `achievements.md` against the platform's live list once (a doctor pass can do this); a corpus whose header total disagrees with the live count has entries to remove or add.
+
 ### Save-watcher discoverability, mixed-tag authoring discipline, and step-7 corpus audit (v92, 2026-09-05)
 
 **Builder changes.**
