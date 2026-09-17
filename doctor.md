@@ -14,6 +14,7 @@ This procedure runs on an existing, instantiated guide when something is wrong, 
 
 - The session is **fresh** and opened **inside the game folder** (`Guides/<game>/`), not at workspace root or inside the framework folder. Framework files this procedure reads (`docs/corpus-format.md`, `CHANGELOG.md`, templates) come from the running skill, not a path relative to the guide.
 - The guide has already been instantiated (`architecture.md` exists, `CHECKPOINT.md` exists, at least one content subfolder has been populated). If those aren't present, redirect the user to `setup_wizard.md` or `ingestion.md` and stop.
+- **Know which branch you are writing to, before you write.** If the guide folder is under version control, resolve the current branch and whether this is a secondary checkout: `git rev-parse --abbrev-ref HEAD`, and compare `git rev-parse --git-dir` with `git rev-parse --git-common-dir` (they differ inside a worktree). On a non-default branch, say so in the first message and name the branch -- every recap this run produces is then scoped to that branch, never to the guide as a whole. Writes on a side branch are real, they push cleanly, and they stay invisible to the next session, the published guide, and any tooling that reads the default branch until someone merges them.
 - Run on a mid-tier, cost-efficient model (Sonnet-class or equivalent) at reasoning effort `high` (the level named `high`: Anthropic `effort: high` -- Sonnet's default in Claude Code; Codex/GPT-5 `model_reasoning_effort: high`; NOT your runtime's maximum where it exposes `xhigh` / `max` / adaptive). Capable enough, not overkill: keep the model mid-tier (not a flagship) and the effort at `high`, not maxed -- a bigger model or a higher rung over-reasons and costs more without improving the repair. Doctor makes real judgment calls -- diagnosing drift, reconciling conflicts, deciding what to repair.
 
 ## Procedure
@@ -130,6 +131,7 @@ Skip this step entirely (no flags, no re-run) only if doctor edited values insid
 
 - Add a dated `## Harness changelog` entry per branch that ran: branch letter, one-line description, files touched, pending follow-ups (e.g. "ingestion run pending for `doctor_<date>.txt`", "branch C deferred -- scaffolded fields not yet filled"). Don't merge branches into a single ambiguous entry.
 - One-screen recap to the user: which branches ran, what changed, what research handoffs need to happen, any reconciliation actions taken.
+- **Scope the recap to where the work actually landed.** If this run wrote to a non-default branch (see pre-flight), the recap says so and names the merge as the outstanding step. "Fixed", "updated", "pushed" with no such qualifier are claims about the guide itself, and from a side branch they are false -- the repair is real, the guide does not have it yet.
 
 ## Discipline rules
 

@@ -4,6 +4,15 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Doctor states which branch it is writing to, and scopes its recap to match (v96, 2026-09-17)
+
+**Builder changes.**
+
+- **New pre-flight step: resolve the branch before writing.** A guide folder can be open on a side branch or in a secondary checkout (a worktree, a second clone). Writes there are real and push cleanly, and they stay invisible to the next session, to the published guide, and to any tooling that reads the default branch, until someone merges them. Doctor now resolves the current branch and whether the folder is a secondary checkout, and names a non-default branch in its first message.
+- **Step 7 recap is scoped to where the work landed.** "Fixed", "updated" and "pushed" are claims about the guide, not about the working copy. From a non-default branch the recap must say so and name the merge as the outstanding step; the repair is real, and the guide does not have it yet.
+
+**Existing corpus impact.** None. This changes doctor's own reporting behavior; no corpus file, template or format version is affected.
+
 ### Guide-to-framework links use the public repository URL (v95, 2026-09-17)
 
 **Builder changes.**
