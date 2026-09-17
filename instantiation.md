@@ -30,7 +30,7 @@ Announce the resolved `<workspace>` value before any Write -- even when running 
 
 ## Step 2 -- Copy the templates
 
-> **Literal-path discipline (v37).** Only `[BRACKETED_PLACEHOLDERS]` get substituted when copying templates. The strings `../../hintforge/builder/` in `claude_md.md` (and any other template content) are **literal content** -- do NOT resolve them to absolute paths like `C:\Users\<name>\.claude\skills\hintforge\` or `~/.claude/skills/hintforge/`, even when running from an installed skill. Published guides must reference the framework via relative path to remain portable when cloned. Same discipline class as the v33 `[WORKSPACE_ROOT]` cascade.
+> **Literal-path discipline (v37; breadcrumb form updated v95).** Only `[BRACKETED_PLACEHOLDERS]` get substituted when copying templates. Framework references in `claude_md.md` (and any other template content) are **literal content** -- do NOT resolve them to absolute paths like `C:\Users\<name>\.claude\skills\hintforge\` or `~/.claude/skills/hintforge/`, even when running from an installed skill. Published guides reference the framework by its public repository URL (`https://github.com/hintforge/builder/blob/main/<path>`), which resolves for anyone who clones the guide on its own; a path relative to a sibling checkout resolves only on a machine that already has the framework sitting next to the guide. Same discipline class as the v33 `[WORKSPACE_ROOT]` cascade.
 
 | Template | Destination | What to do |
 |---|---|---|

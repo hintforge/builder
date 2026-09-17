@@ -93,4 +93,4 @@ aggregation_opt_in: false
 
 ## Harness changelog
 ### v1 -- YYYY-MM-DD HH:MM UTC
-- Project created from `../../hintforge/builder/templates/`. Subfolders chosen: [list]. Personas chosen: [PERSONA1] / [PERSONA2], active: [DEFAULT]. Warning tiers: enemies [N], puzzles [N].
+- Project created from [`templates/`](https://github.com/hintforge/builder/tree/main/templates). Subfolders chosen: [list]. Personas chosen: [PERSONA1] / [PERSONA2], active: [DEFAULT]. Warning tiers: enemies [N], puzzles [N].

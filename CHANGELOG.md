@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Guide-to-framework links use the public repository URL (v95, 2026-09-17)
+
+**Builder changes.**
+
+- **The breadcrumb from a guide back to the framework is now a public repository URL, not a path relative to a sibling checkout.** A relative path resolves only on a machine that already has the framework checked out next to the guide, so it was dead for anyone who cloned a guide on its own. `templates/dependencies.md` and `templates/checkpoint.md` now emit `https://github.com/hintforge/builder/...`, matching `templates/claude_md.md`, which already used that form. The literal-path-discipline notes in `instantiation.md` and `setup_wizard.md`, and the wizard's absolute-path scanner guidance, name the URL form as the correct one. **The ban on absolute local paths is unchanged** and its post-write scan still blocks the setup handoff: the rule exists so that nothing about the maintainer's own machine appears in a published guide, and a repository URL carries none of it.
+
+**Existing corpus impact.** No `corpus-core-version` bump and no change to corpus structure. Guides built before this version carry the relative breadcrumb in `dependencies.md`; that link will not resolve for anyone who clones the guide without the framework beside it. Swap it for the repository URL of the same file at your convenience -- a doctor pass can do it, and nothing else depends on the form.
+
 ### Achievement completeness is verified against the live platform list (v93, 2026-09-07)
 
 **Builder changes.**
