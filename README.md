@@ -191,15 +191,6 @@ After each phase, run ingestion in a fresh session: say `ingest the research` wi
 
 The setup wizard (`setup_wizard.md`) manages brief generation for all three phases and tracks which phases have completed via `CHECKPOINT.md`. Refer to `ingestion.md` for the full ingestion procedure.
 
-## Reddit sweep (optional)
-
-An optional post-build module that harvests community-confirmed findings from a game's
-subreddit into the research inbox. It is the one framework procedure with an external
-dependency, nothing else requires it, and **it doesn't currently work as
-documented** -- Reddit's anonymous API now refuses unauthenticated clients, so it needs your
-own Reddit app credentials, and it hasn't been exercised end to end since. Design, prerequisites
-and the honest status are in [`docs/reddit-sweep.md`](docs/reddit-sweep.md).
-
 ## Corpus integrity: why discrepancies happen and how to fix them
 
 Research across multiple sources run at different times by a model that is probabilistic by nature will produce discrepancies. Two wikis give different cooldown values for the same ability. A P2 zone file names a weapon by a slightly different name than the P1 achievement file. A stat from a P3 sweep contradicts a claim ingested in P1 without either being obviously wrong. This is expected, not a sign something went wrong.
@@ -301,7 +292,7 @@ Patches can change stat values, fix or break mechanics, alter drop rates, or ren
 
 Trigger: `hintforge doctor` in a fresh session inside the game folder, then tell it a patch shipped and give it the patch notes or patch version. Doctor reads `architecture.md` for the current game-version manifest, flags claims that reference content the patch notes touch, and produces a repair plan before changing anything. You confirm the plan before repairs run.
 
-If the patch is large, doctor recommends a post-patch Reddit sweep to pull community findings. You run it by typing `hintforge doctor, reddit sweep for the <patch>` in a fresh session; doctor does not chain the sweep itself.
+If the patch is large, doctor may point you at the optional Reddit sweep module for community findings. It runs separately and doctor never chains it; see [`docs/reddit-sweep.md`](docs/reddit-sweep.md), including why it does not currently work as documented.
 
 ### After a DLC ships
 
