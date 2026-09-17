@@ -22,7 +22,7 @@ Per-runtime details in [`docs/install/`](docs/install/).
 
 ## Real tools for real playthroughs
 
-![Four planner tools built on Hintforge guides: a skill-tree planner comparing four trees with prerequisite costs, a city planner showing ring layout and reach cost, a character build planner with a rank ladder and talent browser, and a filterable species roster](assets/readme-tools-grid.png)
+![Four tools built on Hintforge guides: a skill-tree planner comparing four trees with prerequisite costs, a character dossier generated from a save file, a character build planner with a rank ladder and talent browser, and a filterable species roster](assets/readme-tools-grid.png)
 
 **These run with no AI at all.** Each is a single self-contained HTML file that lives in its guide: no account, no install, no API key, no internet connection, nothing running in the background. You double-click it and it opens in whatever browser you already have, on any operating system. The guide's corpus is where its numbers come from. An agent builds the tool once, and after that it's just a page that works.
 
@@ -74,7 +74,7 @@ It's also designed as a framework for **multi-contributor truth aggregation** --
 
 ---
 
-![A generated character dossier: a personnel-file masthead over the character's stats, perks and loadout, assembled from the player's own save file](assets/readme-dossier.png)
+![A city planner: a radial map of a settlement with buildings placed around a central generator, a heat-radius limit drawn on the rings, and a build list showing what each structure costs and what research it needs first](assets/readme-city-planner.png)
 
 ## What Hintforge does -- today and planned
 
