@@ -8,19 +8,23 @@ A guide for any game, on any system, where you choose how much help you want and
 >
 > **Pre-built guides are available now:** browse the public guide repositories in the [`hintforge` organization](https://github.com/orgs/hintforge/repositories).
 
-## Install
+## Install & update
 
 Paste this into Claude Code, Codex, or OpenClaw:
 
 > Install the hintforge skill from github.com/hintforge/builder
 
-Per-runtime details in [`docs/install/`](docs/install/).
-
-## Update
-
-Already installed? Paste this to get the latest version:
+Already installed? Same line, one word different:
 
 > Update the hintforge skill from github.com/hintforge/builder
+
+Per-runtime details in [`docs/install/`](docs/install/).
+
+## What people build with it
+
+![Four planner tools built on Hintforge guides: a skill-tree planner comparing four trees with prerequisite costs, a city planner showing ring layout and reach cost, a character build planner with a rank ladder and talent browser, and a filterable species roster](assets/readme-tools-grid.png)
+
+**These run with no AI at all.** Each is a single self-contained HTML file that lives in its guide: no account, no install, no API key, no internet connection, nothing running in the background. You double-click it and it opens in whatever browser you already have, on any operating system. The guide's corpus is where its numbers come from -- an agent builds the tool once, and after that it is just a page that works.
 
 ## Get started
 
@@ -33,17 +37,17 @@ Already installed? Paste this to get the latest version:
 
 **You'll know it's working when** the wizard greets you and starts asking setup questions (game name, persona cast, dial defaults) before touching any files.
 
-> **Model recommendation.** Use a **mid-tier, cost-efficient model (Sonnet-class or equivalent) at reasoning effort `high`** for all builder operations: setup, ingestion, stitch, zipper, doctor, and reddit sweep. The builder's work involves real judgment -- spoiler-tier classification, confidence calibration, conflict reconciliation, deciding how facts route and connect -- which benefits from full reasoning. **Effort:** set it to the level named `high` -- Anthropic `effort: high` (already Sonnet's default in Claude Code); Codex/GPT-5 `model_reasoning_effort: high`. This is `high`, NOT your runtime's maximum: where a runtime exposes rungs above `high` (Claude Code `xhigh` / `max`, OpenClaw `adaptive` / `max`), do not use them. **Model:** stay mid-tier (Sonnet-class) -- a flagship / top-tier model is overkill here: it over-reasons, drifts off the procedure, and costs more without improving the structured output. Both levers point the same way: capable enough for the judgment, not the biggest model or the deepest effort on offer. The research cascade itself (P1, P2, P3 brief generation) is best handed off to an external deep-research tool (the recommended default). Confirm your model and effort setting before starting a session.
+> **Model recommendation.** Use a **mid-tier, cost-efficient model (Sonnet-class or equivalent) at reasoning effort `high`** for all builder operations: setup, ingestion, stitch, zipper, doctor, and Reddit sweep. The builder's work involves real judgment -- spoiler-tier classification, confidence calibration, conflict reconciliation, deciding how facts route and connect -- which benefits from full reasoning. **Effort:** set it to the level named `high` -- Anthropic `effort: high` (already Sonnet's default in Claude Code); Codex/GPT-5 `model_reasoning_effort: high`. This is `high`, NOT your runtime's maximum: where a runtime exposes rungs above `high` (Claude Code `xhigh` / `max`, OpenClaw `adaptive` / `max`), do not use them. **Model:** stay mid-tier (Sonnet-class) -- a flagship / top-tier model is overkill here: it over-reasons, drifts off the procedure, and costs more without improving the structured output. Both levers point the same way: capable enough for the judgment, not the biggest model or the deepest effort on offer. The research cascade itself (P1, P2, P3 brief generation) is best handed off to an external deep-research tool (the recommended default). Confirm your model and effort setting before starting a session.
 
 ---
 
-## Why hintforge exists
+## Why Hintforge exists
 
 Fan-wiki pages dump every spoiler on you the moment you land -- assuming you can see the page through the ads. There's no setting for "I want a hint about *this* puzzle but not the boss fight in two hours."
 
-hintforge inverts that: **information is opt-in.** Want more? Ask. Want less? Lower the tier back down.
+Hintforge inverts that: **information is opt-in.** Want more? Ask. Want less? Lower the tier back down.
 
-**Remembering where you left off can be difficult.** Complex games demand a lot up front: crafting systems, skill trees, gear builds, hotkey layouts you spent an hour customizing. Then life happens. Come back six weeks later and you're staring at a skill tree you don't recognize, a control layout you've half-forgotten, and quest context that's gone cold. The usual workaround is Googling "how do I play X again" and landing on a five-year-old forum post that's slightly wrong for the current patch. hintforge keeps that context alongside your save -- when you tell it you're returning after a break, it reconstructs what you had going without spoiling where the story goes. No plot hints. No boss previews. Just "here's your build, here's what you were doing, and here are the four buttons you always forget."
+**Remembering where you left off can be difficult.** Complex games demand a lot up front: crafting systems, skill trees, gear builds, hotkey layouts you spent an hour customizing. Then life happens. Come back six weeks later and you're staring at a skill tree you don't recognize, a control layout you've half-forgotten, and quest context that's gone cold. The usual workaround is Googling "how do I play X again" and landing on a five-year-old forum post that's slightly wrong for the current patch. Hintforge keeps that context alongside your save -- when you tell it you're returning after a break, it reconstructs what you had going without spoiling where the story goes. No plot hints. No boss previews. Just "here's your build, here's what you were doing, and here are the four buttons you always forget."
 
 ### "Couldn't I just put a wiki into NotebookLM?"
 
@@ -70,9 +74,11 @@ It's also designed as a framework for **multi-contributor truth aggregation** --
 
 ---
 
-## What hintforge does -- today and planned
+![A generated character dossier: a personnel-file masthead over the character's stats, perks and loadout, assembled from the player's own save file](assets/readme-dossier.png)
 
-**Working today** (verified on Windows 11 + Claude Desktop and Claude Code, Pro/Max tier):
+## What Hintforge does -- today and planned
+
+**Working today.** Hintforge is a command-line framework: it builds and reads a folder of markdown files, so it runs wherever your coding agent runs -- Claude Code, Codex CLI or OpenClaw, on Linux, macOS or Windows. There is no desktop app to install and no GUI; if you work in a terminal, you are already set up.
 
 - Two-dial, user-controlled assistance: enemy tier 0-5 + puzzle tier 0-3, set at setup, changeable any time.
 - Spoiler-free defaults with a request-based hint ladder (Lvl 1 nudge -> Lvl 2 -> Lvl 3 step-by-step).
@@ -83,7 +89,8 @@ It's also designed as a framework for **multi-contributor truth aggregation** --
 - Three opt-in capability modules:
   - **PTT** (push-to-talk) -- hold a hotkey to talk to the agent via local Whisper transcription.
   - **TTS** (read-aloud) -- Stop hook speaks each agent reply through your speakers in a persona-aware voice.
-  - **save-watcher** -- reads the game's save file at session start to populate location / inventory / state into the agent's context.
+  - **save-watcher** -- reads the game's save file at session start for location / inventory / state. Raw save fields are treated as unsafe until they are confirmed against the corpus's own tagged claims: a field name in a save is not a promise about what the value means, and the reader will not report one as a live fact on the strength of the field name alone.
+- Interactive tools per guide -- a guide can carry a planner built on its own corpus (skill trees, city layouts, character builds, species rosters, power budgets). Each is a single self-contained HTML file in the guide's `artifacts/` folder: it opens in any browser with no account, no install and no AI, and the corpus is where its numbers come from. Reusable tools ship with a published guide; anything generated from one player's save stays local.
 - Transparent file-scope design -- the framework instructs the agent to confine writes to the framework folder and the per-game folder; no telemetry, no daemons, no privilege elevation, no auto-commits.
 - Token-heavy operations (research, content sweeps) are opt-in and flagged before they run; the default is "ask as questions arise" rather than batching research up front. Deep-research handoff works with Claude's built-in Research, Gemini Deep Research, ChatGPT Deep Research, or Perplexity -- the wizard writes a brief to `<game>/research_brief.txt`, you run it in whichever tool, drop the result into `<game>/research_inbox/`, and a fresh session ingests it.
 - Stale-session detection -- when a fresh session opens on a guide last played >30 days ago, the bot offers a controls + open-thread refresher before resuming. Default threshold 30 days, configurable; safe default is "yes refresh" if the user gives no answer.
@@ -129,21 +136,23 @@ Independent of tiers, you can always escalate a specific puzzle by asking: "Lvl 
 
 ---
 
+![A power-budget scratchpad: reactor power split across a ship's systems, each row carrying its reference figure and a running total, running in a plain browser with no account and no AI](assets/readme-power-planner.png)
+
 ## The builder/reader split
 
 Hintforge ships as two separate skills in two separate repos.
 
-**This repo (`hintforge/builder`) is the builder.** It handles everything involved in creating and maintaining a guide: the setup wizard, the research cascade, ingestion of results into the corpus, stitch-and-zipper cross-referencing, doctor corpus maintenance, and the reddit sweep optional module. You run the builder when you are building or updating a guide, not when you are playing.
+**This repo (`hintforge/builder`) is the builder.** It handles everything involved in creating and maintaining a guide: the setup wizard, the research cascade, ingestion of results into the corpus, stitch-and-zipper cross-referencing, doctor corpus maintenance, and the Reddit sweep optional module. You run the builder when you are building or updating a guide, not when you are playing.
 
 **The reader (`hintforge/reader`) is a separate repo and a separate skill.** It is the session-time companion: it reads the corpus you built, enforces your spoiler dials, tracks your position, and fires point-of-no-return warnings. You install it once and open it when you sit down to play.
 
-The split matters for a few reasons. Each skill can be installed independently and updated on its own cadence. A reader update does not require a builder rebuild. A corpus-format change (tracked by `corpus-core-version` in `architecture.md`) is the only event that requires coordination across both, and even then the reader will warn rather than hard-stop on a mismatch.
+The split matters for a few reasons. Each skill can be installed independently and updated on its own cadence. A reader update does not require a builder rebuild. A corpus-format change (tracked by `corpus-core-version` in the corpus manifest -- `nav/architecture.md`, or `architecture_manifest.md` at the corpus root on a guide built without a zone graph) is the only event that requires coordination across both, and even then the reader will warn rather than hard-stop on a mismatch.
 
 ### How to confirm the builder skill triggered
 
-When you open a session in a folder where the skill is installed, your agent loads it on startup. You can verify it loaded by asking "what are your active framework rules" or "what skill is running" at the start of any session. The agent should describe hintforge's scope constraints, spoiler-discipline rules, and file-scope limits. If it cannot, the session is running without the skill, and any work done in that session will not follow framework conventions.
+When you open a session in a folder where the skill is installed, your agent loads it on startup. You can verify it loaded by asking "what are your active framework rules" or "what skill is running" at the start of any session. The agent should describe Hintforge's scope constraints, spoiler-discipline rules, and file-scope limits. If it cannot, the session is running without the skill, and any work done in that session will not follow framework conventions.
 
-If the skill did not trigger, check that you opened the session inside the hintforge repo or a game folder that has the skill installed. See [`docs/install/`](docs/install/) for per-runtime install and troubleshooting.
+If the skill did not trigger, check that you opened the session inside the Hintforge repo or a game folder that has the skill installed. See [`docs/install/`](docs/install/) for per-runtime install and troubleshooting.
 
 ### How to confirm the reader skill triggered
 
@@ -184,19 +193,12 @@ The setup wizard (`setup_wizard.md`) manages brief generation for all three phas
 
 ## Reddit sweep (optional)
 
-The reddit sweep (`reddit_sweep.md`) is an optional post-build module that browses a game's subreddit and surfaces community-confirmed findings: undocumented interactions, dev-confirmed bugs, build math, strategies for specific encounters, recurring questions that signal guide gaps.
-
-It runs in its own fresh session, after the research cascade has completed and before stitch, triggered by saying: `hintforge doctor, reddit sweep` inside the game folder. (The `hintforge doctor` anchor is what loads the skill; the `reddit sweep` qualifier selects this module. There is no standalone trigger.)
-
-**External dependency: reddit-mcp-buddy.** The sweep uses the `reddit-mcp-buddy` MCP server. The sweep checks for reachability before crawling and aborts cleanly if the server is not available.
-
-**Rate limits and auth tiers.** Reddit's anonymous JSON API is no longer usable for the sweep -- it returns HTTP 403 to unauthenticated clients -- so reddit-mcp-buddy must be configured with a registered Reddit "script" app before the sweep can run. Create one at reddit.com/prefs/apps and set its client ID/secret in reddit-mcp-buddy for app-only OAuth (60 req/min); add a username/password for the higher authenticated rate (100 req/min). The sweep surfaces the detected tier and estimated wallclock before crawling and asks for confirmation; if no working credential is configured it aborts cleanly rather than crawling.
-
-**Why a separate session.** The sweep's failure modes (MCP unreachability, rate-limit hits, subreddit gone private) are distinct from ingestion's failure modes. Running both in the same session risks one failure contaminating the other's state. The sweep writes its findings file before asking whether to ingest, so a sweep failure after file-write doesn't block ingestion from running against a completed file.
-
-**Output and ingestion gate.** The sweep writes findings to `<game>/research_inbox/module/reddit_sweep.<game>.<ISO-date>1.md` and pauses before ingesting. You can review the file first, ingest immediately, or skip ingestion and ingest later. Every claim from the sweep routes through the same spoiler-classification pass as P1/P2/P3 claims.
-
-**Doctor integration.** Doctor recommends a sweep; it never runs one itself. When a patch, DLC, or a specific gap calls for community findings, doctor tells you to type `hintforge doctor, reddit sweep for the <patch/DLC/gap>` in a fresh session. The sweep always runs in its own session, never chained from the doctor run that recommended it -- that keeps the reddit-MCP failure surface isolated and the context scoped. See `reddit_sweep.md` for the full procedure and `doctor.md` Branches B and C for when doctor raises the recommendation.
+An optional post-build module that harvests community-confirmed findings from a game's
+subreddit into the research inbox. It is the one framework procedure with an external
+dependency, it is not required by anything else, and **it does not currently work as
+documented** -- Reddit's anonymous API now refuses unauthenticated clients, so it needs your
+own Reddit app credentials and has not been exercised end to end since. Design, prerequisites
+and the honest status are in [`docs/reddit-sweep.md`](docs/reddit-sweep.md).
 
 ## Corpus integrity: why discrepancies happen and how to fix them
 
@@ -220,7 +222,7 @@ These three tools exist because the [universal principles](https://github.com/hi
 
 Load-bearing rules summarized. Full set (17 principles + rationale) in the [reader skill's `principles.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md).
 
-**User-controlled assistance is the backbone, not a feature.** The two tiers are first-class state, not a setting hidden in a config screen. Every other rule (spoiler discipline, the hint ladder, persona constraints) only makes sense in service of reader agency over information flow. Inverting the fan-wiki "spoil-everything-by-default" model is what hintforge exists to do.
+**User-controlled assistance is the backbone, not a feature.** The two tiers are first-class state, not a setting hidden in a config screen. Every other rule (spoiler discipline, the hint ladder, persona constraints) only makes sense in service of reader agency over information flow. Inverting the fan-wiki "spoil-everything-by-default" model is what Hintforge exists to do.
 
 **Spoiler-free defaults + a request-based hint ladder.** Until the reader raises a tier, the guide names puzzle types only when the reader is staring at one, names enemies only post-encounter, and never reveals story beats or boss existence. When the reader asks for help, the agent delivers the smallest possible nudge first (Lvl 1) and escalates only on request. The reader's curiosity ceiling is the only one that escalates.
 
@@ -251,7 +253,11 @@ The reader is non-technical and trusts the framework by trusting the link they w
 
 ## Status & compatibility
 
-Verified-running on Windows 11 + Claude Desktop / Claude Code, Pro/Max tier. The markdown core is OS- and agent-agnostic; Windows-specific add-ons (TTS hook, save-game default paths, PowerShell snippets) need adaptation for Mac / Linux. Cowork and browser claude.ai are not the right runtimes for building or maintaining a guide -- both lack the local-file persistence the framework relies on.
+**No desktop app is required, on any platform.** The framework is markdown plus a skill file; any agent that can read and write local files can run it. It is developed and regression-tested on Windows 11 against Claude Code, and it runs equally on Linux and macOS through Claude Code, Codex CLI or OpenClaw -- the terminal is the supported surface, not a GUI.
+
+The only platform-specific pieces are three optional add-ons: the read-aloud hook (Windows speech), the default save-file paths, and a few PowerShell snippets. None is required to build or use a guide, and each is quarantined so the core stays portable.
+
+What does not work is a runtime with no persistent local filesystem -- a browser chat session cannot build or maintain a guide, because the corpus is files you keep.
 
 Full portability matrix in [`os_compatibility.md`](os_compatibility.md). Per-runtime install caveats (Claude Code hooks, Cowork session-scoping, browser claude.ai) live with the install docs at [`docs/install/`](docs/install/). The player-facing OS-compatibility view ships with the reader at the [reader skill's `os_compatibility.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/os_compatibility.md).
 
@@ -271,7 +277,8 @@ This repo is the **builder** skill (authoring side). The runtime **reader** skil
 | [`instantiation.md`](instantiation.md) | Manual setup flow (for advanced users who want to skip the wizard) |
 | [`ingestion.md`](ingestion.md) | Research-ingestion procedure (populates corpus files from `research_inbox/`) |
 | [`stitch_and_zipper.md`](stitch_and_zipper.md) | Post-ingestion synthesis -- cross-system edges + overlap reconciliation |
-| [`reddit_sweep.md`](reddit_sweep.md) | Optional module for community-knowledge harvest via reddit-mcp-buddy MCP server |
+| [`reddit_sweep.md`](reddit_sweep.md) | Optional module for community-knowledge harvest from a game's subreddit |
+| [`docs/reddit-sweep.md`](docs/reddit-sweep.md) | What that module needs to run, and why it does not currently work as documented |
 | [`doctor.md`](doctor.md) | Post-instantiation maintenance: format bumps, game updates, targeted repair (triggered by "doctor hintforge") |
 | [`os_compatibility.md`](os_compatibility.md) | Maintainer-facing portability matrix + porting roadmap |
 | [`distribution.md`](distribution.md) | GitHub + aggregator + wiki-gen long-term vision |
@@ -294,7 +301,7 @@ Patches can change stat values, fix or break mechanics, alter drop rates, or ren
 
 Trigger: `hintforge doctor` in a fresh session inside the game folder, then tell it a patch shipped and give it the patch notes or patch version. Doctor reads `architecture.md` for the current game-version manifest, flags claims that reference content the patch notes touch, and produces a repair plan before changing anything. You confirm the plan before repairs run.
 
-If the patch is large, doctor recommends a post-patch reddit sweep to pull community findings. You run it by typing `hintforge doctor, reddit sweep for the <patch>` in a fresh session; doctor does not chain the sweep itself.
+If the patch is large, doctor recommends a post-patch Reddit sweep to pull community findings. You run it by typing `hintforge doctor, reddit sweep for the <patch>` in a fresh session; doctor does not chain the sweep itself.
 
 ### After a DLC ships
 
