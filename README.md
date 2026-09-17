@@ -24,7 +24,7 @@ Per-runtime details in [`docs/install/`](docs/install/).
 
 ![Four planner tools built on Hintforge guides: a skill-tree planner comparing four trees with prerequisite costs, a city planner showing ring layout and reach cost, a character build planner with a rank ladder and talent browser, and a filterable species roster](assets/readme-tools-grid.png)
 
-**These run with no AI at all.** Each is a single self-contained HTML file that lives in its guide: no account, no install, no API key, no internet connection, nothing running in the background. You double-click it and it opens in whatever browser you already have, on any operating system. The guide's corpus is where its numbers come from -- an agent builds the tool once, and after that it is just a page that works.
+**These run with no AI at all.** Each is a single self-contained HTML file that lives in its guide: no account, no install, no API key, no internet connection, nothing running in the background. You double-click it and it opens in whatever browser you already have, on any operating system. The guide's corpus is where its numbers come from. An agent builds the tool once, and after that it's just a page that works.
 
 ## Get started
 
@@ -78,7 +78,7 @@ It's also designed as a framework for **multi-contributor truth aggregation** --
 
 ## What Hintforge does -- today and planned
 
-**Working today.** Hintforge is a command-line framework: it builds and reads a folder of markdown files, so it runs wherever your coding agent runs -- Claude Code, Codex CLI or OpenClaw, on Linux, macOS or Windows. There is no desktop app to install and no GUI; if you work in a terminal, you are already set up.
+**Working today.** Hintforge is a command-line framework: it builds and reads a folder of markdown files, so it runs wherever your coding agent runs -- Claude Code, Codex CLI or OpenClaw, on Linux, macOS or Windows. There's no desktop app to install and no GUI. If you work in a terminal, you're already set up.
 
 - Two-dial, user-controlled assistance: enemy tier 0-5 + puzzle tier 0-3, set at setup, changeable any time.
 - Spoiler-free defaults with a request-based hint ladder (Lvl 1 nudge -> Lvl 2 -> Lvl 3 step-by-step).
@@ -195,9 +195,9 @@ The setup wizard (`setup_wizard.md`) manages brief generation for all three phas
 
 An optional post-build module that harvests community-confirmed findings from a game's
 subreddit into the research inbox. It is the one framework procedure with an external
-dependency, it is not required by anything else, and **it does not currently work as
+dependency, nothing else requires it, and **it doesn't currently work as
 documented** -- Reddit's anonymous API now refuses unauthenticated clients, so it needs your
-own Reddit app credentials and has not been exercised end to end since. Design, prerequisites
+own Reddit app credentials, and it hasn't been exercised end to end since. Design, prerequisites
 and the honest status are in [`docs/reddit-sweep.md`](docs/reddit-sweep.md).
 
 ## Corpus integrity: why discrepancies happen and how to fix them
@@ -253,11 +253,11 @@ The reader is non-technical and trusts the framework by trusting the link they w
 
 ## Status & compatibility
 
-**No desktop app is required, on any platform.** The framework is markdown plus a skill file; any agent that can read and write local files can run it. It is developed and regression-tested on Windows 11 against Claude Code, and it runs equally on Linux and macOS through Claude Code, Codex CLI or OpenClaw -- the terminal is the supported surface, not a GUI.
+**No desktop app is required, on any platform.** The framework is markdown plus a skill file; any agent that can read and write local files can run it. It's developed and regression-tested on Windows 11 against Claude Code, and it runs the same on Linux and macOS through Claude Code, Codex CLI or OpenClaw. The terminal is the supported surface.
 
 The only platform-specific pieces are three optional add-ons: the read-aloud hook (Windows speech), the default save-file paths, and a few PowerShell snippets. None is required to build or use a guide, and each is quarantined so the core stays portable.
 
-What does not work is a runtime with no persistent local filesystem -- a browser chat session cannot build or maintain a guide, because the corpus is files you keep.
+What doesn't work is a runtime with no persistent local filesystem. A browser chat session can't build or maintain a guide, because the corpus is files you keep.
 
 Full portability matrix in [`os_compatibility.md`](os_compatibility.md). Per-runtime install caveats (Claude Code hooks, Cowork session-scoping, browser claude.ai) live with the install docs at [`docs/install/`](docs/install/). The player-facing OS-compatibility view ships with the reader at the [reader skill's `os_compatibility.md`](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/os_compatibility.md).
 
