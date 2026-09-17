@@ -20,7 +20,7 @@ Already installed? Same line, one word different:
 
 Per-runtime details in [`docs/install/`](docs/install/).
 
-## What people build with it
+## Real tools for real playthroughs
 
 ![Four planner tools built on Hintforge guides: a skill-tree planner comparing four trees with prerequisite costs, a city planner showing ring layout and reach cost, a character build planner with a rank ladder and talent browser, and a filterable species roster](assets/readme-tools-grid.png)
 
