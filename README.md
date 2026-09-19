@@ -326,6 +326,12 @@ Even without a patch or DLC, a corpus built from a snapshot of web sources drift
 
 ---
 
+## Related
+
+If you're looking for a game to actually play, [whatdoweplay](https://github.com/dtiger1889-ops/whatdoweplay) picks one from your own Steam playtime and what you and your friends both already own.
+
+---
+
 ## Contributing
 
 A full `CONTRIBUTING.md` lands alongside the multi-contributor aggregator -- see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the current stub (license inheritance + pointer back here). For now:
