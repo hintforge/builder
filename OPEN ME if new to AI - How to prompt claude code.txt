@@ -257,7 +257,7 @@ What it does:
    5-hour cap on day one. Instead, Claude writes a one-page
    research brief to:
 
-      ~/Documents/Guides/<game>/research_brief.txt
+      ~/Documents/Guides/<game>/research_briefs/p1.txt
 
    ...and tells you which external tool to paste it into,
    based on your Claude tier:

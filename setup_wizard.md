@@ -547,7 +547,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 
 > **Don't declare Step 8 done until the brief files are written.** Step 9 will refuse to print the Step 10 handoff if `<game>/research_briefs/p1.txt` doesn't exist on disk (and `p2.txt` / `p3.txt` if `[RUN_P2]` / `[RUN_P3]` were yes). Capturing `[RESEARCH_MODE] = handoff` in the summary table is not the same as having written the brief; the artifact is the gate.
 >
-> **How to verify the gate -- per-file Read, never directory enumeration.** Check each brief by known filename: `p1.txt` always; `p2.txt` if `[RUN_P2] = true`; `p3.txt` if `[RUN_P3] = true`. For each, call `Read` on `<game>/research_briefs/<filename>`. A successful Read confirms the file exists; a Read error means the gate fails -- name the missing file and halt before Step 10. Do **NOT** call `Glob('research_briefs/*', path='<game>')` or any directory-listing tool for this gate: Glob returns 0 results when the pattern carries a literal subdirectory prefix relative to `path` (known tool defect), the Bash `ls "...\"` recovery has a Windows trailing-backslash escape bug, and you already know every brief's filename from `[RUN_P2]` / `[RUN_P3]`. Enumeration burns 2-3 turns on fallback attempts and adds no value over reading each known file. Same discipline as Step 9 sub-step 3's "do not enumerate `templates/`" rule -- read by name, never by listing.
+> **How to verify the gate -- per-file Read, never directory enumeration.** Check each brief by known filename: `p1.txt` always; `p2.txt` if `[RUN_P2] = true`; `p3.txt` if `[RUN_P3] = true`. For each, call `Read` on `<game>/research_briefs/<filename>`. A successful Read confirms the file exists; a Read error means the gate fails -- name the missing file and halt before Step 10. In each brief you Read, also confirm the three opening blocks are present in order -- `EXECUTE THIS BRIEF IN FULL.`, `OUTPUT FILE NAMING -- REQUIRED.`, `EXECUTION DISCIPLINE -- REQUIRED IF YOU CAN RUN SUB-AGENTS.` -- and rewrite any brief missing one before continuing. Do **NOT** call `Glob('research_briefs/*', path='<game>')` or any directory-listing tool for this gate: Glob returns 0 results when the pattern carries a literal subdirectory prefix relative to `path` (known tool defect), the Bash `ls "...\"` recovery has a Windows trailing-backslash escape bug, and you already know every brief's filename from `[RUN_P2]` / `[RUN_P3]`. Enumeration burns 2-3 turns on fallback attempts and adds no value over reading each known file. Same discipline as Step 9 sub-step 3's "do not enumerate `templates/`" rule -- read by name, never by listing.
 
 1. **Generate the brief.** After Step 9 file-writing completes, write a research prompt to `<game>/research_briefs/p1.txt` AND show it inline in chat. The brief is a one-page research request that works whether the reader is the user themselves, a third party they handed it to, or an external tool with no surrounding context.
 
@@ -591,6 +591,38 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
      ```
 
      Non-negotiable wording. Substitute the placeholders before writing the brief; the receiving tool sees the literal filename (e.g. `[GAME_FOLDER]_p1.result.md`) at the very top. (Incident: prior P1 brief -- Claude.ai Research produced the artifact with the filename only as a bottom footer; required user intervention to relocate.)
+
+   - **Execution discipline** (REQUIRED -- third block of every brief, immediately after the output-filename directive; P1, P2 and P3 alike). A brief run inside an agent runtime that can spawn sub-agents (Claude Code, agent SDKs, multi-agent research tools) has no built-in limit on fan-out and no built-in end condition. Use this exact wording:
+
+     ```
+     EXECUTION DISCIPLINE -- REQUIRED IF YOU CAN RUN SUB-AGENTS.
+
+     If you can split this research across sub-agents or parallel workers,
+     these limits apply. If you research alone, skip this block.
+
+     1. At most 4 sub-agents running at once. You are the lead: count the
+        sub-agents still running before every spawn, and at 4, wait for
+        one to report before starting another. Sub-agents do not spawn
+        sub-agents of their own. No agent teams, no teammates, no peer
+        sessions, no relays between sub-agents. Every sub-agent reports
+        to the lead only; the lead consolidates.
+     2. Keep a written topic ledger: topic, status (queued / in flight /
+        done), which sub-agent. Never dispatch a topic that is already
+        in flight or done. A report that repeats a topic already done is
+        discarded, not integrated a second time.
+     3. The run ends without waiting on any single report. Once every
+        ledger topic has been dispatched, and each has either reported
+        or gone one check-in past its expected finish, write the result
+        file from what you have. Add a "## Not covered" section naming
+        each missing topic and why it is missing. Then stop. Waiting on
+        the same named report across more than two consecutive check-ins
+        means the run has stalled: stop waiting and write the file.
+     4. Never ask the person who gave you this brief to end the run. The
+        run ends when the result file is written; the only step left for
+        a person is to collect that file.
+     ```
+
+     Non-negotiable wording; do not raise the ceiling of 4. The block bounds orchestration, not scope: every topic the brief asks for is still dispatched, and anything that does not come back is named under `## Not covered` so P3 or a later pass can pick it up. (Incident: a P3 brief run in Claude Code covered its full scope, then fanned out to 7 sub-agents plus 12 teammates and a peer session, blocked indefinitely on two relayed reports that never arrived, re-counted duplicate reports as new completions, and ended only when the agent asked the user to stop it.)
 
    - **Game grounding** (1 line): exact game name, developer, year, platform, current patch version. State scope: "Base game only -- DLC content is researched separately in P3 (cascade phase)." Name shipped DLC by title so external tools don't conflate base-game and DLC vocabulary, but do not request research on them.
 
@@ -715,6 +747,8 @@ Ask:
 - "Run P3? (yes if game has shipped DLC / **skip**)"
 
 Capture `[RUN_P2]` and `[RUN_P3]`.
+
+Every P2 and P3 brief opens with the same three required blocks as P1 (self-executing opener, output-filename directive, execution discipline), verbatim, before its phase-specific content.
 
 **If `[RUN_P2] = true`:** Generate P2 brief to `<game>/research_briefs/p2.txt`. P2 brief requests:
 - **Per-zone gate-lists** (one subsection per zone): ordered sequential gates (5-15 per zone, or 5-15 per branch for branching zones); entry / exit / outgoing edges referencing `architecture.md` by edge `(from, to)` pair; optional branches, common confusions, soft-lock warnings, sources. Nav-only -- puzzles and enemies referenced by name as pointers, not solved inline.
