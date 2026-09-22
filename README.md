@@ -32,7 +32,7 @@ Per-runtime details in [`docs/install/`](docs/install/).
    - [Claude Code](docs/install/claude-code.md)
    - [Codex (CLI + desktop)](docs/install/codex.md)
    - [OpenClaw](docs/install/openclaw.md)
-2. **In your runtime,** ask: "build a guide for [GAME]". The wizard walks you through ~10 questions, then scaffolds `~/Documents/Guides/<game>/` with the universal core directories, the vector extensions your game needs, and a `research_brief.txt` ready for a deep-research handoff.
+2. **In your runtime,** ask: "build a guide for [GAME]". The wizard walks you through ~10 questions, then scaffolds `~/Documents/Guides/<game>/` with the universal core directories, the vector extensions your game needs, and a `research_briefs/p1.txt` brief ready for a deep-research handoff.
 3. **Install the [`hintforge/reader`](https://github.com/hintforge/reader) skill** to play with the guide once it's built.
 
 **You'll know it's working when** the wizard greets you and starts asking setup questions (game name, persona cast, dial defaults) before touching any files.
@@ -167,7 +167,7 @@ Supported handoff targets: Claude's built-in Research mode, Gemini Deep Research
 **Why this is the recommended path:** External deep-research tools are optimized for broad multi-source synthesis. Running P1, P2, and P3 inside a local agent session using a top-tier model is significantly more expensive for equivalent or worse coverage. Use the handoff path. Use a Sonnet-class (or equivalent) model at high reasoning effort locally for everything except the research itself.
 
 **Round-trip:**
-1. The setup wizard generates a research brief and writes it to `<game>/research_brief.txt`.
+1. The setup wizard generates a research brief and writes it to `<game>/research_briefs/p1.txt` (`p2.txt` / `p3.txt` for the later phases).
 2. You paste the brief into your external deep-research tool of choice.
 3. Save the result file into `<game>/research_inbox/p1/` (or p2, p3 as appropriate).
 4. In a fresh session inside the game folder, say: `ingest the research`.

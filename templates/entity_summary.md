@@ -19,7 +19,7 @@
 
 ## Capabilities
 
-[Build-adjacent content: abilities, equipment slots, party synergies, faction-level mechanics, etc. Forward-pointers to `items/abilities.md`, `items/builds.md`, etc. as appropriate.]
+[Build-adjacent content: abilities, equipment slots, party synergies, faction-level mechanics, etc. Forward-pointers to `items/abilities.md`, `items/builds.md`, etc. as appropriate. A capability flag sits beside the stat that moderates it, or is marked `eligibility-only` (see [`../ingestion.md`](../ingestion.md) step 4, "For capability flags").]
 
 ## Quests
 

@@ -4,6 +4,18 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Research briefs bound their own execution; capability flags carry the stat that moderates them (v97, 2026-09-22)
+
+**Builder changes.**
+
+- **Every P1/P2/P3 brief now carries an execution-discipline block** straight after the output-filename directive (`setup_wizard.md` Step 8). When the research runs somewhere that can spawn sub-agents, at most 4 run at once; there are no teams, peers or relays; every topic is tracked in a written ledger so nothing is dispatched twice or counted twice. The run writes its result file with a `## Not covered` list instead of waiting on a report that never arrives, and it never asks the person who supplied the brief to stop it. Research scope is unchanged. Step 8's brief gate now confirms all three opening blocks are present in each written brief.
+- **A capability flag is recorded with the stat that moderates it** (`ingestion.md` step 4). When a record carries a yes/no capability flag and the game has a separate stat that decides whether using it is wise, both go in the same record under distinct keys (never `confidence`, which is source confidence). If the moderating stat is unknown the flag is marked `eligibility-only`, and any artifact filter, ranking or reader answer built on it presents it as permission, not advice. `templates/claim_format.md` and `templates/entity_summary.md` point to the rule.
+- README and the new-user text now name the brief file correctly (`research_briefs/p1.txt`).
+
+**Reader changes (same framework version).** The spoiler gate in `persona_universal.md` gains its second half next to default-deny: gated-class content is delivered only when a content match AND a player-originated signal (a question naming the entity, a stated "I already know", or a spoiler dial that covers the tier) are both present, and the gate now names every surface the reader can read (corpus, raw save, web, pasted screenshots); a surface it was never taught counts as a leak path. The artifact launcher docs now tell Linux and macOS users to open `index.html` directly; `launch.ps1` is Windows-only.
+
+**Existing corpus impact.** No `corpus-core-version` bump. Briefs already written can be regenerated or have the block pasted in by hand. Existing capability flags are unaffected until a doctor or ingestion pass touches them.
+
 ### Doctor states which branch it is writing to, and scopes its recap to match (v96, 2026-09-17)
 
 **Builder changes.**

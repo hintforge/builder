@@ -57,7 +57,7 @@ The metadata line is italicized and starts with `_source:` -- easy to scan, does
 
   An auditor reading these values should be able to trace each value back to an identifiable capture path; the rule is "name the host and interface that actually served the bytes, not the rung the contributor originally tried to walk."
 - **contributor** -- who added or last-verified the claim. GitHub identity once published; local handle until then.
-- **confidence** -- `high` / `medium` / `low`. Use the binary `verified` / `unverified` if a graded scale is overkill for the project.
+- **confidence** -- `high` / `medium` / `low`. Use the binary `verified` / `unverified` if a graded scale is overkill for the project. Source confidence only: a game stat that shares the word gets its own key (see [`../ingestion.md`](../ingestion.md) step 4, "For capability flags").
 - **last-verified** -- date the claim was last re-checked against reality. Stale claims (>1 game version old) flagged for re-verification.
 - **enemy-tier** -- `0`-`5`. Minimum enemy-spoiler warning tier (from `warning_tiers.md`) the reader must be at to see this claim. `0` = no enemy info revealed. Higher tiers gate enemy abilities, boss mechanics, late-game roster, etc.
 - **puzzle-tier** -- `0`-`3`. Minimum puzzle-spoiler tier the reader must be at. `0` = no puzzle solution revealed (location-only is fine). Higher tiers gate hints, partial solutions, and full answers to puzzles / codes / sequences.
