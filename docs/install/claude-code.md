@@ -1,8 +1,16 @@
 # Install on Claude Code
 
-1. Clone this repo to any local path.
-2. Run `/plugin add <path-to-clone>/.agents/skills/hintforge/` from inside Claude Code.
-3. Open a session in the workspace where you keep (or want to keep) your guide folders.
+1. Clone this repo straight into your Claude Code skills folder, so the clone itself is the skill:
+
+   ```
+   git clone https://github.com/hintforge/builder ~/.claude/skills/hintforge
+   ```
+
+   On Windows, `~` is your user folder (`%USERPROFILE%`). The repo root carries its own `SKILL.md` next to the procedure files it links to (`setup_wizard.md`, `ingestion.md`, `doctor.md`, `templates/`), so install the whole repo. The `.agents/skills/hintforge/` folder holds only the manifest.
+2. Start a new Claude Code session. Skills load when a session starts, so a session that was already open won't see the builder.
+3. Open that session in the workspace where you keep (or want to keep) your guide folders.
+
+**Updating.** Run `git pull` inside `~/.claude/skills/hintforge`. Because the clone is the skill, you don't need to copy anything or create links. A copied install goes stale silently on every update.
 
 **Verification.** Ask "build a guide for [game name]" or "set up a new Hintforge corpus". The builder should greet you and start the setup wizard -- collecting game name, persona cast, dial defaults, and vector-extension choices before scaffolding any files.
 
