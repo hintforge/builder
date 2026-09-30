@@ -4,6 +4,12 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Achievement completeness uses mechanical key comparisons (v99, 2026-09-30)
+
+Ingestion compares actual achievement entries against the retained source roster by platform id or name, checks duplicates separately, and saves the executed check plus missing/extra/duplicate output in a spoiler-tagged receipt. Achievement overlays must resolve individually to aggregation entries. Inspection and aggregate counts cannot certify completeness.
+
+**Existing corpus impact.** No format bump or automatic repair. The next ingestion pass applies the check; existing achievement coverage claims remain unchanged until checked against a source roster.
+
 ### Research briefs bound their own execution; capability flags carry the stat that moderates them (v97, 2026-09-22)
 
 **Builder changes.**
