@@ -54,11 +54,22 @@ Check `<game>/research_inbox/` for numbered subdirectories (`p1/`, `p2/`, `p3/`,
 
 **Frontmatter-aware routing.** Before routing to the standard phase pipeline, read the file's frontmatter. If `kind: reddit_sweep` (or another module-sweep `kind:` value), route to **step 4b "Ingesting a reddit_sweep artifact"** below instead of the standard step 3 -> step 4 flow. Reddit-sweep artifacts have their own structure (Findings + Recurring questions + appendix) that step 4b is built for; routing them through standard phase ingestion would fail at vector-tag distribution.
 
+**Pages the author saved by hand -- `manual/`.** This folder holds web pages the author saved after step 12 asked for them (see "Blocked pages" there): PDFs, saved HTML, or Markdown files from a browser extension. They are source pages, not research results, so there is no brief to match. Skip `pages_to_save.md` (the checklist itself). For each saved page: work out which listed address it came from (Markdown clippers usually record the address at the top of the file; PDFs usually print it in the header or footer; if neither does, ask the author), then use the page to confirm, correct or fill the claims and gaps that cited that address. Every new or changed fact goes through the step 3 spoiler classification like any other, records `capture-method: manual_paste`, and cites the page's canonical address, not the local filename. Tick the page off in `pages_to_save.md`, then move the file aside per step 11. A saved Reddit or forum thread holds only the replies that were expanded on screen when it was saved; do not treat a missing reply as evidence it does not exist.
+
 If the user attached a file directly, use that instead and ask which phase or module it belongs to. If all inboxes are empty and no file was attached, ask the user where the result is.
 
 ### 2. Read the brief and result
 
 Read the corresponding phase brief from `<game>/research_briefs/` -- match by phase number (e.g., `p1.txt`, `p2.txt`, `p4_weapons_enemies.md`). File extension and descriptive suffixes may vary; match on the `p<N>` prefix. Read the brief first (so the bot knows what was asked), then the result file(s).
+
+**Several results for one phase.** The handoff asks the author to run each brief in at least two deep-research tools, so a phase folder often holds two or more results. Read all of them before writing anything, and treat them as independent sources to compare, not files to concatenate:
+
+- A fact two results agree on, each with its own cited source, is corroborated; name both tools on its `_source:` line.
+- A fact only one result carries keeps that result's own attribution. The other result's silence neither confirms nor refutes it.
+- Where the results disagree, do not pick the longer or more confident one. Check the cited sources if they are reachable; otherwise keep both values with `[Contradicted across sources -- see notes]` and log the conflict in `limitations.md`.
+- Watch for an unreliable result: citations that do not resolve or do not say what is claimed, facts that nothing else supports, a self-check marked complete over thin coverage. When one result shows these, say so in the step 12 recap and name the tool, so the author knows which result to trust less.
+
+Each result file moves aside on its own in step 11. If only one result is present, ingest it normally and note in the recap that it had nothing to be compared against.
 
 **Large result files (>25k tokens) must be read in chunks.** Check the file size first -- if Read errors with "exceeds maximum allowed tokens," fall back to repeated Read calls with `offset` and `limit` (e.g., lines 0-499, 499-998, …) to walk the whole file. Result files from external deep-research tools regularly land in the 30-50k-token range; treat single-Read success as a happy path, not the default.
 
@@ -363,6 +374,36 @@ One-screen summary: subfolders touched, sections added per subfolder, any `confi
 **On Windows, run the multi-file sanity-check loop via PowerShell, not Bash.** Git Bash on Windows passes commands through cmd.exe escaping, which strips `$f`-style variable expansion in `for f in ...; do head -1 "$base/$f"; done` recipes -- the loop runs but every iteration reads the literal path `...$f` and errors. Use PowerShell instead: ``$base = "<corpus-path>"; foreach ($f in @("puzzles/chamber_00.md", …)) { Get-Content "$base/$f" -TotalCount 1 }``. (Linux/macOS Bash handles the original recipe fine; this constraint is Windows-only.)
 
 **Update `## Phase state` in CHECKPOINT.** Set the ingested phase's field to `complete YYYY-MM-DD` (e.g. `p1_ingestion: complete 2026-05-12`). If the corresponding brief field is still `not started`, set it to `written YYYY-MM-DD` (the brief existed if ingestion ran). If stitch was previously complete and this ingestion adds new `live-observed` claims, set `stitch_stale: true`.
+
+**Blocked pages -- hand them to the author (after any phase; usually first needed after P1).** Some sites turn away automated fetches no matter which rung of the Blocked-source recovery ladders is tried. Collect every page this phase needed but could not read: the result files' unreachable-source flags (for example `[Reddit source unreachable -- canonical URL: ...]`), pages whose ladder failed in this session, and any `limitations.md` entry written this pass that names an address. If there are none, skip this block silently. Otherwise:
+
+1. Write them to `<game>/research_inbox/manual/pages_to_save.md` (create `manual/` if absent) as a checklist: one line per page, canonical address plus what it would fill. Put the pages that the most claims depend on first. The file survives the session, so the author can work through it later.
+2. In the recap, show the message below, filled in. List at most the 10 most useful pages in chat and point to the file for the rest. Keep both options in the same message.
+
+> Some pages I needed were blocked: those sites turn away automated tools like me. The guide works without them, but saving them would fill `<N>` gaps. They're below and in `<game>/research_inbox/manual/pages_to_save.md`. (Heads-up: a page's address can name a later area or boss.)
+>
+> `<address>` -- `<what it fills>`
+> ...
+>
+> **Option 1: save them yourself (a few minutes).** Open each page in your normal browser and save it whichever way is easiest:
+> - **Print to PDF** -- press Ctrl+P (Cmd+P on a Mac) and choose "Save as PDF" (on Windows it may say "Microsoft Print to PDF"). Nothing to install, and it works on phones too.
+> - **Save page as** -- Ctrl+S (Cmd+S on a Mac).
+> - **Anything you already use** to save web pages, as long as it gives you a file.
+> - **If you'll do this often, one free browser extension: Obsidian Web Clipper.** It saves each page as a clean Markdown text file, which is the easiest format for me to read. It's made by the company behind the Obsidian notes app, but you don't need Obsidian or a vault. Install it from your browser's official extension store (Chrome, Edge, Firefox and Safari all have it), open its settings, and under General set **Save behavior** to **"Save file..."**. After that, one click on the extension saves the page.
+>
+> Two things to know:
+> - Saved files go to your **Downloads** folder. Move them into `<game>/research_inbox/manual/`.
+> - These all save only what's on screen. On Reddit and forum threads, click every "more replies" / "load more comments" link first, or the hidden replies won't be in the file.
+>
+> When the files are in that folder, open a fresh chat in this guide's folder and say "ingest the research".
+>
+> **Option 2: I drive your browser.** I can open and save these pages myself in your own browser. You'd need to allow me to control the browser when it asks, and it uses far more of your usage than saving a few pages by hand -- reading a page through the browser costs many times what one click on Save costs you. Say "drive the browser" if you'd rather I do it.
+
+Rules for this block:
+- Offer Option 2 as written only when this session actually has a browser-control tool. Without one, replace it with a single line: "If you connect a browser-control tool to me, I could save these myself instead, though it costs far more of your usage than doing it by hand." Do not walk the author through setting one up.
+- If the author picks Option 2: say how many pages you will open before starting, save each one as Markdown into `research_inbox/manual/`, expand collapsed replies before saving a thread, and stop and hand the page back on any login wall or human-verification check rather than working around it.
+- Recommend only the extension named above, and never assume the author uses Obsidian or any other notes app or vault.
+- Do not suggest URL-rewriting reader services (sites that fetch a page for you when you put their address in front of it): they fetch from their own servers, so the same sites block them.
 
 **Recommended next (conditional on cascade position).** The next step depends on whether this was the final brief in the configured cascade. Check CHECKPOINT's `## Phase plan` / phase-state fields for the configured plan (standard cascade: P3 is the final brief; some games are P1-only or P1+P2).
 

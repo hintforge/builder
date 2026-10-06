@@ -157,7 +157,7 @@ together:
 7. Puzzle tier 0-3? (0 = silent, 3 = full solutions on entry)
 8. Save-watcher? (skip / set up -- skip recommended on Pro)
 9. Read-aloud? (skip / persona-matched / generic -- skip recommended on Pro)
-10. Research mode? (none / minimal / standard / deep / handoff -- none recommended on Pro; handoff moves research to a deep-research tool: Claude Research, Gemini, ChatGPT, or Perplexity)
+10. Research mode? (none / minimal / standard / deep / handoff -- none recommended on Pro; handoff moves research to deep-research tools you run yourself, such as Claude Research, ChatGPT Deep Research, Gemini Deep Research or Perplexity; run the brief in at least two)
 ```
 
 (Omit lines for variables already pre-filled in `setup_answers.txt`.)
@@ -537,7 +537,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
   - **Minimal** -- 1 top source per category, stub a few claims. ~5 messages. Skips source-diversity floor and non-English sources.
   - **Standard** -- apply the brief's source-diversity floor (3 source classes, non-English when applicable) at one source per class per category; flag conflicts. ~20 messages.
   - **Deep** -- apply the full handoff-brief spec in-house: 5+ sources per topic, exception-finding, mechanism-not-inventory, video transcription, datamining sweep. Spoiler-classification pass still runs after. ~50+ messages. (Only pick this on Max/Team or if you're OK with heavy spend.)
-  - **Handoff** -- I write you a research brief to paste into a deep-research tool (Claude Research / Gemini Deep Research / ChatGPT Deep Research / Perplexity). You bring the results back; I ingest them. ~2 messages here, ~5-10 to ingest results later. The heavy research runs in that tool instead of this chat -- and a non-Claude tool spends none of your Claude budget.
+  - **Handoff** -- I write you a research brief to run in deep-research tools (Claude Research, ChatGPT Deep Research, Gemini Deep Research, Perplexity, or any similar tool). Run the same brief in **at least two** of them and bring every result back; I compare them while ingesting. No single tool is reliable enough on its own: one tool's result can come back thin or partly invented, and with nothing to compare it against there is no way to tell. ~2 messages here, ~5-10 per result to ingest later. The heavy research runs in those tools instead of this chat -- and a non-Claude tool spends none of your Claude budget.
 
 **Capture:**
 - `[RESEARCH_MODE]` -- one of `none` / `minimal` / `standard` / `deep` / `handoff`
@@ -686,7 +686,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 
    - **Internationalization rule** -- ≥1 non-English source per chapter area; drawn from the source-language set declared in the Architecture Summary. LLM translation is acceptable; flag translated facts with `[translated from: <lang>]`. "Checked, nothing English missed" is a valid positive finding. Padding with low-quality sources to hit a quota is not.
 
-   **Brief content constraint -- no filesystem paths or save instructions.** The brief is sent verbatim to deep-research tools (Gemini Deep Research, Claude Research, ChatGPT, Perplexity) that have **no filesystem access**. Embedding sandbox-style paths like `<game>/research_inbox/p1/` or instructions like "save output to..." causes those tools to halt and ask "where?" before running the actual research, blocking the handoff. The brief must end after the deep-enough self-check / output format / spoiler handling sections. Filesystem paths, drop-zone meta, and "where to put the result" instructions live ONLY in Step 10's user-facing handoff message -- not in the brief file itself.
+   **Brief content constraint -- no filesystem paths or save instructions.** The brief is sent verbatim to deep-research tools (Claude Research, ChatGPT Deep Research, Gemini Deep Research, Perplexity, and similar) that have **no filesystem access**. Embedding sandbox-style paths like `<game>/research_inbox/p1/` or instructions like "save output to..." causes those tools to halt and ask "where?" before running the actual research, blocking the handoff. The brief must end after the deep-enough self-check / output format / spoiler handling sections. Filesystem paths, drop-zone meta, and "where to put the result" instructions live ONLY in Step 10's user-facing handoff message -- not in the brief file itself.
 
    No pronouns referring to "the wizard," "the framework," or "an AI agent" -- the recipient doesn't need that context to act on the request.
 
@@ -698,32 +698,42 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
    P1 brief:      <game>/research_briefs/p1.txt
    P1 drop zone:  <game>/research_inbox/p1/
 
-   Recommended tool by your Claude tier:
-     Pro / Max / Team / Enterprise   Claude Research on claude.ai
-                                     (included in every paid Claude plan)
-     Free / no Claude sub            Gemini Deep Research or Perplexity
-                                     Deep Research (free tiers)
+   Run this brief in AT LEAST TWO deep-research tools, not one.
+   No single tool is reliable on its own: a result can come back
+   thin or partly made up, and with only one result nobody can tell.
+   With two, ingestion compares them -- facts both agree on are
+   stronger, and facts only one found get checked.
 
-   Any of these works -- if you'd rather keep research spend off your
-   Claude subscription entirely, use one of the non-Claude tools on
-   whatever tier you have.
+   Tools that work (pick any two you can use):
+     Claude Research on claude.ai (included in every paid Claude plan)
+     ChatGPT Deep Research
+     Gemini Deep Research
+     Perplexity Deep Research
+     ...or any other tool that takes a long brief and returns a
+     detailed written report. Several have free tiers with limits;
+     check each tool's current plan. A non-Claude tool spends none
+     of your Claude budget.
 
-   Steps:
-     1. Upload p1.txt to the tool above. The brief is self-executing --
+   Steps (repeat 1-2 for each tool):
+     1. Upload p1.txt to the tool. The brief is self-executing --
         no clarifying questions needed. If the tool still asks, reply:
         "Execute the brief in the attached file in full. Do not ask
         clarifying questions -- every parameter is in the file."
-     2. Save the output to <game>/research_inbox/p1/ as
-        <game_folder>_p1.result.md (the filename the brief specifies
-        at the top of the artifact).
-     3. In a fresh Claude Code session here: "ingest the research".
+     2. Save the output to <game>/research_inbox/p1/. The brief names
+        the file <game_folder>_p1.result.md; add the tool's name
+        before ".result.md" (for example
+        <game_folder>_p1.<tool-name>.result.md) so the results don't
+        overwrite each other.
+     3. When every result is saved, in a fresh Claude Code session
+        here: "ingest the research".
 
      Shortcut (claude.ai Max/Team/Enterprise): if you have Research
      mode + the Filesystem connector, paste the brief into a
      Research-mode chat with Filesystem enabled and give it the
      absolute path to <game>/research_inbox/p1/. Result file is
      written directly -- no manual save. Add "don't summarize,
-     only put it in the brief file" to keep the chat clean.
+     only put it in the brief file" to keep the chat clean. That
+     covers one of your two tools; still run the brief in a second.
 
    Use a fresh session for ingestion -- it's the largest single context
    load this guide will see. Run P1 ingestion before P2 (P1 creates the
@@ -779,7 +789,7 @@ Drop zone: `<game>/research_inbox/p3/`.
 **Note for the user:**
 - The default `none` is fine. You can run research later by saying "research the puzzles" / "research everything you can" / etc.
 - Per-question research happens automatically and is cheap (1-3 messages per question) -- that's normal use.
-- Pick `handoff` if you have access to a deep-research tool (Claude Research -- included in every paid Claude plan -- or Gemini, ChatGPT, Perplexity) and want the heavy research to run there instead of in this chat.
+- Pick `handoff` if you can use deep-research tools (Claude Research -- included in every paid Claude plan -- ChatGPT Deep Research, Gemini Deep Research, Perplexity, or similar) and want the heavy research to run there instead of in this chat. Run each brief in at least two of them: one tool on its own can return a thin or partly invented result, and a second result is what lets ingestion catch it.
 
 ### Step 9 -- Confirmation + execution (REQUIRED)
 
@@ -863,7 +873,7 @@ If yes (and headroom is sufficient), the AI agent:
 5. If `[SAVE_DIR]` provided: scaffolds `<game>/save_watcher.py` from the documented pattern
 6. If TTS enabled and Windows: scaffolds `<game>/.claude/tts_hook.ps1`
 7. Adds the project to the workspace ledger (`<WORKSPACE_ROOT>/CLAUDE.md`)
-8. **Only if `[RESEARCH_MODE]` ≠ `none`:** runs the chosen research bundle (in-house) or generates the handoff briefs (handoff mode), announcing each URL or brief file as it's written. For in-house modes (`minimal` / `standard` / `deep`) stops when the budget is consumed.
+8. **Only if `[RESEARCH_MODE]` ≠ `none`:** runs the chosen research bundle (in-house) or generates the handoff briefs (handoff mode), announcing each URL or brief file as it's written. For in-house modes (`minimal` / `standard` / `deep`) stops when the budget is consumed. If any page was blocked during in-house research, write it to `<game>/research_inbox/manual/pages_to_save.md` and show the **Blocked pages** message from [`ingestion.md`](ingestion.md) step 12 before the Step 10 handoff.
 9. **Brief-artifact gate (handoff/deep modes only).** If `[RESEARCH_MODE]` is `handoff` or `deep`, verify on disk that `<game>/research_briefs/p1.txt` exists and is non-empty. If `[RUN_P2]` is yes, verify `<game>/research_briefs/p2.txt`. If `[RUN_P3]` is yes, verify `<game>/research_briefs/p3.txt`. **If any required brief is missing, do NOT print the Step 10 handoff message. Stop and report the missing artifact, then back up to the brief-generation sub-procedure of Step 8.** A handoff-mode setup that doesn't ship a P1 brief has not completed Step 8 even if the Step 9 summary table looks fully filled -- the variable-must-have-value enforcement catches missing answers but not missing artifacts; this gate catches the latter.
 
 10. **Stage 0 artifact gate (whenever `[STAGE0] = done`, all research modes).** Verify by per-file `Read` (same discipline as the brief gate -- never directory enumeration) that Step 6.7's two mandated artifacts landed on disk:

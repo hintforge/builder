@@ -92,7 +92,7 @@ It's also designed as a framework for **multi-contributor truth aggregation** --
   - **save-watcher** -- reads the game's save file at session start for location / inventory / state. Raw save fields are treated as unsafe until they are confirmed against the corpus's own tagged claims: a field name in a save is not a promise about what the value means, and the reader will not report one as a live fact on the strength of the field name alone.
 - Interactive tools per guide -- a guide can carry a planner built on its own corpus (skill trees, city layouts, character builds, species rosters, power budgets). Each is a single self-contained HTML file in the guide's `artifacts/` folder: it opens in any browser with no account, no install and no AI, and the corpus is where its numbers come from. Reusable tools ship with a published guide; anything generated from one player's save stays local.
 - Transparent file-scope design -- the framework instructs the agent to confine writes to the framework folder and the per-game folder; no telemetry, no daemons, no privilege elevation, no auto-commits.
-- Token-heavy operations (research, content sweeps) are opt-in and flagged before they run; the default is "ask as questions arise" rather than batching research up front. Deep-research handoff works with Claude's built-in Research, Gemini Deep Research, ChatGPT Deep Research, or Perplexity -- the wizard writes a brief to `<game>/research_brief.txt`, you run it in whichever tool, drop the result into `<game>/research_inbox/`, and a fresh session ingests it.
+- Token-heavy operations (research, content sweeps) are opt-in and flagged before they run; the default is "ask as questions arise" rather than batching research up front. Deep-research handoff works with Claude's built-in Research, ChatGPT Deep Research, Gemini Deep Research, Perplexity, or similar tools -- the wizard writes a brief to `<game>/research_brief.txt`, you run it in at least two of them, drop every result into `<game>/research_inbox/`, and a fresh session ingests and compares them.
 - Stale-session detection -- when a fresh session opens on a guide last played >30 days ago, the bot offers a controls + open-thread refresher before resuming. Default threshold 30 days, configurable; safe default is "yes refresh" if the user gives no answer.
 
 **Roadmap:**
@@ -162,14 +162,14 @@ The same check applies. Open a session inside your game guide folder and ask "wh
 
 The research cascade (P1, P2, P3) is the most token-intensive part of building a guide. P1 alone for a large open-world game can run to tens of thousands of tokens if handled locally. The recommended default is to hand this off to an external deep-research tool and bring the result back in.
 
-Supported handoff targets: Claude's built-in Research mode, Gemini Deep Research, ChatGPT Deep Research, Perplexity. Any tool that accepts a structured brief and returns a detailed result file works.
+Supported handoff targets: Claude's built-in Research mode, ChatGPT Deep Research, Gemini Deep Research, Perplexity. Any tool that accepts a structured brief and returns a detailed result file works. No single tool is the recommended one: **run each brief in at least two tools.** One tool's result can come back thin or partly invented, and only a second result lets ingestion catch it -- facts both results support are stronger, and facts only one found get checked.
 
 **Why this is the recommended path:** External deep-research tools are optimized for broad multi-source synthesis. Running P1, P2, and P3 inside a local agent session using a top-tier model is significantly more expensive for equivalent or worse coverage. Use the handoff path. Use a Sonnet-class (or equivalent) model at high reasoning effort locally for everything except the research itself.
 
 **Round-trip:**
 1. The setup wizard generates a research brief and writes it to `<game>/research_briefs/p1.txt` (`p2.txt` / `p3.txt` for the later phases).
-2. You paste the brief into your external deep-research tool of choice.
-3. Save the result file into `<game>/research_inbox/p1/` (or p2, p3 as appropriate).
+2. You paste the brief into at least two external deep-research tools.
+3. Save each result file into `<game>/research_inbox/p1/` (or p2, p3 as appropriate), with the tool's name added to the filename so the results don't overwrite each other.
 4. In a fresh session inside the game folder, say: `ingest the research`.
 5. The agent (running Sonnet-class at high reasoning effort) distributes facts from the result file into the corpus with source tags, spoiler classification, and structured-claim metadata.
 
@@ -260,7 +260,7 @@ This repo is the **builder** skill (authoring side). The runtime **reader** skil
 
 | File | Purpose |
 |---|---|
-| [`.agents/skills/hintforge/SKILL.md`](.agents/skills/hintforge/SKILL.md) | The skill manifest -- conventional path discovered by Claude Code, Codex CLI, and OpenClaw |
+| [`.agents/skills/hintforge/SKILL.md`](.agents/skills/hintforge/SKILL.md) | The skill manifest -- the conventional path Codex CLI and OpenClaw scan. Claude Code does not read `.agents/skills/`; every runtime installs the whole repo per [`docs/install/`](docs/install/) |
 | [`AGENTS.md`](AGENTS.md) | Repo-level agent pointer (cross-runtime convention) |
 | [`CLAUDE.md`](CLAUDE.md) | Framework definition + hard rules (the file your AI agent reads on startup) |
 | [`CONTEXT.md`](CONTEXT.md) | Glossary of Hintforge domain terms (corpus, vector extension, stitch, zipper, etc.) |

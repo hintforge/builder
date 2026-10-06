@@ -129,8 +129,10 @@ stage0 = yes
 #   minimal   -- ~5 messages; one source per category
 #   standard  -- ~20 messages; 1-2 sources per category, conflicts flagged
 #   deep      -- ~50+ messages; sweep everything reachable (Max/Team only)
-#   handoff   -- Claude writes a research brief to paste into Gemini Deep
-#               Research / ChatGPT / Perplexity; you bring results back and
-#               Claude ingests them in a fresh session. Cost externalized.
+#   handoff   -- Claude writes a research brief to paste into at least two
+#               deep-research tools (Claude Research, ChatGPT, Gemini,
+#               Perplexity, or similar); you bring every result back and
+#               Claude compares and ingests them in a fresh session.
+#               Cost externalized.
 
 research = handoff

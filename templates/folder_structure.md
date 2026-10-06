@@ -95,12 +95,13 @@ Skip if the game is fully linear with no missables (rare).
 
 ### `research_inbox/`
 
-Staging area for research result files awaiting ingestion. Two flavors of subfolder under `research_inbox/` carry two different shapes of artifact:
+Staging area for research result files awaiting ingestion. Three flavors of subfolder under `research_inbox/` carry three different shapes of artifact:
 
 - **Phase folders** -- `p1/`, `p2/`, `p3/` (and `p4/`, etc. for extended cascades). Consume **external-research-tool result files** (deep-research output produced from briefs in `research_briefs/`). Created by the wizard at scaffold time based on the planned cascade. Ingested via [`ingestion.md`](../ingestion.md)'s standard step 1 -> step 4 routing.
 - **Module folders** -- `module/` (created on demand by autonomous-sweep procedures, not at wizard scaffold time). Consume **framework-internal sweep artifacts** (currently `reddit_sweep.<game>.<ISO-date><N>.md` from [`reddit_sweep.md`](../reddit_sweep.md); future supplemental sweeps land here too). Ingested via ingestion.md's step 4b "Ingesting a reddit_sweep artifact" -- a frontmatter-aware alternate to the standard phase pipeline.
+- **Hand-saved pages** -- `manual/` (created on demand when ingestion asks the author to save pages that automated fetches could not reach). Holds the author's saved copies (PDF, HTML or Markdown) plus the `pages_to_save.md` checklist. Ingested via ingestion.md step 1's "Pages the author saved by hand" rule: each page confirms, corrects or fills the claims that cited its address.
 
-Both flavors share the same `_processed/` move-aside convention -- ingested files move to `<subfolder>/_processed/` so re-runs of "ingest the research" do not double-process them. The phase-vs-module distinction is preserved by which subfolder a file came from.
+All flavors share the same `_processed/` move-aside convention -- ingested files move to `<subfolder>/_processed/` so re-runs of "ingest the research" do not double-process them. The phase-vs-module distinction is preserved by which subfolder a file came from.
 
 ## Files at game-folder root
 
