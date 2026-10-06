@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Deep research runs in two tools; blocked pages go back to the author (v101, 2026-10-06)
+
+- **No single deep-research tool is the default any more.** The setup wizard (Step 8 and the Step 10 handoff), the new-user text, `setup_answers.txt` and the README ask the author to run each research brief in at least two deep-research tools, name several as examples without ranking them, and say why: one tool's result can come back thin or partly invented, and only a second result exposes it. Each result is saved under its own filename.
+- **Ingestion compares several results for one phase** (`ingestion.md` step 2). Agreement between results counts as corroboration, a fact only one result carries keeps that result's attribution, disagreements are checked or kept as contradicted, and a result that looks unreliable is named in the recap.
+- **Blocked pages are handed back to the author** (`ingestion.md` step 12, after any phase). When a page could not be fetched, ingestion writes a checklist to `research_inbox/manual/pages_to_save.md` and offers, in one message, two ways to get them: save the pages by hand (print to PDF, save page as, a tool the author already has, or one recommended Markdown clipper extension that needs no other app), or let the agent drive the browser, with a plain warning that this needs the author's permission and costs far more usage. In-house research modes show the same message at the end of setup. Hand-saved pages are ingested from the new on-demand `research_inbox/manual/` folder (`ingestion.md` step 1; `templates/folder_structure.md`).
+
+**Existing corpus impact.** No `corpus-core-version` bump. `research_inbox/manual/` is created only when needed. Results already ingested are unaffected; a second result for an already-ingested phase can be dropped into its phase folder and ingested like any other.
+
 ### Achievement completeness uses mechanical key comparisons (v99, 2026-09-30)
 
 Ingestion compares actual achievement entries against the retained source roster by platform id or name, checks duplicates separately, and saves the executed check plus missing/extra/duplicate output in a spoiler-tagged receipt. Achievement overlays must resolve individually to aggregation entries. Inspection and aggregate counts cannot certify completeness.

@@ -75,10 +75,11 @@ Fill in what you can. Each section has comments above it
                      e.g. "Mentor / Rival Captain".
    research       -- How much background research Claude does
                      up-front. Default "handoff" writes you a
-                     research brief to paste into a free deep-
-                     research tool (Gemini Deep Research, ChatGPT
-                     Deep Research, Perplexity) so the cost
-                     doesn't eat your Claude messages. Other
+                     research brief to paste into deep-research
+                     tools (Claude Research, ChatGPT, Gemini,
+                     Perplexity, or similar) -- use at least two,
+                     so one tool's mistakes get caught -- and the
+                     cost doesn't eat your Claude messages. Other
                      options: "none" (cheapest -- Claude looks
                      things up as you ask), "minimal", "standard",
                      "deep". See the "ABOUT THE RESEARCH HANDOFF"
@@ -259,20 +260,28 @@ What it does:
 
       ~/Documents/Guides/<game>/research_briefs/p1.txt
 
-   ...and tells you which external tool to paste it into,
-   based on your Claude tier:
+   ...and asks you to paste it into AT LEAST TWO
+   deep-research tools, for example:
 
-      Max / Team / Enterprise   Claude Research on claude.ai
-      Pro                       Gemini Deep Research (free)
-      Free / no Claude sub      Perplexity Deep Research
+      Claude Research on claude.ai (in every paid Claude plan)
+      ChatGPT Deep Research
+      Gemini Deep Research
+      Perplexity Deep Research
 
-   The expensive sweep happens on the external tool's
+   Any two you can use will do; several have free tiers.
+   Why two: one tool on its own can come back thin or with
+   made-up facts, and with nothing to compare it to, nobody
+   can tell. Claude compares the two when it reads them in.
+
+   The expensive sweep happens on the external tools'
    tokens, not yours.
 
 How to bring results back as a file:
 
-   1. The external tool finishes and gives you a long
-      writeup in your browser. Save the output -- any of
+   1. Each external tool finishes and gives you a long
+      writeup in your browser. Save each one as its own
+      file, with the tool's name in the filename so the
+      two don't overwrite each other. Any of
       .txt, .md, or .docx works. Two easy ways:
         a) Use the tool's "download" or "export" button
            if it has one.
