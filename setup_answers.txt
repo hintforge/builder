@@ -49,15 +49,23 @@ player_name =
 workspace_root =
 
 
-# === Save-watcher / game install paths (Step 3) ===
+# === Installed-game file check (Step 2.5) ===
+# If the game is installed on this computer (PC only), Claude can spend a few
+# read-only messages checking whether its files list exact item and ability
+# names. Nothing is extracted or copied. Consoles skip this automatically.
+# Options: yes / skip. Leave blank to be asked during setup.
+file_probe =
+
+# Where is the game installed? (full path, or "skip" / blank to let setup find it)
+game_install_dir = skip
+
+
+# === Save-watcher (Step 3) ===
 # ⚠️ Heads-up: setting up the save-watcher takes 10-30 messages on Pro.
-# Most users should leave both blank or write "skip".
+# Most users should leave this as "skip".
 
 # Where does the game save your progress? (full path, or "skip")
 save_dir = skip
-
-# Where is the game installed? (full path, or "skip" -- only useful with save-watcher)
-game_install_dir = skip
 
 
 # === Hint tiers (Step 4) ===

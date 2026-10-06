@@ -80,8 +80,9 @@ Before any other step, check whether the user has filled in `hintforge/setup_ans
 | `game_version` | `[GAME_VERSION]` | 1 |
 | `player_name` | `[PLAYER_NAME]` | 1.5 |
 | `workspace_root` | `[WORKSPACE_ROOT]` | 2 |
+| `file_probe` | `[FILE_PROBE]` | 2.5 |
+| `game_install_dir` | `[GAME_INSTALL_DIR]` | 2.5 (reused by Step 3, never re-asked there) |
 | `save_dir` | `[SAVE_DIR]` | 3 |
-| `game_install_dir` | `[GAME_INSTALL_DIR]` | 3 |
 | `enemy_tier` | `[ENEMY_TIER]` | 4 |
 | `puzzle_tier` | `[PUZZLE_TIER]` | 4 |
 | `personas` | `[PERSONA1]`, `[PERSONA2]`, `[DEFAULT_PERSONA]` | 5 |
@@ -100,7 +101,8 @@ Before any other step, check whether the user has filled in `hintforge/setup_ans
 - `personas = NameA / NameB` → split on `/`, trim, treat first as `[PERSONA1]` and `[DEFAULT_PERSONA]`, second as `[PERSONA2]`. Confirm in Step 9.
 - `tts = skip` → `[TTS_ENABLED] = false`, `[TTS_STYLE] = n/a`.
 - `tts = persona-matched` or `tts = generic` → `[TTS_ENABLED] = true`, `[TTS_STYLE]` set accordingly. Step 6 still runs to do the OS detection / voice selection live.
-- `save_dir = skip` and `game_install_dir = skip` → Step 3 fully skipped; record as `skipped (from setup_answers.txt)`.
+- `game_install_dir = <path>` → prefills `[GAME_INSTALL_DIR]` for Step 2.5 and skips that step's own locate-the-install-dir sub-step; Step 2.5's own ask still runs live (a path prefill answers "where," not "whether to probe"). `game_install_dir = skip` → no install-dir prefill; Step 2.5's ask still runs live.
+- `save_dir = skip` → Step 3's save-watcher setup is skipped; record `[SAVE_DIR] = skipped (from setup_answers.txt)`. (No longer paired with `game_install_dir` -- that key moved to Step 2.5.)
 - `research = deep` → still announce the cost estimate and confirm before running, even though pre-filled. Heavy ops always get one final live confirmation.
 - `run_p2 = skip` → `[RUN_P2] = false`. `run_p2 = yes` → `[RUN_P2] = true`. Ignored when `[RESEARCH_MODE]` is not `handoff` or `deep`.
 - `run_p3 = skip` → `[RUN_P3] = false`. `run_p3 = yes` → `[RUN_P3] = true`. Ignored when `[RESEARCH_MODE]` is not `handoff` or `deep`.
@@ -125,7 +127,8 @@ After Step -1 reads pre-fills and Step 0 confirms environment, the wizard collec
 - Step 1 -- `game_name`, `game_folder`, `game_platform`, `game_version` (`game_version_as_of` is auto-set to today, never asked)
 - Step 1.5 -- `player_name`
 - Step 2 -- `workspace_root`
-- Step 3 -- `save_dir`, `game_install_dir`
+- Step 2.5 -- `file_probe` (yes/skip only -- the probe procedure itself is not batchable, see Live-only steps below)
+- Step 3 -- `save_dir` (`game_install_dir` moved to Step 2.5; reused here, never re-asked)
 - Step 4 -- `enemy_tier`, `puzzle_tier`
 - Step 6 -- `tts`
 - Step 6.5 -- `ptt`, `ptt_hotkey`
@@ -133,6 +136,7 @@ After Step -1 reads pre-fills and Step 0 confirms environment, the wizard collec
 - Step 8 -- `research`
 
 **Live-only steps (sequential, after the batched ask):**
+- Step 2.5 -- install-file probe procedure (when `file_probe = yes`); read-only, ≤10 tool calls, runs after the batched ask and before Step 3
 - Step 5 -- persona research (when `personas = you pick`); needs bot reasoning between turns
 - Step 6.7 -- Stage 0 pre-research (when `stage0 = yes`); web search runs after the batched ask, output written to `stage0_priors.md` before Step 7
 - Step 7 -- subfolder shape; bot pre-populates from Stage 0 priors, user confirms/edits
@@ -273,6 +277,47 @@ AUTO-CONFIRM mode does not suppress this announcement -- it is a path-resolution
 
 If `Guides/` doesn't exist yet, create it as part of this step.
 
+### Step 2.5 -- Local ground-truth probe: install-file introspection (REQUIRED to ASK -- read-only, ≤10 tool calls)
+
+**Why this exists.** If the game is installed on this machine, its own shipped files sometimes carry exact, patch-current names and text (item names, ability names, localization strings) that are cheaper and more current than a web search -- and for a translated game, the game's own localization file is the only source guaranteed to match the exact shipped wording. Today nothing in the wizard looks at the installed game at all before research starts. This step closes that gap with a classification pass, not an extraction pass: it never unpacks, extracts, or caches game data. It also captures `[GAME_INSTALL_DIR]` -- the one and only step that does; every later step that wants the install directory reuses this step's value instead of asking again (see Step 3).
+
+**Platform gate (before asking anything).** If `[GAME_PLATFORM]` (captured in Step 1) is a console (PS/Xbox/Switch), silently record `[FILE_PROBE] = not-probed` (reason: console platform, no local file access) and continue to Step 3. Only PC platforms see the ask below.
+
+**Ask (PC platforms only):**
+- "Is the game installed on this machine? If so, I can spend a few messages -- read-only, nothing extracted or cached -- checking whether its files are usable as a research source. For a translated game this often surfaces exact item/ability/class names that wikis get wrong. (yes / **skip**)"
+- If skip, or the user says it isn't installed: record `[FILE_PROBE] = not-probed` and continue. Never a blocker.
+- **Prefill note:** `file_probe = yes` in `setup_answers.txt` skips only this ask, not the procedure below -- the probe still runs live and produces a real verdict (same pattern as Step 6.7's `stage0` prefill). `game_install_dir = <path>` in `setup_answers.txt` prefills the path and skips procedure sub-step 1 below.
+
+**If yes -- probe procedure (READ-ONLY, hard ceiling 10 tool calls total, no extraction):**
+
+1. **Locate the install directory.** Use the `setup_answers.txt` prefill if present; else check the default Steam library path (`steamapps/common/<name>`); if not found there, ask the user once for the path. Record the confirmed path as `[GAME_INSTALL_DIR]`.
+2. **List the top two directory levels only.** No recursive walk.
+3. **Classify by signature** against this table:
+
+   | Signature seen | Engine family | Verdict |
+   |---|---|---|
+   | `<Game>_Data/StreamingAssets/` with `.json`/`.txt`/`.csv` inside | Unity | `plaintext-rich` or `structured-extractable` |
+   | `Content/Paks/*.pak` | Unreal | `packed` |
+   | `*.pck` | Godot | `packed` |
+   | loose `.lua`/`.xml`/`.txt`/`.ini` data + localization folders | custom/older engines | `plaintext-rich` |
+   | only executables + opaque archives (`.dat`, `.pak`, `.assets`, no plaintext siblings) | any | `packed` or `opaque` |
+
+4. **Spot-check at most 2 candidate files**, localization first (`Localization/`, `Loc/`, `lang/`, `*en*.json|.csv|.po`): read the first ~50 lines to confirm plaintext and note what it enumerates (item names, ability names, dialogue keys, etc.).
+5. **Emit the verdict**: one of `plaintext-rich` / `structured-extractable` / `packed` / `opaque` / `not-probed`, plus a 1-3 line inventory (file paths + what they contain) and, when the game is translated, whether a source-language + English localization pair exists.
+
+**Hard guards:**
+- Read-only. No extraction, no cache builds, no tooling installs during setup -- a `packed` verdict is a finding, not a task; do not offer to unpack anything here.
+- The 10-call ceiling is a stop condition, not a target. If classification isn't clean by call 10, stop and record `opaque`.
+- **What this step's files can and cannot prove.** The game's shipped files are the same bytes every player of that build gets -- reading them tells you what content the game DEFINES (names, text, static data), never what state any specific save or session is CURRENTLY in. Nothing found in this step may be presented as live, current, or player-specific game state; it is definitional/static content only. This distinction is low-stakes for install files specifically, but it is the rule that any future step reading save data must inherit and never skip -- do not re-derive it per game.
+
+**Output:** capture `[FILE_PROBE]` (the verdict) and `[FILE_PROBE_INVENTORY]` (the 1-3 line summary) as wizard variables, shown inline at probe time. Persist them into `<game>/research_briefs/stage0_priors.md` when Step 6.7 writes that file -- the probe runs before `<game>/research_briefs/` exists, so it cannot write its own artifact yet. If Step 6.7 is later skipped, the wizard still writes a probe-only `stage0_priors.md` at the Step 6.7 position containing just this block. Also finalize `[GAME_INSTALL_DIR]` here -- this is the one step that owns that capture.
+
+**Auto-confirm / sandbox behavior:** under the benchmark auto-confirm directive this step resolves to **skip** (sandboxes have no game installed). `setup_answers.txt` gains an optional `file_probe` key (`yes` / `skip`, default `skip`), handled like the other Step -1 keys (see Edit 5 below).
+
+**Default for the first-user test:** yes (run it) when a PC install exists -- cost is small (≤10 read-only calls) and it raises the floor on Step 3's advisory, Step 6.7's priors, and Step 8's brief, mirroring Step 6.7's own "small cost, raises the floor" reasoning.
+
+**Future extension point -- not part of this step today.** Save-format classification (is the save plaintext, obfuscated, encrypted or compressed, and what its fields mean) is deliberately not done here: a save file's field names do not reliably say what the values currently mean, so that work needs its own validated design before any setup step reads saves. When it is ready, it EXTENDS this step -- a second read-only classification target, its own small call sub-budget, its own verdict variable -- rather than adding a sibling step.
+
 ### Step 3 -- Game install / save locations (REQUIRED to ASK -- answer is usually "skip"; ⚠️ token-intensive)
 
 > **⚠️ Heads-up for Claude Pro users -- strongly consider skipping this step.**
@@ -281,12 +326,13 @@ If `Guides/` doesn't exist yet, create it as part of this step.
 
 **Ask (optional -- and clearly marked as skippable):**
 - "Want me to set up a save-file watcher? It lets me know where you are in the game without you telling me, but it's the most expensive optional module to set up (estimate: 10-30 messages, varies a lot by game) and many games make this hard. Recommended: skip -- you can add it any time later. (yes / **skip**)"
+  - **If Step 2.5 produced a verdict, fold it into this ask's framing before asking (the recommendation itself doesn't change, only the framing):** `[FILE_PROBE]` = `plaintext-rich` or `structured-extractable` → append "-- for what it's worth, this game's files looked tractable when I checked earlier; still your call given the message cost." `[FILE_PROBE]` = `packed` or `opaque` → append "-- this game's files looked hard to work with when I checked earlier, which is one more reason to expect this to be slow." `[FILE_PROBE]` = `not-probed` → ask with the framing above unchanged. This is a soft, correlational signal about install files, not a claim about the save format itself -- do not word it as one.
 - If user chooses skip → record `[SAVE_DIR] = skipped` and move on.
-- If user chooses yes → "Where does the game save your progress?" and "Where is the game installed (optional, helps research)?"
+- If user chooses yes → ask "Where does the game save your progress?". **Do NOT ask where the game is installed if `[GAME_INSTALL_DIR]` is already set from Step 2.5** -- reuse it silently and tell the user what's being used ("Using `[GAME_INSTALL_DIR]` from the earlier check."). Only ask "Where is the game installed (optional, helps research)?" if Step 2.5 was skipped or came back `not-probed` and `[GAME_INSTALL_DIR]` is still unset.
 
 **Capture (only if not skipped):**
-- `[GAME_INSTALL_DIR]` -- research hint when looking up game-specific data
-- `[SAVE_DIR]` -- used to scaffold `save_watcher.py` in the per-game folder
+- `[GAME_INSTALL_DIR]` -- owned by Step 2.5; reused here when set, captured here only as the fallback described above.
+- `[SAVE_DIR]` -- used to scaffold `save_watcher.py` in the per-game folder. Always captured in this step; Step 2.5 does not touch save location.
 
 **OS-aware default suggestions (only shown if user opts in):**
 - Windows: `C:\Users\<user>\AppData\Local\<GAME>\` or `%APPDATA%\<GAME>\`
@@ -438,6 +484,8 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 **If yes -- procedure:**
 
 1. Run a web search on `[GAME_NAME]` (Wikipedia + Steam page + one community guide if available). Pull a description, genre tags, and any easily-visible content signals (weapon list length, ability tree presence, settings-menu coverage, control-rebind notoriety).
+
+   **If `[FILE_PROBE]` (Step 2.5) is `plaintext-rich` or `structured-extractable`:** read `[FILE_PROBE_INVENTORY]` before running the web search above. A local file that enumerates item/ability/class names authoritatively outranks a wiki guess for that category's `present`/coverage-estimate fields in the inventory below -- cite the local file path in the category's one-line rationale when it drove the classification. Scope the web search to what the files didn't answer: structural signals (game-type, dependency density, faction density, named-NPC density) still need external sources, since local files don't expose those. When `[FILE_PROBE]` is `packed`, `opaque`, or `not-probed`, run the web search exactly as below with no local-file input.
 
 2. Produce a **structural-priors block** with these required outputs:
 
@@ -640,13 +688,14 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
      - **Source-language set** -- dev-country language + top-3 player-region languages (used to enforce the non-English source floor below)
      - **Achievement stub count** -- REQUIRED at `corpus-core-version: 4` and later. State the `[ACHIEVEMENT_STUB_COUNT]` from Stage 0 -- the integer count of platform achievements the game ships, captured from the Stage 0 stub fetch and written to `research_briefs/achievement_stubs.md`. The researcher uses this count as the coverage target for Standing prompt #9 (Achievement coverage, below). When `[STAGE0] = skipped`, this field reads "stub list deferred to researcher -- fetch the platform's canonical achievement list as the first step of P1 research." When the game has no platform achievements (`[ACHIEVEMENT_STUB_COUNT] = 0`), state "no platform achievements -- skip Standing prompt #9 and write `achievements.md` at status: research-integrated with the honest empty-statement."
      - **Content categories inventory** -- REQUIRED. For each of the categories below, mark `present` / `absent` / `uncertain` with a one-line rationale and (when present) a coverage estimate (item count or system complexity): `weapons`, `cartridges/ammo`, `consumables`, `crafting_materials`, `abilities`, `upgrades`, `support_items`, `builds`, `controls`, `settings`. When `[STAGE0] = done`, this section is hard-coded from `stage0_priors.md`; the researcher confirms / corrects rather than re-deriving. Categories marked `present` get dedicated coverage in the chapter-organized facts section; categories marked `absent` are explicitly skipped so budget isn't wasted.
+     - **Local-file sourcing note** -- REQUIRED when `[FILE_PROBE]` (Step 2.5) is `plaintext-rich` or `structured-extractable`. State: "This game's own files were checked at setup and classified `[FILE_PROBE]` -- `[FILE_PROBE_INVENTORY]`. This is definitional/static content the game ships to every player, not evidence of any save's current state. Prefer these files over community wikis for exact item/ability/class names and text, especially for a translated game, where the game's own localization file is patch-current and wikis lag. Community sources remain the source for mechanics, strategy, and build advice the files don't cover." When `[FILE_PROBE]` is `packed`, `opaque`, or `not-probed`, omit this note entirely and proceed with standard web-sourced research.
 
    - **Chapter-organized facts** (rest of the researcher's output; after Architecture Summary): per chapter -- 1-2 lines of context, then facts as bullets. Each fact carries: `vector:` tag + `spoiler:` tag + per-fact source attribution. **Vector tag taxonomy** (twelve tags): `nav` (gate/area-traversal) · `puzzle` (solutions, mechanics) · `item` (weapons, consumables, key items) · `boss` (strategies, weaknesses) · `enemy` (non-boss patterns) · `lore` (story beats) · `controls` (keybindings, control remaps -- routes to `controls.md`) · `settings` (graphics/audio/accessibility -- routes to `settings.md`) · `build` (loadout strategies, weapon/ability combinations -- routes to `items/builds.md`) · `structure` (zone-graph edges, optional content registry entries, support topology, locks-and-keys -- integrator routes these to `nav/architecture.md`) · `missable` (overlay tag; combine as `vector: item, missable: yes`) · `mechanic` (FALLBACK only -- game-system rules not specific to one of the above; do not absorb `controls`/`settings`/`build` into this bucket). Standing prompts on every chapter: (1) What do mainstream English guides miss? (2) What exceptions exist to apparent rules? (3) Mechanism not inventory -- *why* and *what triggers*, not just *what is here*. (4) What tapes, documents, weapon schematics, or key items have a limited pickup window? Mark each `missable: yes` with the latest safe chapter. **(5) Builds: what recommended loadouts/playstyles do mainstream guides converge on, and where do they disagree? Cover at least one ability-focused, one weapon-focused, and one hybrid build when the game supports them. (6) Controls: what control remaps (PC keyboard/mouse and controller) are commonly recommended, and why? Include accessibility-rebind discussion when sources cover it. (7) Settings: which graphics/audio/accessibility settings meaningfully affect difficulty or perception? (Motion blur, FOV, HDR, colorblind mode, subtitle behavior, controller deadzones, etc.) (8) Unlock chains -- for every unlockable item (weapon, mod, ability, upgrade, consumable schematic, key item, cosmetic), capture the *complete* acquisition sequence at container-level granularity: the specific container or source (named chest, NPC trade, drop pool, blueprint pickup, quest reward), its tier/state where containers are tiered (bronze/silver/gold chest, common/rare drop, weighted table), the access conditions inside the parent location (which gate / puzzle / sub-zone reached), AND every alternate path if more than one source exists. "X is from Polygon 10" / "X drops in the Forest" is insufficient -- required form is "X is in Polygon 10 silver chest, accessed after the magnetic-platform puzzle" or "X drops from Forest Wolf-variant rare table, ~3% rate." Unlock-chain granularity is structurally absent from item-organized sources (weapon upgrade tables, build guides, gear lists) -- those organize "what does this item do?" not "what is in this container?" The chest-tier / container-tier data lives on location-organized sources (per-dungeon walkthroughs, in-game collection-UI tabs, Fandom location pages, completion-percentage guides). For every unlockable item, route at least one source through a location-organized guide. If a container's tier or sub-location cannot be recovered, mark it explicitly as `[unlock-chain incomplete -- container/tier unknown]` rather than emitting the looser "from location X" form as if complete. Every permutation matters: if a mod can be acquired from Chest A in Zone 10 OR a separate world-pickup in Zone 6, both must be captured. (9) Achievement coverage (required at `corpus-core-version: 4` and later). The corpus's `<game>/research_briefs/achievement_stubs.md` lists every achievement the game ships, fetched at Stage 0 from the platform's canonical list. For each achievement: (a) capture the trigger condition at the same container-level granularity required for unlock chains in Standing prompt #8 -- not "complete the side quest" but "complete side quest X via dialogue branch Y at NPC Z, requires item W from chest in Zone 10 silver tier"; (b) capture the PoNR window if missable -- the latest gate/chapter/scenario beat where the trigger is still reachable; (c) capture prerequisites -- other achievements, items, story flags, build states that must be in place first; (d) flag achievement-name spoilers when the platform's hidden flag is set. Achievement names cited verbatim are acceptable (they're factual lookup keys); developer-authored description text must be paraphrased (publisher IP). The researcher's output must include an "Achievement Coverage" section near the end of the result file listing every stub-file entry with one of three resolutions: **resolved** (paragraph-grade trigger captured with prereqs and PoNR window), **deferred** (entry name + reason, e.g. "DLC-locked, P3 scope" or "online-only, single-player corpus"), or **unreachable** (entry name + what blocked research). DLC scope discipline preserved per the existing P1 brief's DLC rule: DLC achievements stay in P3 scope; the Stage 0 stub fetch captures them but P1's coverage check covers base-game only. The researcher does not need to know the trigger-type taxonomy; classification happens at ingestion (see [`ingestion.md`](ingestion.md) step 8). The researcher's job here is to capture the trigger / PoNR / prereqs / hidden-name-flag for each stub.**
 
    - **Source diversity floor** (per topic, not per brief):
      - **Minimum 5 independent sources** before any fact is marked confirmed.
      - At least one source from each of three classes: (a) reference wiki, (b) community forum / Reddit / Steam Community guide, (c) video walkthrough or speedrun route (transcribe relevant segments).
-     - **Non-English sources required** when the game's developer is non-Anglophone, when the game's primary community is non-Anglophone, or when English coverage is known-thin. Russian StopGame.ru / DTF.ru / VK groups for Russian-developed games; Japanese 2ch / wiki.gg-jp for Japanese; gry-online.pl for Polish; etc.
+     - **Non-English sources required** when the game's developer is non-Anglophone, when the game's primary community is non-Anglophone, or when English coverage is known-thin. Russian StopGame.ru / DTF.ru / VK groups for Russian-developed games; Japanese 2ch / wiki.gg-jp for Japanese; gry-online.pl for Polish; etc. **When Step 2.5's `[FILE_PROBE_INVENTORY]` names a source-language + English localization pair, that pair satisfies part of this floor directly -- cite it as a `datamining`-class source in the per-fact attribution (see Output format below) instead of re-deriving the same names from a web search.**
      - Datamining and modding-community sources (Nexus Mods comments, modder Discords, deep Reddit threads beyond top-voted) when the topic is mechanic-level.
      - Top-3 English search hits are the floor, never the ceiling.
 
@@ -806,8 +855,9 @@ About to set up:
   Version as of:    [GAME_VERSION_AS_OF]                                  ← Step 1 (auto, today's date)
   Workspace root:   [WORKSPACE_ROOT]         (from setup_answers.txt)
   Player name:      [PLAYER_NAME]            (from setup_answers.txt)     ← Step 1.5
+  File probe:       [FILE_PROBE]                                         ← Step 2.5 (or "not-probed")
+  Game install:     [GAME_INSTALL_DIR]       (from setup_answers.txt)     ← Step 2.5 (often "not-probed"; reused by Step 3)
   Save dir:         [SAVE_DIR]               (from setup_answers.txt)     ← Step 3 (often "skipped")
-  Game install:     [GAME_INSTALL_DIR]       (from setup_answers.txt)     ← Step 3 (often "skipped")
   Enemy tier:       [ENEMY_TIER]             (from setup_answers.txt)     ← Step 4
   Puzzle tier:      [PUZZLE_TIER]            (from setup_answers.txt)     ← Step 4
   Persona 1:        [PERSONA1]                                            ← Step 5 (or "none")

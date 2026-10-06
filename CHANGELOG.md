@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Setup checks the installed game's own files (v102, 2026-10-06)
+
+- **New wizard Step 2.5, between Step 2 and Step 3.** On a PC, setup asks whether the game is installed on this machine and, if so, spends at most 10 read-only tool calls classifying its files: `plaintext-rich`, `structured-extractable`, `packed`, `opaque` or `not-probed`, plus a one-to-three-line inventory of what the readable files list. Nothing is unpacked, extracted or cached; consoles skip the step silently. The result is shown at the time and saved into `research_briefs/stage0_priors.md`.
+- **Step 2.5 now owns the install folder.** `[GAME_INSTALL_DIR]` is captured there and reused by Step 3, which no longer asks for it a second time. `setup_answers.txt` gains a `file_probe` key (yes / skip, blank to be asked) and moves `game_install_dir` under the new step.
+- **Research uses what the check found.** When the files are readable, Stage 0 grounds its content inventory in them, the P1 brief gains a local-file sourcing note, and a source-language plus English localization pair counts toward the non-English source floor as a `datamining`-class source. The step states plainly that shipped files prove what the game defines, never what any save currently holds.
+
+**Existing corpus impact.** None. No `corpus-core-version` bump; existing guides are not re-checked.
+
 ### Deep research runs in two tools; blocked pages go back to the author (v101, 2026-10-06)
 
 - **No single deep-research tool is the default any more.** The setup wizard (Step 8 and the Step 10 handoff), the new-user text, `setup_answers.txt` and the README ask the author to run each research brief in at least two deep-research tools, name several as examples without ranking them, and say why: one tool's result can come back thin or partly invented, and only a second result exposes it. Each result is saved under its own filename.
