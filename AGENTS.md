@@ -4,7 +4,7 @@ This repository is the **Hintforge builder** skill -- a setup-side framework for
 
 ## Skill location
 
-The skill lives at [`.agents/skills/hintforge/SKILL.md`](.agents/skills/hintforge/SKILL.md). This path is read identically by Claude Code, Codex CLI (which scans `.agents/skills/` from cwd up), and OpenClaw.
+The skill's manifest lives at [`.agents/skills/hintforge/SKILL.md`](.agents/skills/hintforge/SKILL.md). Codex CLI and OpenClaw scan `.agents/skills/` folders, but that folder alone cannot run a procedure: the root `SKILL.md` links to procedure files beside it, so every runtime installs the whole repo. Claude Code does not read `.agents/skills/` at all: clone the repo into `~/.claude/skills/hintforge` as described in [`docs/install/claude-code.md`](docs/install/claude-code.md). Install steps for every runtime: [`docs/install/`](docs/install/).
 
 ## Companion skill
 
