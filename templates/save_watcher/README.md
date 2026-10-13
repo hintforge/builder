@@ -71,12 +71,6 @@ def find_strings(buf):
 
 Then look for known keys (`World`, `Sublevel_*`, persona names, equipped slot names) by string prefix. This is the most common pattern for UE4/UE5 single-player titles.
 
-### Pattern -- archive with JSON state and blueprint identifiers
-
-Some saves are ZIP-compatible archives containing separate header, player-state and party/unit JSON members. Inspect the member list first, then read only the bounded members needed for the query; do not unpack an entire save by default. Record which layer each value comes from, its timestamp/campaign, and the field's documented meaning. Same-named fields across layers are not interchangeable.
-
-A blueprint GUID/key is an identifier, not a player-facing name or stat. Resolve it from the installed game's own blueprint/localization catalog when that catalog exists; unknown keys remain unresolved identifiers. Keep installed definition data separate from current save state, and validate at least three player-visible facts against the matching save/screen before calling the mapping trustworthy. Summary disclosure uses the reader's default-deny and two-signal gate; a raw archive member is never automatically spoiler-safe. This is a discovery pattern, not a generic decoder or promise that every archive has these members.
-
 ### Pattern 3 -- Encrypted / proprietary binary
 
 **Run these four checks before you classify a save as Pattern 3.** "No readable strings in the first N KB, and the header matches no compression magic" is the usual reason a save gets filed here, and it is not sufficient: it separates *not plaintext* from *plaintext*, and says nothing about encrypted vs obfuscated vs compressed. Obfuscation (a fixed XOR keystream, a byte rotation, a counter) is far more common than encryption in single-player games, and it is readable in an afternoon. Each check is minutes of work and any one of them can settle it:
@@ -90,6 +84,16 @@ A save that passes all four -- no text decode, no shared keystream, no identical
 - **Skip.** Just tell Claude your location at session start. This is the recommended answer for this case -- the cost/benefit rarely justifies the other two options.
 - **Find a community decrypter.** Mod scenes for popular games often have one. Cite the source in your save_watcher.py.
 - **Reverse-engineer.** Big project. Don't do this for a guide -- only if you're already modding the game.
+
+### Pattern 4 -- Archive with blueprint/localization-key resolution
+
+Some saves are ZIP-compatible archives containing separate header, player-state and party/unit JSON members. Inspect the member list first, then read only the bounded members needed for the query; do not unpack an entire save by default. Record which layer each value comes from, its timestamp/campaign, and the field's documented meaning. Same-named fields across layers are not interchangeable.
+
+A blueprint GUID/key is an identifier, not a player-facing name or stat. Resolve it from the installed game's own blueprint/localization catalog when that catalog exists; unknown keys remain unresolved identifiers. Keep installed definition data separate from current save state, and validate at least three player-visible facts against the matching save/screen before calling the mapping trustworthy. Summary disclosure uses the reader's default-deny and two-signal gate; a raw archive member is never automatically spoiler-safe. This is a discovery pattern, not a generic decoder or promise that every archive has these members.
+
+**Resolve each layer explicitly:** archive member -> exact blueprint ID -> localization key -> display string. A catalog may combine the middle stages, but record which lookup supplied each stage and the catalog/locale/version used. Never assume the same identifier denotes the same current state across save layers.
+
+**Check four cases before trusting an implementation:** a known ID resolving cleanly; a blueprint ID with no matching localization key; a stale or foreign-locale catalog returning a wrong/missing string; and an ID absent from the archive's index. Retain an unresolved identifier and its failed lookup rather than guessing a name. These are implementation fixtures, not a claim that a decoder has been built.
 
 ## Avoid these traps
 

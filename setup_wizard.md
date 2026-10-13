@@ -739,6 +739,7 @@ Run pre-research before Step 7's category classification. Use its findings to co
      5. Flagged at least one common-knowledge rule that has documented exceptions.
      6. Covered late-game base-game content where it exists; did not stop at the early game. (DLC content is out of P1 scope by the DLC scope discipline -- it's covered in P3.)
      7. Every unlockable item has an unlock chain captured at container-level granularity (specific chest/tier/drop-pool -- not just parent location). Items where only the looser "from location X" form survived sources are explicitly marked `[unlock-chain incomplete]`, not silently emitted as complete. (Standing prompt 8.)
+     8. Accounted for every supplied, recalled or found companion tool in the readable-source lists or `## Sources found but not read`, preserving coverage evidence, uncertainty and access-check status. For each in-scope collectible category, reported the expected total when known, located count, usable locations/access conditions and explicit remaining gaps; unread sources do not count as located items or satisfy class (d). An honest empty unread-source section is valid. P2/P3 repeat this check within their own selected scope.
 
    - **Internationalization rule** -- ≥1 non-English source per chapter area; drawn from the source-language set declared in the Architecture Summary. LLM translation is acceptable; flag translated facts with `[translated from: <lang>]`. "Checked, nothing English missed" is a valid positive finding. Padding with low-quality sources to hit a quota is not.
 

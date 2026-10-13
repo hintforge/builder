@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Explicit research completion check and archive-resolution fixtures (v104, 2026-10-13)
+
+- The research brief's numbered self-check now explicitly accounts for companion-tool dispositions, location totals/counts/gaps and readable class (d), including honest empty results and phase-scoped P2/P3 propagation.
+- Save-watcher Pattern 4 explicitly records the archive-to-blueprint-to-localization-to-display chain and four success/failure fixtures. Catalog/locale/version evidence and unresolved identifiers remain visible; no generic decoder is introduced.
+
+**Existing corpus impact.** No format bump or automatic migration. New research and save-watcher implementations use the explicit checks; existing guide content and live save mappings are not re-certified.
+
+
 ### Traceable research, direct-repair classification and separate relationship audits (v103, 2026-10-13)
 
 - Research briefs request exact numbered page references per fact, readable location inventories, companion-tool discovery and explicit unread-source metadata. Ingestion records a read-only citation receipt, preserves source applicability and supports a bounded directed location pull with normal claim gates.
