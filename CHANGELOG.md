@@ -4,6 +4,16 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Traceable research, direct-repair classification and separate relationship audits (v103, 2026-10-13)
+
+- Research briefs request exact numbered page references per fact, readable location inventories, companion-tool discovery and explicit unread-source metadata. Ingestion records a read-only citation receipt, preserves source applicability and supports a bounded directed location pull with normal claim gates.
+- Doctor stages every new or meaning-changing claim for the existing spoiler classifier before writing, including single-claim repairs, and records the invocation and returned counts. Re-read CHECKPOINT before edits to preserve concurrent work.
+- Stitch requires corroborated taxonomy edges and a separate row/audit for each independently testable relationship. `Related DEP(s)` is optional; existing six-column tables remain valid. Evidence-backed name collisions route to targeted repair; a completed zero-edge initial audit is valid.
+- Builder references resolve from the full framework root in both flat and nested installs. Existing-guide player questions route to the reader; the wizard's gameplay fallback offers research, waits for acceptance, answers, then persists.
+
+**Existing corpus impact.** No format bump or automatic repair. The next ingestion/doctor pass can add `limitations.md`'s Companion tools section when evidence exists. New optional relationship links do not force table migration. The next scoped/full audit follows the revised checks; prior coverage and tag claims are not retroactively verified.
+
+
 ### Setup checks the installed game's own files (v102, 2026-10-06)
 
 - **New wizard Step 2.5, between Step 2 and Step 3.** On a PC, setup asks whether the game is installed on this machine and, if so, spends at most 10 read-only tool calls classifying its files: `plaintext-rich`, `structured-extractable`, `packed`, `opaque` or `not-probed`, plus a one-to-three-line inventory of what the readable files list. Nothing is unpacked, extracted or cached; consoles skip the step silently. The result is shown at the time and saved into `research_briefs/stage0_priors.md`.

@@ -9,6 +9,8 @@ This procedure runs in a **fresh session inside the game folder** after at least
 
 ## Two separate passes, two separate triggers
 
+Procedure map: [Zipper](#phase-a----zipper-reconciliation) · [Stitch](#phase-b----stitch-edge-synthesis) · [Phase state](#checkpoint----phase-state-and-readiness) · [Session steps](#session-shapes) · [Scope limits](#what-is-out-of-scope).
+
 Stitch and zipper are triggered independently. Running them together is the default recommendation, but either can run alone:
 
 - `"run stitch"` -- edge synthesis only
@@ -96,9 +98,13 @@ Stitch writes only edges where the corpus already documents the dependency clear
 
 Example: a mechanics file documents that overloading a relay system disrupts nearby electrical systems. A separate navigation file documents that a generator sequence requires uninterrupted electrical state. Two files, different directories, overlapping state-space -- write the edge.
 
+**Interpretation-governing taxonomy also meets the write threshold.** A type or classification distinction qualifies when it changes which rule applies in another topic directory and is independently corroborated in two or more cited files across two or more topic directories. The same per-edge value audit applies; vocabulary overlap alone is not a dependency. Positive: corroborated object variants change eligibility for a resource rule in another file. Negative: two files share a noun but imply no different behaviour.
+
 ### Per-edge convergence audit (mandatory)
 
 Convergence on topic is not the same as convergence on value. Two files may both mention "Solomorne's recruitment zone" and one says zone X while the other says zone Y -- the topic converges, the value does not. Stitch must check the values, not just the topics. This makes stitch the cascade's audit pass: not just an edge writer, but the procedure that surfaces intra-corpus inconsistencies that ingestion can't see.
+
+**Decompose independently testable relationships.** If one relationship can be true while another in the same cluster is false, each gets its own DEP ID, cited sources and convergence audit. An indivisible relationship remains one row. An optional `Related DEP(s)` column can link facets of a cluster; every referenced DEP ID must resolve in this file. It is not a new required column and does not force migration of existing tables.
 
 For each edge -- both new candidates and existing edges already in `dependencies.md`:
 
@@ -119,6 +125,8 @@ The build is not done until stitch has either written all eligible edges or surf
 **Everything else is skipped silently.** Single-source mentions; two mentions within the same directory; dependencies inferable only from a shared named entity (same NPC, same currency); proximity-only co-occurrence -- none of these are surfaced to the user as proposals. The prior "medium confidence -- ask the user" flow produced rubber-stamp confirmations that did not actually screen for edge quality, and surfacing the proposal text leaks gameplay spoilers in chat (see Chat output discipline below). If a borderline case becomes important later, a future stitch pass over a richer corpus will pick it up at the write threshold.
 
 Skipped edges are not logged in `dependencies.md` or in chat. The harness changelog in CHECKPOINT may carry a one-line aggregate ("N borderline candidates skipped -- single-source") if the contributor would benefit from knowing the corpus is close but not converged. Never enumerate skipped edges individually; that re-introduces the spoiler-leak the threshold was raised to prevent.
+
+**Route evidence-backed name collisions, not ordinary skips.** When the corpus itself suggests two names may identify the same entity, or supplies another unresolved reconcilable inconsistency below the write threshold, preserve a count by reason and recommend doctor Branch C. Use an aggregate such as `N single-source skips; M possible name-collision skips -- targeted repair recommended` in the recap/changelog; no entity names or skipped-edge descriptions in chat. No supporting corpus passage means an ordinary skip, never a guessed collision.
 
 ### Output: `dependencies.md` + inline cross-refs
 
@@ -197,7 +205,7 @@ The flag resets to `false` when stitch completes.
 1. User opens a fresh session inside the game folder and says "run stitch" (or continues from zipper in the same session if running both and corpus is small enough).
 2. Model reads CHECKPOINT: confirms zipper has run (or user has explicitly accepted running stitch on an un-zippered corpus). Reads `stitch_scope:` if set.
 3. **Corpus size check (mandatory).** Scans file list, reports total count and approximate KB. Proceeds with full pass by default regardless of size.
-3b. **Dependencies-file structural lint (mandatory).** Before reading corpus content, verify `dependencies.md` table integrity. For each `|`-delimited markdown table in the file, count cells in the header row and confirm every data row has the same cell count. Mismatched rows are usually edges written under the wrong table's schema (e.g., a 6-column cross-system edge appended into a 5-column missable/sequencing table). Surface mismatches in chat with file:line and the column-count delta; do not auto-fix during stitch -- flag for the user or a doctor branch C repair. **Why this step exists:** stitch's per-edge audit reads edge *content* but not table *structure*; a structurally misplaced row can survive multiple stitch passes silently. A one-shot column-count check at read-time catches this class of defect before it propagates into the audit.
+3b. **Dependencies-file structural lint (mandatory).** Before reading corpus content, verify every `|`-delimited table in `dependencies.md`: each data row must have the same cell count as its header. Report mismatches with file:line and the column-count delta. Do not auto-fix during stitch; flag for the user or a doctor branch C repair.
 
    Implementation recipe (bash/git-bash, one line per table):
    ```
@@ -223,7 +231,7 @@ The flag resets to `false` when stitch completes.
 
    Two anchors are what make the endpoint check usable, and both were established by running it across every available corpus before it shipped. **Match only a declared edge, not any parenthetical:** a node file writes its edges as a marked-up `(from, to)` pair under its outgoing-edges heading, while ordinary prose is full of unmarked pairs -- a sector described as `(lift, southeast)`, a pickup tagged `(optional, item-pickup)`. Matching bare parentheses reported a false positive in three of four corpora; requiring the code-span markup left exactly one finding, and it was the real broken edge. **Then require the origin to be known:** report a target only when the id it was declared *from* is one the architecture already recognizes, and match ids on word boundaries so a short id does not match as a substring of an unrelated word.
 
-   Report both classes with file:line in the same chat surface as 3b, and do not auto-fix: a dangling reference is either a missing file (content work) or a stale pointer (repair work), and stitch cannot tell which. Hand them to the user or to a doctor branch C repair. **Why this step exists:** without it a corpus can pass a full zipper survey and a full stitch pass, be declared finished, and still carry a reference that resolves to nothing -- the defect surfaces only later, when a player asks about the target and the lookup comes back empty.
+   Report both classes with file:line alongside 3b. Do not auto-fix a dangling reference: it may indicate missing content or a stale pointer. Flag it for the user or a doctor branch C repair.
 
 4. Model reads corpus files per scope. Two sub-passes:
    - **Re-audit existing edges:** For each row already in `dependencies.md`, run the per-edge convergence audit (open cited sources, verify specific values). Surface contradictions to `## Corpus inconsistencies`.
@@ -233,7 +241,6 @@ The flag resets to `false` when stitch completes.
        - If the match supports the claim, add the file to the source column (an uncited supporting source strengthens the edge -- audit miss).
        - If the match contradicts the claim, treat as a corpus inconsistency: add a row to `## Corpus inconsistencies` per step 5b discipline and leave the edge in place pending resolution.
        - If the match is a different legitimate use of the same string (same NPC name appearing in a non-related context), note it inline in the audit trail and move on.
-     **Why this step exists.** The per-edge audit confirms the edge agrees with its cited sources; it does NOT check whether the broader corpus disagrees. A high-confidence edge can ship with a contradiction lurking one file away. The grep is mechanical, cheap (one query per claim value), and catches the inverse defect class.
 5. **Completion gate (mandatory).** Before writing the run-log row or CHECKPOINT entry, reconcile audits-done vs edges-in-dependencies:
    - Re-read `dependencies.md` and extract every edge ID (e.g. `grep -oE '^\| [A-Z][A-Z][A-Z]-[0-9]+' dependencies.md`).
    - Compare that list against the edges the re-audit sub-pass actually opened sources for. The model must be able to enumerate which edge IDs were audited; if any edge in dependencies.md is missing from the audit list, the audit is incomplete.
@@ -248,23 +255,25 @@ The flag resets to `false` when stitch completes.
    - Edit the wrong source to match the authoritative value. If the edge text itself is wrong, edit the edge text and propagate to inline cross-refs.
    - Remove the inconsistency row from `## Corpus inconsistencies`.
 
-   **Why auto-resolve instead of deferring.** The completion gate (sub-step 5a) is the structural fix that guarantees audit exhaustiveness -- not the phase separation. Once the gate confirms every edge was audited, resolution can proceed safely because the walk is already done. Deferring to a separate trigger adds a user round-trip with no decision value; the authoritative source is almost always clear from the inconsistency description, and the user reviews the diff after the fact either way.
 
    5c. **Propagation check (mandatory after every edge-text correction in 5b).** When step 5b edits an edge's text (not just a source file) to replace a wrong value with the authoritative one, the wrong value may live in inline cross-refs, sibling-file summaries, and unrelated-looking cross-references scattered across the corpus. The audit cannot reach these because its read scope is `(edge × cited-source)` -- inline propagation surfaces are not part of any edge's cited list. For each edge-text correction:
-   - Capture the literal old value being replaced (e.g. `"Cluster bolt"`, `"Polymer Jelly scarcer"`, `"E39 permanently locks"`).
+   - Capture the literal old value being replaced (e.g. `"<old-item-name>"`, `"<old-resource-claim>"`, `"<gate-id> permanently locks"`).
    - `grep -rn "<old-value>" <corpus-root>` -- exclude `_processed/`, `research_inbox/`, `research_briefs/`, `.claude/`.
    - For every match: classify as (a) update to new value (the same wrong claim propagated -- fix it), (b) different legitimate use of the same string (leave alone, note the disambiguation in the audit trail), or (c) corpus inconsistency that needs its own row in `## Corpus inconsistencies` (when the match exposes a second contradiction the original audit didn't catch).
    - Track every match + classification in the per-edge audit trail. The classification IS the discipline -- "I greppped and found nothing" without showing the matches is not sufficient.
 
    **Propagation completion gate.** Before proceeding to 5d, the completion gate (5a) extends: in addition to `audits-done == edges-in-dependencies`, the model must enumerate `propagation-done == edge-text-corrections-in-5b`. Every 5b edit that changed an edge's text must have a corresponding grep run with classified matches. If any 5b edit lacks a propagation grep, return to 5c for that edit. Do not proceed to 5d until both lists match.
 
-   **Why this step exists.** The "propagate to inline cross-refs" clause was previously buried as a comma-clause inside 5b. Empirically dropped in multiple stitch sessions where an edge text was corrected but the wrong value continued to live in inline cross-refs across the corpus. The cooperative read mode of the per-edge audit does not naturally transition into the adversarial read mode propagation requires; promoting it to a mandatory mechanical sub-step with its own completion gate is the structural fix.
 
    5d. **Write run log + CHECKPOINT.** Add a row to `dependencies.md` stitch run log -- include the count from step 4's audit in the `Inconsistencies surfaced` column (count the inconsistencies found, even if they were resolved in 5b). Update `## Phase state` in CHECKPOINT: `stitch: complete YYYY-MM-DD`, `stitch_stale: false`, `stitch_scope: full` (or scoped list). Add `## Harness changelog` entry listing DEP-IDs written (IDs only -- no descriptions), inconsistencies found and resolved, plus an optional aggregate skip count if borderline candidates were common.
 
 6. Chat reply at end of session: bare completion line per **Chat output discipline** above. No edge tables, titles, or rationales.
 
 ---
+
+**Audited-zero completion.** A full audit with zero candidate/written edges satisfies the existing completion gate and phase-state update; report `Stitch complete. 0 edges written.` Do not skip the initial audit because the corpus is small. This does not broaden any later unchanged-input no-op exception.
+
+**Branch and concurrent-write scope.** On a git-backed guide, inspect the current branch at orientation and disclose a non-default branch; any completion statement names where the work landed. Never switch, merge or commit on the player's behalf. Re-read CHECKPOINT immediately before editing it and preserve any other session's changes.
 
 ## Builder/reader split
 

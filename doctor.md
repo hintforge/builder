@@ -4,13 +4,15 @@ This procedure runs on an existing, instantiated guide when something is wrong, 
 
 > **Trigger-phrase note.** Avoid the bare "run the doctor" -- Claude Code's built-in `/doctor` CLI health-check command collides with that phrasing and the agent will route to the wrong place. The "doctor hintforge" verb-plus-skill-name form is the unambiguous primary; the reader skill's mismatch-warning text uses it.
 
-> **Why this is its own file.** Setup, ingestion, and stitch-and-zipper each assume a clean entry point: setup assumes nothing exists, ingestion assumes a fresh research result, stitch-and-zipper assumes a finished P1-P3 pass. None of them handle "the guide has populated state and something is wrong, stale, or incomplete." Doctor is the catch-all for that case -- before, during, or after the research cascade. Most doctor runs happen post-instantiation (a finished guide drifting against a new framework version or game patch), but mid-cascade use is supported: a format bump landing between P1 and P2, or a structural repair (e.g. scaffolding an entity-class folder for fragmented companion content) before the next phase compounds the debt.
+> **Scope.** Use Doctor on an instantiated guide before, during, or after the research cascade: format migration, game-version drift, or targeted structural/content repair. It does not require a finished cascade.
 
 > **What this file is not.** Not a setup rerun, not a full ingestion, not stitch-and-zipper. Doctor dispatches to those when warranted but never replays them blindly.
 
 > **Compaction expectation:** UNEXPECTED by default -- most doctor branches are targeted (a specific stale file, a single format-bump field, a known drift). A compacting doctor run means the branch is too broad for the scope label. EXPECTED only for Branch C full-corpus migrations (e.g. v4 → v5 entity-overlay migration), which legitimately need ingestion-class handling. See [`compaction_policy.md`](compaction_policy.md).
 
 ## Pre-flight
+
+Procedure map: [Manifest and triage](#procedure) · [Discipline](#discipline-rules) · [Regeneration safety](#regeneration-safety).
 
 - The session is **fresh** and opened **inside the game folder** (`Guides/<game>/`), not at workspace root or inside the framework folder. Framework files this procedure reads (`docs/corpus-format.md`, `CHANGELOG.md`, templates) come from the running skill, not a path relative to the guide.
 - The guide has already been instantiated (`architecture.md` exists, `CHECKPOINT.md` exists, at least one content subfolder has been populated). If those aren't present, redirect the user to `setup_wizard.md` or `ingestion.md` and stop.
@@ -97,8 +99,8 @@ Branch A does not invent content. If a bump introduced a new universal-core fiel
 
 1. Characterize the gap with the user: symptom, file, fact. Read the affected files before proposing anything.
 2. Pick depth of fix:
-   - **Wrong fact / single claim** -> edit in place with corrected `_source:` line.
-   - **Missing facts, scope <= one file** -> web fetch if needed, write corrections, run the spoiler-classification sub-agent from [`ingestion.md`](ingestion.md) step 3 over the new facts.
+   - **Wrong fact / single claim** -> stage the corrected claim and `_source:` line, classify it under the mandatory receipt below, then edit in place.
+   - **Missing facts, scope <= one file** -> web fetch if needed, stage the corrections, run the spoiler-classification sub-agent from [`ingestion.md`](ingestion.md) step 3 over the new facts, then write the returned classifications with the receipt below.
    - **Missing facts, scope > one file or genuinely under-researched area** -> generate a targeted brief at `<game>/research_briefs/doctor_<YYYY-MM-DD>.txt` (same mechanism as branch B), hand off to deep research, user ingests via normal ingestion.
    - **Community-knowledge-shaped gap** (build math, weapon / item interaction patterns, "is this a bug" categories, undocumented mechanics the deep-research cascade missed) -> the [`reddit_sweep.md`](reddit_sweep.md) sweep covers this, but doctor does NOT run it in this session. Recommend the user run **`hintforge doctor, reddit sweep for the <gap>`** in a fresh session (the gap being the specific mechanic, build, or interaction; the sweep runs in its own session per `reddit_sweep.md`). The sweep produces a findings file in `research_inbox/module/`; the user ingests it per ingestion.md's step 4b "Ingesting a reddit_sweep artifact." If the gap is also factually under-researched at the deep-research level (not just community-shaped), pair the sweep with a targeted brief -- sweep covers community knowledge, brief covers structural / wiki / dev-doc coverage. If the `reddit-mcp-buddy` MCP is unreachable, fall back to the targeted-brief path alone.
    - **Misclassification** (right facts, wrong vector tags or wrong spoiler tier) -> run the spoiler-classification sub-agent on the affected facts, move content per `ingestion.md` step 4's vector table.
@@ -106,6 +108,12 @@ Branch A does not invent content. If a bump introduced a new universal-core fiel
 4. Log each repair in `CHECKPOINT.md`.
 
 **Branch C never touches the `## Hintforge manifest` fields.** `game-version`, `game-version-platform`, and `game-version-as-of` are not repair targets: the date moves only via the Manifest check's Route 2 (human-confirmed "nothing changed") or Branch B step 3 (game update), and `corpus-core-version` only via Branch A. A repair fixes content; it does not re-stamp what game state the corpus was reconciled against.
+
+### Classification receipt for direct claim edits (mandatory)
+
+Before writing new factual content or changing the meaning/value of an existing claim in Branch B or C, stage every affected claim and invoke the spoiler-classification sub-agent from `ingestion.md` step 3. This applies to a single claim, supplied source material, multi-file backfills, stat changes and writes into an existing tagged section. Existing headings, neighbouring tags, mechanic-shaped wording and `source` labels do not establish the new claim's tier. Doctor never substitutes its own copied tags for this invocation.
+
+Use the classifier's returned metadata when writing. Keep a receipt in the guide CHECKPOINT with the classifier invocation, count of staged claims, count of returned classifications, and affected file paths. Every staged claim must have a corresponding returned classification; an unavailable classifier or an unclassified remainder blocks those writes and is reported as unfinished. Untouched claims keep their existing tags. This is a classification receipt, not evidence that all tags are semantically correct; live adherence remains a separate check.
 
 ### 6. Phase state updates + cascade re-runs
 
@@ -121,11 +129,13 @@ Doctor has authority to read and set any `## Phase state` flag in CHECKPOINT whe
 | Framework procedure changes affect how existing edges/content should be audited | `stitch_stale: true`; `stitch_scope: full` |
 | Prior ingestion results invalidated (branch B game update contradicts existing content, branch C reveals systematic research error) | Reset relevant `p[N]_ingestion` to `pending (reason)` |
 
-**Audit inherited state (mandatory).** Before declaring step 6 complete, scan the last 5 `## Harness changelog` entries in CHECKPOINT against the rules table above. For each prior entry whose finding *would* warrant a Phase state flag under current rules but doesn't have one set, backfill the flag and add a one-line changelog entry: `vN+1 -- backfill: <flag> set per <rule> (inherited from vX recommendation)`. This is mechanical, not judgment-based -- if the prior finding matches a current rule and the flag is missing, set it. **Why this step exists:** procedure changes that retire a workflow (e.g., "changelog entry sufficient" → "Phase state flag required") would otherwise apply only to new doctor findings; inherited recommendations made under the old procedure stay misclassified. Without this backfill pass, every rule change creates a one-session gap on the first invocation post-change.
+**Audit inherited state (mandatory).** Before declaring step 6 complete, compare the last 5 `## Harness changelog` entries in CHECKPOINT with the rules table above. If a prior finding matches a current rule and its required Phase state flag is missing, set that flag. Add a one-line changelog entry: `vN+1 -- backfill: <flag> set per <rule> (inherited from vX recommendation)`.
 
 **Run vs flag.** If the re-run is small and scoped (touched files only, <5 files), run it in this session per [`stitch_and_zipper.md`](stitch_and_zipper.md). If the re-run would be a full re-audit or the session is already long, set the flags and defer. **A CHECKPOINT changelog entry alone is not sufficient** -- flags in Phase state are what future sessions scan; changelog entries are archaeology.
 
 Skip this step entirely (no flags, no re-run) only if doctor edited values inside existing entries without changing file structure, template shape, or cross-file relationships.
+
+**Concurrent CHECKPOINT edits:** re-read the current file immediately before each write or targeted edit. Preserve other sessions' phase flags, open threads and changelog entries; merge only this run's changes into the current text.
 
 ### 7. Update CHECKPOINT and surface a recap
 

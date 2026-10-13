@@ -25,9 +25,9 @@ Everything else is **untested but designed to be portable**. Surface gaps in you
 ### Windows-locked (today)
 
 - **TTS hook:** the documented pattern uses Windows SAPI via a PowerShell hook script. The setup wizard scaffolds one for Windows users. Mac (`say`) and Linux (`espeak` / `festival`) hook variants are not yet specified. Contribution opportunity.
-- **Default file paths:** templates currently show `C:\Users\<user>\Documents\Claude\<game>\` style paths. The setup wizard ([`setup_wizard.md`](setup_wizard.md)) parameterizes workspace root so the user's actual path goes in. Mac/Linux users supply `~/Claude/<game>/` or wherever.
+- **Default file paths:** templates currently show `%USERPROFILE%\Documents\Claude\<game>\` style paths. The setup wizard ([`setup_wizard.md`](setup_wizard.md)) parameterizes workspace root so the user's actual path goes in. Mac/Linux users supply `~/Claude/<game>/` or wherever.
 - **PowerShell snippets** in some scripts (e.g. timestamp generation: `[System.DateTime]::UtcNow.ToString(...)`). Trivial to translate to bash (`date -u +"%Y-%m-%d %H:%M UTC"`).
-- **Save game directory defaults:** Windows games typically save to `C:\Users\<user>\AppData\Local\<GAME>\` or `%APPDATA%\<GAME>\`. Mac save locations (often `~/Library/Application Support/<game>/`) and Linux (often `~/.local/share/<game>/` or via Proton `~/.steam/steam/steamapps/compatdata/<id>/pfx/...`) need per-game research. The setup wizard parameterizes save-dir input rather than baking platform assumptions.
+- **Save game directory defaults:** Windows games typically save to `%USERPROFILE%\AppData\Local\<GAME>\` or `%APPDATA%\<GAME>\`. Mac save locations (often `~/Library/Application Support/<game>/`) and Linux (often `~/.local/share/<game>/` or via Proton `~/.steam/steam/steamapps/compatdata/<id>/pfx/...`) need per-game research. The setup wizard parameterizes save-dir input rather than baking platform assumptions.
 
 ## Bot-portability: what any AI agent needs to consume hintforge
 

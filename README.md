@@ -32,7 +32,7 @@ Per-runtime details in [`docs/install/`](docs/install/).
    - [Claude Code](docs/install/claude-code.md)
    - [Codex (CLI + desktop)](docs/install/codex.md)
    - [OpenClaw](docs/install/openclaw.md)
-2. **In your runtime,** ask: "build a guide for [GAME]". The wizard walks you through ~10 questions, then scaffolds `~/Documents/Guides/<game>/` with the universal core directories, the vector extensions your game needs, and a `research_briefs/p1.txt` brief ready for a deep-research handoff.
+2. **In your runtime,** ask: "build a guide for [GAME]". The wizard walks you through ~10 questions, then scaffolds `Guides/<game>/` under your selected workspace with the universal core directories, the vector extensions your game needs, and a `research_briefs/p1.txt` brief ready for a deep-research handoff.
 3. **Install the [`hintforge/reader`](https://github.com/hintforge/reader) skill** to play with the guide once it's built.
 
 **You'll know it's working when** the wizard greets you and starts asking setup questions (game name, persona cast, dial defaults) before touching any files.
@@ -230,7 +230,7 @@ What the framework code itself contains (verifiable by reading the repo):
 - No silent auto-commit / auto-push baked into any script. Git is only used at explicit request.
 
 What the framework instructs the agent to do (relies on the agent following the rules in [`SKILL.md`](SKILL.md)):
-- Confine filesystem changes to the declared scope (`~/Documents/hintforge/` and the per-game folder it creates).
+- Confine filesystem changes to the declared scope (the framework installation and the per-game folder it creates).
 - Announce web fetches before running them.
 - Announce file-touching actions before doing them.
 

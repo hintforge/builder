@@ -28,7 +28,7 @@ from pathlib import Path
 SAVE_DIR = Path(os.environ.get(
     "GAME_SAVE_DIR",
     # TODO: replace with the game's typical save location
-    r"C:/Users/<user>/AppData/Local/<GameName>/Saved/SaveGames",
+    str(Path.home() / "AppData" / "Local" / "<GameName>" / "Saved" / "SaveGames"),
 ))
 
 # File pattern for actual save files (vs. settings/config files).

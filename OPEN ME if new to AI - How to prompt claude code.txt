@@ -136,21 +136,24 @@ There's no model-switching dance.
 Copy everything between the ===== lines below and paste it
 into the Claude Code Desktop chat. Hit Send.
 
-The prompt assumes hintforge is at ~/Documents/hintforge
+In the examples below, <documents-folder> means your actual
+Documents folder. Replace that placeholder with its full path.
+
+The prompt assumes hintforge is at <documents-folder>/hintforge
 (the default when you extract the ZIP into Documents). If
 you put it somewhere else -- different drive, Downloads,
-Dropbox / OneDrive -- replace ~/Documents/hintforge in the
+Dropbox / OneDrive -- replace <documents-folder>/hintforge in the
 prompt with your actual path. (Right-click the folder in
 File Explorer -> Copy as path.)
 
 ==========================================================
 
-Hi Claude, I have a folder at ~/Documents/hintforge with a
+Hi Claude, I have a folder at <documents-folder>/hintforge with a
 tier-controlled game-guide framework. (If that path is
 wrong, use whatever path I pasted in over it -- otherwise
 that default is correct.) Please:
 
-1. First, find the hintforge folder. Try ~/Documents/hintforge
+1. First, find the hintforge folder. Try <documents-folder>/hintforge
    first; if that doesn't exist, ask me where I put it before
    doing anything else.
 2. Read <hintforge>/setup_answers.txt -- I may have
@@ -162,8 +165,8 @@ that default is correct.) Please:
    whatever's still missing in plain English.
 4. Create the new game folder as a sibling of hintforge,
    under a Guides/ folder next to it (e.g. if hintforge is
-   at ~/Documents/hintforge then the guide goes at
-   ~/Documents/Guides/<game>/). Don't change anything
+   at <documents-folder>/hintforge then the guide goes at
+   <documents-folder>/Guides/<game>/). Don't change anything
    outside the hintforge folder and the new guide folder.
 5. After setup, just be ready to answer my questions
    about the game.
@@ -210,7 +213,7 @@ After Claude finishes setup, it will tell you to:
 
    * Close this chat and open a new one
    * Open the new chat in your game's folder
-     (~/Documents/Guides/<game>/)
+     (<documents-folder>/Guides/<game>/)
    * Stay on Sonnet (no model switch needed)
 
 This handoff matters -- a fresh chat starts with clean
@@ -223,7 +226,7 @@ the handoff message.
 ----------------------------------------------------------
 
 In your new chat, set the working folder to your game's
-folder (something like ~/Documents/Guides/<game>/), confirm
+folder (something like <documents-folder>/Guides/<game>/), confirm
 the model is still SONNET, and just chat normally:
 
    "I'm stuck on the puzzle in the second area"
@@ -258,7 +261,7 @@ What it does:
    5-hour cap on day one. Instead, Claude writes a one-page
    research brief to:
 
-      ~/Documents/Guides/<game>/research_briefs/p1.txt
+      <documents-folder>/Guides/<game>/research_briefs/p1.txt
 
    ...and asks you to paste it into AT LEAST TWO
    deep-research tools, for example:
@@ -290,13 +293,13 @@ How to bring results back as a file:
    2. Save the file into the drop-zone folder Claude made
       for you:
 
-         ~/Documents/Guides/<game>/research_inbox/
+         <documents-folder>/Guides/<game>/research_inbox/
 
       That's the ONLY folder Claude looks in for handoff
       results. Anything you put there is fair game;
       nothing else on your computer gets touched.
    3. Open a FRESH Claude Code chat in the guide folder
-      (~/Documents/Guides/<game>/) and say:
+      (<documents-folder>/Guides/<game>/) and say:
 
          ingest the research
 
@@ -318,7 +321,7 @@ no inbox folder needed.
    "I can't write files"
       File access isn't on. Go back to STEP 2.
 
-   Claude says it can't find ~/Documents/hintforge
+   Claude says it can't find <documents-folder>/hintforge
       The ZIP didn't extract right. Re-extract the ZIP
       into your Documents folder. You should end up with
       Documents\hintforge\ containing a bunch of .md files
@@ -327,7 +330,7 @@ no inbox folder needed.
    Claude is asking questions you already answered in
    setup_answers.txt
       It might not have read the file. Tell it: "Please
-      re-read ~/Documents/hintforge/setup_answers.txt and
+      re-read <documents-folder>/hintforge/setup_answers.txt and
       use those answers."
 
    Claude is being weird or wrong

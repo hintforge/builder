@@ -24,7 +24,7 @@ Edge-TTS uses Microsoft's free neural voices via a public endpoint -- no API key
 1. Copy the five files into the per-game folder per the table above.
 2. Add the per-game folder's absolute path to `~/.claude/tts_game_folders.txt` (one per line). Create the file if it doesn't exist. Example:
    ```
-   C:\Users\<you>\Documents\Guides\<game>
+   <absolute-path-to-your-guide>
    ```
    This is the allowlist the Stop hook checks before speaking. Without this entry, the hook silently no-ops.
    **While you're in this file, sweep for stale entries.** Any path here that no longer exists on disk (renamed, moved, deleted guide) should be removed in the same edit -- confirm with the user before deleting, but don't leave broken entries in place. The allowlist is shared cross-game state; reconciling it with reality is part of touching it.

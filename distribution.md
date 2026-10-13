@@ -105,7 +105,7 @@ Lean toward natural-language paste as the primary mechanism -- it asks the least
 
 ### Research is opt-in, separated from setup (token-aware)
 
-**Why this matters:** a Claude Pro account has roughly 45 messages per 5-hour window. Auto-research that burns 30-50 messages on day one blows the user's entire cap before they get any guide value. So research and guide-use are separable: the wizard ends with the per-game folder scaffolded but **mostly empty**, and the user invokes research explicitly, sized to their token budget.
+Keep research and guide-use separable. Setup scaffolds a mostly empty guide; the user invokes research explicitly, sized to their token budget. Subscription limits vary by model and provider. Treat message counts below as planning estimates, never guarantees about a user's allowance.
 
 #### Research command modes
 The framework offers three research sizes the user can invoke by name:

@@ -1,6 +1,8 @@
 # Setup Wizard -- First-Run Prompt Flow
 
-Structured spec any markdown-aware AI agent executes when a user first instantiates hintforge for a new game. Not yet wrapped in an installer -- a future installer milestone will ship the wrapper (Claude Code skill, Python CLI, or slash command).
+Executable procedure for any markdown-aware AI agent setting up Hintforge for a new game. Follow the steps in order; optional installer development is separate from this procedure.
+
+Procedure map: [When to run](#when-the-wizard-runs) · [Required order](#wizard-steps----required-order) · [Completion rule](#hard-rule-for-the-ai-bot-running-this-wizard) · [Batching](#batching-policy-required----applies-to-all-unanswered-batchable-steps) · [Gameplay fallback](#last-mile-fallbacks).
 
 > **Compaction expectation:** UNEXPECTED. See [`compaction_policy.md`](compaction_policy.md). Setup produces structurally fragile output (scaffolded corpus + briefs). If you observe context pressure mid-wizard -- or if earlier steps burned excess context for any reason -- follow the step 9 handoff failsafe (hand the user the captured parameters + verification block for a fresh session) rather than proceeding into post-compact file writes.
 
@@ -36,7 +38,7 @@ The AI bot then:
 Constraints derived from the first-user test (codified in the [Transparent Operations principle](https://github.com/hintforge/reader/blob/main/.agents/skills/hintforge-reader/principles.md)):
 - **No shell required.** The user never opens a terminal. Everything happens through the AI bot's filesystem tools.
 - **No Python install required.** Save-watcher and similar Python optional add-ons are scaffolded only if the user has Python; otherwise skipped with a clear note.
-- **No UAC / sudo / admin elevation.** Everything writes to user-writable space (`~/Documents/`, `%USERPROFILE%\Documents\`).
+- **No UAC / sudo / admin elevation.** Everything writes to user-writable space (`<documents-folder>/`, `%USERPROFILE%\Documents\`).
 - **Plain-language prompts.** No "snake_case folder name" -- instead "what should the folder be called? (default: `[guess]`)". No "save game directory" -- "where does the game store your progress? (you can usually skip this; we'll work without it)".
 - **Announce before acting.** Each major action ("I'm going to clone X to Y", "I'm about to write the following 6 files") is surfaced before execution. The user can say "wait" or "skip" at any step.
 - **No covert behavior.** No telemetry, no auto-push, no background processes, no scheduled tasks.
@@ -250,7 +252,7 @@ This step is a deterministic precondition. It runs after Step 1 captures `[GAME_
 2. **Current working directory.** Else, capture cwd (PowerShell: `Get-Location`; Bash: `pwd`). If cwd contains a `hintforge/` subdirectory OR cwd's basename looks like a hintforge test sandbox (matches `hintforge_test_*`), set `[WORKSPACE_ROOT]` to cwd. Source tag: `cwd`.
 3. **OS Documents default.** Else, use the OS-appropriate user-Documents path: Windows `%USERPROFILE%\Documents\Claude\`, macOS/Linux `~/Claude/`. Create the directory if it doesn't exist. Source tag: `default`.
 
-**Hard rule -- skill base is not a path source.** The skill loader injects a line like `Base directory for this skill: C:\Users\<user>\.claude\skills\hintforge` (or the macOS/Linux equivalent under `~/.claude/skills/`). That path is **read-only metadata** describing where the framework files live for `Read` operations. It MUST NOT be used as `<parent of hintforge>`, MUST NOT anchor `[WORKSPACE_ROOT]`, and MUST NOT appear in any Write/mkdir target. Corpus files NEVER write into `~/.claude/skills/`. If the resolution cascade above somehow yields a path under `~/.claude/skills/` (it shouldn't -- cwd and Documents won't ever be there), treat it as a bug and halt for live confirmation.
+**Hard rule -- skill base is not a path source.** The skill loader injects a line like `Base directory for this skill: %USERPROFILE%\.claude\skills\hintforge` (or the macOS/Linux equivalent under `~/.claude/skills/`). That path is **read-only metadata** describing where the framework files live for `Read` operations. It MUST NOT be used as `<parent of hintforge>`, MUST NOT anchor `[WORKSPACE_ROOT]`, and MUST NOT appear in any Write/mkdir target. Corpus files NEVER write into `~/.claude/skills/`. If the resolution cascade above somehow yields a path under `~/.claude/skills/` (it shouldn't -- cwd and Documents won't ever be there), treat it as a bug and halt for live confirmation.
 
 **Announcement (REQUIRED, even in AUTO-CONFIRM mode):**
 
@@ -279,7 +281,7 @@ If `Guides/` doesn't exist yet, create it as part of this step.
 
 ### Step 2.5 -- Local ground-truth probe: install-file introspection (REQUIRED to ASK -- read-only, ≤10 tool calls)
 
-**Why this exists.** If the game is installed on this machine, its own shipped files sometimes carry exact, patch-current names and text (item names, ability names, localization strings) that are cheaper and more current than a web search -- and for a translated game, the game's own localization file is the only source guaranteed to match the exact shipped wording. Today nothing in the wizard looks at the installed game at all before research starts. This step closes that gap with a classification pass, not an extraction pass: it never unpacks, extracts, or caches game data. It also captures `[GAME_INSTALL_DIR]` -- the one and only step that does; every later step that wants the install directory reuses this step's value instead of asking again (see Step 3).
+Classify accessible installed-game files for patch-current names and text. This is a read-only classification pass: never unpack, extract, or cache game data. Capture `[GAME_INSTALL_DIR]` here; every later step reuses that value rather than asking again (see Step 3).
 
 **Platform gate (before asking anything).** If `[GAME_PLATFORM]` (captured in Step 1) is a console (PS/Xbox/Switch), silently record `[FILE_PROBE] = not-probed` (reason: console platform, no local file access) and continue to Step 3. Only PC platforms see the ask below.
 
@@ -335,7 +337,7 @@ If `Guides/` doesn't exist yet, create it as part of this step.
 - `[SAVE_DIR]` -- used to scaffold `save_watcher.py` in the per-game folder. Always captured in this step; Step 2.5 does not touch save location.
 
 **OS-aware default suggestions (only shown if user opts in):**
-- Windows: `C:\Users\<user>\AppData\Local\<GAME>\` or `%APPDATA%\<GAME>\`
+- Windows: `%USERPROFILE%\AppData\Local\<GAME>\` or `%APPDATA%\<GAME>\`
 - Mac: `~/Library/Application Support/<GAME>/`
 - Linux native: `~/.local/share/<GAME>/`
 - Linux via Proton/Steam: `~/.steam/steam/steamapps/compatdata/<id>/pfx/drive_c/users/steamuser/...`
@@ -376,7 +378,7 @@ This is the backbone (user-controlled assistance is Principle #1 in the [univers
 
 ### Step 5 -- Persona / voice preferences (REQUIRED)
 
-> **Hard rule -- `persona.md` is unconditional.** Every game guide gets a `persona.md` at the game-folder root, regardless of the answer below. The file is the integration point for PTT/TTS modules and the future `add a persona` toggle; skipping it leaves voice modules with no hook to register against. **Skipping `persona.md` is a bug** -- incidents on file: prior wizard runs ignored `personas = none` and picked two characters anyway, or skipped the file entirely. Step 5 has two branches (A and B); both write `persona.md`.
+> **Hard rule -- `persona.md` is unconditional.** Both Step 5 branches write `persona.md` at the game-folder root, including when `personas = none`. It is the integration point for PTT/TTS modules and the `add a persona` toggle. Do not invent a cast when the user chose none.
 >
 > **`personas = none` prefill is authoritative.** When Step -1 set `personas = none`, the wizard MUST take Branch B without proposing or researching character voices. Do not "helpfully" override the prefill.
 
@@ -471,9 +473,9 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 
 ### Step 6.7 -- Stage 0 pre-research (REQUIRED -- runs before Step 7; ⚠️ token-aware)
 
-**Why this exists.** Asking the user to classify content categories (Step 7) without internet context creates a catch-22: classification needs research, research is shaped by classification. The result of skipping pre-research is that the P1 brief (later) inherits whatever the user happened to guess, and gameplay fundamentals -- weapons, abilities, controls, settings -- get under-covered because the brief never knew they existed in the form they take in this game. The failure this step prevents: a prior P1 produced a 46-zone graph but only documented 3 of 12+ weapons; no controls.md, no settings.md, no abilities.md, no upgrades.md.
+Run pre-research before Step 7's category classification. Use its findings to cover gameplay fundamentals (weapons, abilities, controls, settings) as well as navigation in the P1 brief; do not rely on the user's guesses about which systems exist.
 
-**Cost.** 1-3 messages -- one or two web queries (Wikipedia / IGDB / Steam description / one or two top guides), one summarization message. Announced before running; user can skip.
+**Cost.** About 1-3 messages for the bounded first pass -- one combined companion-tool query inside the one-or-two-query allowance. If deeper access checks need more work, announce the added cost before continuing; skipped Stage 0 runs no probe. The pass uses one or two web queries (Wikipedia / IGDB / Steam description / one or two top guides), one summarization message. Announced before running; user can skip.
 
 **Ask:**
 - "Quick web search before I ask you about subfolders -- costs ~1-3 messages and lets me suggest specific content categories instead of asking you to guess. (yes / **skip**)"
@@ -503,6 +505,8 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
      - `controls` (note any signals that the game has a notorious control scheme, common remap recommendations, or accessibility-rebind community discussion) -- **always present; the question is depth, not existence**
      - `settings` (note any signals about graphics/audio/accessibility settings that affect difficulty perception -- motion blur tolerance, FOV gating, HDR issues, colorblind mode quality, subtitle behavior) -- **always present for any PC/console game**
    - **Source-language signal:** dev-country language + top player-region languages (used to seed P1's non-English source floor).
+   - **Companion-tool signal:** tools supplied by the user, recalled or found in one combined `"<game> interactive map collectible tracker"` search. Record name, URL if verified, apparent categories and evidence, access status and check date; distinguish readable, robots/terms restriction, JavaScript-dependent, other inaccessible, and not checked. Preserve uncertainty and the search's limits; no result does not prove no tools exist. External research obeys its access restrictions; a separately directed session pull uses ingestion's one-off route.
+
    - **Cross-system dependency density:** one of `high` / `medium` / `low`. High = many interacting systems (open-world RPGs, immersive sims, Metroidvanias with gated progression). Medium = moderate system interaction (linear action games with upgrades, hub-and-spoke games). Low = minimal cross-system interaction (linear narratives, single-mechanic puzzle games, roguelikes with independent runs). Informs stitch-and-zipper recommendation strength at post-ingestion handoff.
    - **Named-NPC density:** one of `high` / `medium` / `low`. Cheap proxy: count proper-noun NPC mentions across a typical walkthrough chapter summary. Structural signal: party-size + presence of recruit/companion/persuade systems. High = recruitable companions, named questgivers across multiple zones, named recurring antagonists (CRPGs, JRPGs, party-driven action-RPGs). Medium = a handful of named recurring NPCs (linear story-driven action games). Low = generic mob-shaped enemies and crowd NPCs only (most arcade, roguelite, abstract-strategy, pure-puzzle games). Feeds Step 7's `npcs/` auto-pop rule (high = scaffold; medium = optional; low = skip).
    - **Faction density:** one of `high` / `medium` / `low`. Group entities the player has an ongoing relationship with (not one-off enemy units). High = multi-faction reputation systems, faction-driven quest gating, faction-specific endings. Medium = a few named factions with stable but non-mechanical relationships. Low = no meaningful faction layer. Feeds Step 7's `factions/` auto-pop rule.
@@ -583,7 +587,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 - "Setup is almost done. Want me to research the game now, or save your messages for actual gameplay questions?"
   - **None (default)** -- folder will be mostly empty; I'll look things up as you ask. ~0 messages now.
   - **Minimal** -- 1 top source per category, stub a few claims. ~5 messages. Skips source-diversity floor and non-English sources.
-  - **Standard** -- apply the brief's source-diversity floor (3 source classes, non-English when applicable) at one source per class per category; flag conflicts. ~20 messages.
+  - **Standard** -- apply the brief's source-diversity floor (3 base source classes, plus a readable location inventory for location topics; non-English when applicable) at one source per class per category; flag conflicts. ~20 messages.
   - **Deep** -- apply the full handoff-brief spec in-house: 5+ sources per topic, exception-finding, mechanism-not-inventory, video transcription, datamining sweep. Spoiler-classification pass still runs after. ~50+ messages. (Only pick this on Max/Team or if you're OK with heavy spend.)
   - **Handoff** -- I write you a research brief to run in deep-research tools (Claude Research, ChatGPT Deep Research, Gemini Deep Research, Perplexity, or any similar tool). Run the same brief in **at least two** of them and bring every result back; I compare them while ingesting. No single tool is reliable enough on its own: one tool's result can come back thin or partly invented, and with nothing to compare it against there is no way to tell. ~2 messages here, ~5-10 per result to ingest later. The heavy research runs in those tools instead of this chat -- and a non-Claude tool spends none of your Claude budget.
 
@@ -620,7 +624,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
      user to narrow scope, do not pause to confirm intent. Begin research now.
      ```
 
-     This opener is non-negotiable; do not paraphrase or shorten. Reason: deep-research and chat tools default to asking clarifying questions on vague user prompts, and an attached file alone doesn't override that default. The directive opener is the override. (Incident: prior P1 brief -- uploaded as file with a short prompt; chat asked "what angle interests you most?" instead of executing.)
+     Use this opener verbatim so the receiving tool executes the brief without a clarification round.
 
    - **Output-filename directive** (REQUIRED -- second block of every brief, immediately after the self-executing opener). Deep-research tools used to auto-place the inferred output filename at the top of the artifact; recent Claude.ai Research behavior moves it to a footer or omits it. The directive forces it to the top so downstream save / ingest steps key off a known filename. Use this exact wording, with `[GAME_FOLDER]` and `[BRIEF_PHASE]` (e.g. `p1`, `p2`, `p3`) substituted:
 
@@ -638,7 +642,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
      this header line before any other content.
      ```
 
-     Non-negotiable wording. Substitute the placeholders before writing the brief; the receiving tool sees the literal filename (e.g. `[GAME_FOLDER]_p1.result.md`) at the very top. (Incident: prior P1 brief -- Claude.ai Research produced the artifact with the filename only as a bottom footer; required user intervention to relocate.)
+     Use this wording verbatim. Substitute placeholders before writing the brief; put the literal output filename at the very top.
 
    - **Execution discipline** (REQUIRED -- third block of every brief, immediately after the output-filename directive; P1, P2 and P3 alike). A brief run inside an agent runtime that can spawn sub-agents (Claude Code, agent SDKs, multi-agent research tools) has no built-in limit on fan-out and no built-in end condition. Use this exact wording:
 
@@ -670,7 +674,10 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
         a person is to collect that file.
      ```
 
-     Non-negotiable wording; do not raise the ceiling of 4. The block bounds orchestration, not scope: every topic the brief asks for is still dispatched, and anything that does not come back is named under `## Not covered` so P3 or a later pass can pick it up. (Incident: a P3 brief run in Claude Code covered its full scope, then fanned out to 7 sub-agents plus 12 teammates and a peer session, blocked indefinitely on two relayed reports that never arrived, re-counted duplicate reports as new completions, and ended only when the agent asked the user to stop it.)
+     Use this wording verbatim; keep the ceiling at 4. Dispatch every requested topic within that ceiling. List incomplete topics under `## Not covered` for a later pass.
+
+   - **Shared evidence and discovery requirements (P1/P2/P3):** include a numbered reference list of exact page URLs (and capture dates when available), with a reference number beside every confirmed or single-source fact. Several independent references may support one fact; do not substitute a site name or a source count for its page address. Missing addresses remain explicitly untraceable, never invented. Include `## Sources found but not read` with name/URL if known, apparent coverage and evidence, reason not read, access-check result/date, and how a person could use it; write an explicit empty statement if none were found. List every supplied, recalled or found companion tool either in that section or the readable source lists, preserving uncertainty and discovery limits. Copy Stage 0 candidates into `## Known companion tools` without local filesystem paths; when Stage 0 was skipped, claim no setup probe. Within each phase's scope, capture enumerable collectibles' expected total when known, usable landmark/container locations, access conditions and missability with normal fact/source/spoiler tags. Report located counts and explicit gaps; use `[location inventory incomplete]` if completeness is unknown or any locations are missing. An unread source supplies no confirmed locations. These requirements also apply to P2 and P3 and their self-checks: P1 stays base-game only, P3 adds only its selected DLC/gaps.
+   - **Source floor for location inventories:** add readable location-organized inventories (maps, trackers, databases, completion lists or walkthroughs) as a fourth source class for relevant topics. If none is readable, report the gap; an unread source does not satisfy the readable floor. Never exclude a game solely for its navigation-type label. External research must preserve and respect restrictions its runtime reports; do not instruct it to bypass a refused fetch.
 
    - **Game grounding** (1 line): exact game name, developer, year, platform, current patch version. State scope: "Base game only -- DLC content is researched separately in P3 (cascade phase)." Name shipped DLC by title so external tools don't conflate base-game and DLC vocabulary, but do not request research on them.
 
@@ -694,7 +701,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 
    - **Source diversity floor** (per topic, not per brief):
      - **Minimum 5 independent sources** before any fact is marked confirmed.
-     - At least one source from each of three classes: (a) reference wiki, (b) community forum / Reddit / Steam Community guide, (c) video walkthrough or speedrun route (transcribe relevant segments).
+     - At least one source from each of three base classes: (a) reference wiki, (b) community forum / Reddit / Steam Community guide, (c) video walkthrough or speedrun route (transcribe relevant segments). For location topics, also use (d) a readable location-organized inventory per the shared location-source floor above; if unavailable, record the gap rather than counting an unread tool.
      - **Non-English sources required** when the game's developer is non-Anglophone, when the game's primary community is non-Anglophone, or when English coverage is known-thin. Russian StopGame.ru / DTF.ru / VK groups for Russian-developed games; Japanese 2ch / wiki.gg-jp for Japanese; gry-online.pl for Polish; etc. **When Step 2.5's `[FILE_PROBE_INVENTORY]` names a source-language + English localization pair, that pair satisfies part of this floor directly -- cite it as a `datamining`-class source in the per-fact attribution (see Output format below) instead of re-deriving the same names from a web search.**
      - Datamining and modding-community sources (Nexus Mods comments, modder Discords, deep Reddit threads beyond top-voted) when the topic is mechanic-level.
      - Top-3 English search hits are the floor, never the ceiling.
@@ -807,7 +814,7 @@ Ask:
 
 Capture `[RUN_P2]` and `[RUN_P3]`.
 
-Every P2 and P3 brief opens with the same three required blocks as P1 (self-executing opener, output-filename directive, execution discipline), verbatim, before its phase-specific content.
+Every P2 and P3 brief carries the shared evidence/discovery/location requirements and the same three required blocks as P1 (self-executing opener, output-filename directive, execution discipline), verbatim, before its phase-specific content.
 
 **If `[RUN_P2] = true`:** Generate P2 brief to `<game>/research_briefs/p2.txt`. P2 brief requests:
 - **Per-zone gate-lists** (one subsection per zone): ordered sequential gates (5-15 per zone, or 5-15 per branch for branching zones); entry / exit / outgoing edges referencing `architecture.md` by edge `(from, to)` pair; optional branches, common confusions, soft-lock warnings, sources. Nav-only -- puzzles and enemies referenced by name as pointers, not solved inline.
@@ -816,6 +823,8 @@ Every P2 and P3 brief opens with the same three required blocks as P1 (self-exec
 - **Localization toolkit** for `nav/localization.md` -- **only when P1's `localization-mechanism class` is `landmark` or `hybrid`; skip for `map-system` and `none`.** Per zone: 3-6 distinctive in-game landmarks (statues, signage, equipment, environmental hazards, named save-points) that uniquely resolve to that zone, with disambiguation notes for landmarks that look similar across zones. Plus a short list of game-appropriate ask-the-player prompts for when CHECKPOINT's `player_position.confidence` drops below `high` ("what's the last big landmark you remember?", "which save-point did you last use?", etc.). For `hybrid` games, also list map-element prompts ("what region does your map show?") for zones that have map coverage.
 
 Drop zone: `<game>/research_inbox/p2/`. Ingest P1 before P2 -- P1 creates the `architecture.md` scaffold that P2 extends.
+
+**P2 lock/key evidence requirement:** every locks-and-keys row names the matched key/unlock condition and supporting page reference, or explicitly records `key: unknown` with its gap. No silently blank key cells. Do not derive a key from the lock name, and keep both halves within the brief's phase and spoiler scope.
 
 **If `[RUN_P3] = true`:** Generate P3 brief to `<game>/research_briefs/p3.txt`. Scope explicitly: list the thin chapters from P1 results and any DLC zones. Same cascade output shape as P1 (Architecture Summary section for DLC-introduced zones + chapter-organized vector-tagged facts). DLC-introduced zone nodes and edges extend the zone graph; DLC-keyed locks extend the locks-and-keys table.
 
@@ -902,9 +911,7 @@ If yes (and headroom is sufficient), the AI agent:
 
    > **Do not enumerate `templates/`.** Read each template by name as listed in this sub-step (`claude_md.md`, `checkpoint.md`, `persona.md`, `warning_tiers.md`, `limitations.md`, and the universal-core files referenced in sub-step 4). Do NOT call `Glob('templates/**/*', path='<skill-root>')`, `Bash(ls templates/)`, or similar enumeration steps -- the template list is fixed by this spec, not discovered at runtime. The Glob tool also does not resolve patterns with a literal subdirectory prefix relative to `path` (e.g. `templates/*.md` with `path='<skill-root>'` returns zero results); if a future step legitimately needs to list a subdirectory, set Glob's `path` argument to that subdirectory directly and use `*.md` or `**/*.md` as the pattern, or use PowerShell `Get-ChildItem`. Enumeration-via-Glob in this step burns 2-3 turns on fallback attempts (Bash `ls` has a Windows trailing-backslash escape bug; PowerShell `Get-ChildItem` works) and adds no value over the named-list approach.
 
-   > **Literal-path discipline.** When copying any template, framework references are **literal content**, not placeholders to resolve. Do NOT substitute them with absolute paths (e.g. `C:\Users\<name>\.claude\skills\hintforge\` or `~/.claude/skills/hintforge/`), even when the wizard is running from an installed-skill location. The skill base directory is metadata for `Read` operations, never a path source for content written into the guide. Published per-game guides reference the framework by its public repository URL (`https://github.com/hintforge/builder/blob/main/<path>`), so the link resolves for anyone who clones the guide on its own -- a path relative to a sibling checkout only works on a machine that already has the framework sitting next to the guide. Only `[BRACKETED_PLACEHOLDERS]` get substituted; everything else in templates is verbatim content. Same discipline class as the v33 `[WORKSPACE_ROOT]` cascade -- both surfaces enforce "skill base is read-only metadata."
-   >
-   > **Incident reference.** A prior wizard run transformed a framework reference in a generated guide file into an absolute path like `C:\Users\<name>\.claude\skills\hintforge\templates\claim_format.md`, baking the maintainer's username + skill-install path into a guide that's supposed to be cleanly publishable. A parallel run on the same input copied verbatim. Non-deterministic. The sanity scan in sub-step 12 catches this post-write.
+   > **Literal-path discipline.** Substitute only `[BRACKETED_PLACEHOLDERS]` when copying templates. Preserve other text and framework references verbatim; never replace them with local absolute paths or sibling-checkout paths. Use the public framework URL (`https://github.com/hintforge/builder/blob/main/<path>`) in published guides. The skill installation directory is a read location, never generated guide content. Verify this with the sub-step 12 sanity scan.
    >
    > **Literal-prose discipline (the player's name is not a slot).** The phrase "the player" in templates is **verbatim content, not a slot.** Do NOT substitute `[PLAYER_NAME]` for it anywhere in prose, headings, or section titles. The ONLY place the player's name is written is `CHECKPOINT.md`'s `**Name:** [PLAYER_NAME]` field (the single sanctioned `[PLAYER_NAME]` insertion site). Every other "the player" stays literal -- substituting it binds the guide to one player and is the prose analogue of the absolute-path leak above. The sub-step 12 player-name scan catches strays post-write.
 
@@ -920,6 +927,7 @@ If yes (and headroom is sufficient), the AI agent:
    - **`mechanics.md` seeding from Stage 0.** Per `docs/corpus-format.md` §1, `mechanics.md` is a universal file at root -- same shape as `controls.md` and `settings.md`. When `[STAGE0] = done` and pre-research surfaces phrases like "mechanic-driven", "physics-based", "systems-heavy", "puzzle mechanic", "stat tracking", "stamina", or names specific systems (heat, evasion, ship power, dialogue weight, affinity, etc.), pre-populate `mechanics.md` with a section header per named system at `status: scaffold` so ingestion has clear write targets. For games Stage 0 classifies as `narrative-no-nav` with no surfaced systems, pre-populate `mechanics.md` at `status: research-integrated` with the explicit one-line statement: "no system-level mechanics -- pure narrative; routing/locks/keys live in `nav/architecture.md`". When `[STAGE0] = skipped`, scaffold `mechanics.md` with a minimal stub and let ingestion populate it. The optional `mechanics/` subdirectory split (see corpus-format.md §1) is a maintainer-time decision triggered by content overflow, not a wizard-time choice -- the wizard always creates the single-file form.
    - **Stage-0-gated:** for each item category Stage 0 marked `present`, create `items/<category>.md` (e.g. `items/weapons.md`, `items/abilities.md`, `items/upgrades.md`). Skip absent categories -- no empty stubs.
    - **Other subfolders from Step 7:** `puzzles/`, `nav/`, game-specific `[areas]/` per the user's confirmed Step 7 selection
+
 5. If `[SAVE_DIR]` provided: scaffolds `<game>/save_watcher.py` from the documented pattern
 6. If TTS enabled and Windows: scaffolds `<game>/.claude/tts_hook.ps1`
 7. Adds the project to the workspace ledger (`<WORKSPACE_ROOT>/CLAUDE.md`)
@@ -934,11 +942,11 @@ If yes (and headroom is sufficient), the AI agent:
 11. **Update `## Phase state` in CHECKPOINT.** Set `setup: complete YYYY-MM-DD`. If P1 brief was generated (sub-step 8), set `p1_brief: written YYYY-MM-DD`. If P2/P3 briefs were generated, set their fields likewise. All other fields remain at their template defaults (`not started` / `not run`).
 12. **Post-write sanity scans (required gate).** Two scans run after all template Writes complete and before the Step 10 handoff -- an absolute-path scan (v37) and a player-name scan (v65). Either failing blocks the handoff.
 
-    **Absolute-path scan.** Read `<game>/CLAUDE.md` and `<game>/AGENTS.md` (the optional shims, if present) and scan for any of these absolute-path patterns: the Windows user-home prefix, `/Users/`, `/home/`, `~/.claude/`, `.claude/skills/`. If any pattern matches, **the wizard has not completed sub-step 3's literal-path discipline** -- stop, do NOT print the Step 10 handoff message. Surface every match to the user with file + line number, e.g.:
+    **Absolute-path scan.** Read `<game>/CLAUDE.md` and `<game>/AGENTS.md` (the optional shims, if present) and scan for any of these absolute-path patterns: Windows drive-qualified user-home paths (regex `[A-Za-z]:[\\/]Users[\\/]`), `%USERPROFILE%`, `/Users/`, `/home/`, `~/.claude/`, `.claude/skills/`. If any pattern matches, **the wizard has not completed sub-step 3's literal-path discipline** -- stop, do NOT print the Step 10 handoff message. Surface every match to the user with file + line number, e.g.:
 
     > ⚠️ Absolute-path leak detected in `<game>/CLAUDE.md`:
-    >   line 12: `C:\Users\<name>\.claude\skills\hintforge\templates\claim_format.md`
-    >   line 34: `C:\Users\<name>\.claude\skills\hintforge\`
+    >   line 12: `%USERPROFILE%\.claude\skills\hintforge\templates\claim_format.md`
+    >   line 34: `%USERPROFILE%\.claude\skills\hintforge\`
     >
     > These should be `https://github.com/hintforge/builder/blob/main/...` (the public repository URL). Rewriting now.
 
@@ -952,7 +960,7 @@ If yes (and headroom is sufficient), the AI agent:
 
 14. Prints the setup-complete message + fresh-session handoff (see Step 10).
 
-**Output formatting -- backtick filenames and paths.** When the wizard prints any "what was installed" recap or refers to created files in chat, every filename and path must be wrapped in backticks: write `` `CLAUDE.md` `` and `` `.claude/settings.json` ``, not bare `CLAUDE.md` or `.claude/settings.json`. Reason: Claude Code's chat renderer (and several other markdown renderers) auto-linkifies bare `name.ext` strings as if they were domain names -- `CLAUDE.md` becomes a clickable `http://CLAUDE.md` link in the rendered output, which is broken and confusing for non-tech users. Backticks defuse the auto-linkifier. The same rule applies to file tables: wrap each filename cell in backticks.
+**Output formatting -- backtick filenames and paths.** Wrap every filename and path in chat recaps and file-table cells in backticks, preventing accidental domain links: `` `CLAUDE.md` ``, `` `.claude/settings.json` ``.
 
 ### Step 10 -- Fresh-session handoff (REQUIRED -- show verbatim at end of setup)
 
@@ -1036,10 +1044,10 @@ If `CHECKPOINT.md` lacks a `Last played:` field -- typically because the guide w
 
 The "last mile" is anything game-specific the AI agent doesn't have data on. Design principle: **the framework doesn't have to ship pre-baked content for every game.** When the user asks about a specific puzzle / item / location and the per-game guide is empty:
 
-1. The AI agent says: "I don't have content for this yet. Let me look it up."
-2. Fetches sources, applies the principles (cite sources, hint ladder, spoiler tier).
-3. Writes the structured claim into the appropriate per-game file.
-4. Answers the user's original question.
+1. Activate the `hintforge-reader` skill and read the relevant corpus file in the current turn.
+2. State the guide-content gap and offer web search. Wait for the player's acceptance.
+3. Fetch sources and answer in chat under the reader's citation, hint-ladder, and spoiler rules.
+4. Persist the structured claim in the matching corpus file after the answer.
 
 This is normal use, not a wizard step. The wizard scaffolds the empty house; gameplay fills it in.
 

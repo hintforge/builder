@@ -2,16 +2,18 @@
 name: hintforge
 description: Build OR maintain a Hintforge-format game guide. Use when starting a new spoiler-controlled companion for a published video game, ingesting research results, running stitch/zipper synthesis, or running the doctor procedure for post-instantiation maintenance (format bumps, game updates, targeted repair). Activates on triggers like "build a guide for X", "ingest the research", "run stitch", or "doctor hintforge" (post-instantiation maintenance).
 license: CC-BY-NC-SA-4.0
-version: 102
+version: 103
 ---
 
 # Hintforge builder
 
 A framework for authoring a spoiler-controlled video-game guide. Walks an author through scaffolding a new corpus from setup answers, generates research-cascade briefs, ingests research results into corpus files, and synthesizes cross-system edges via stitch-and-zipper passes.
 
-The corpora this builder produces are consumed at runtime by the **hintforge-reader** skill. The two skills together replace what was previously a single monolithic framework.
+The corpora this builder produces are consumed at runtime by the **hintforge-reader** skill.
 
-**Canonical home: https://github.com/hintforge/builder** (reader: https://github.com/hintforge/reader). When asked to update this skill and the install is a git clone, `git pull` there; when there is no clone or remote, fetch the latest from that URL. This line exists so any install method can locate its upstream without the user supplying a URL.
+**Canonical home: https://github.com/hintforge/builder** (reader: https://github.com/hintforge/reader). When asked to update this skill and the install is a git clone, `git pull` there; when there is no clone or remote, fetch the latest from that URL.
+
+**Resolve framework references before running a procedure.** Use the directory containing both root `SKILL.md` and `setup_wizard.md` as the framework root. If this manifest was loaded from `.agents/skills/hintforge/SKILL.md`, that root is the repository root (`../../..` from the manifest's folder). Resolve every procedure, template, and documentation path below against that root. If `setup_wizard.md` is absent there, report an incomplete installation; install the whole repository before continuing. Corpus output still belongs in the user's workspace.
 
 ## Where corpus files get written -- read first
 
@@ -36,7 +38,7 @@ Do not activate for runtime player questions ("where do I go?", "hint for this p
 
 When any build / setup / "guide for X" intent fires:
 
-- **If `../Guides/<game>/` already exists with corpus content from a prior wizard run**, the wizard has already run for that (user, game) pair -- answer the user's actual question directly using the guide's contents. The wizard runs once per pair.
+- **If `../Guides/<game>/` already contains a populated corpus**, do not rerun setup. Continue the requested maintenance procedure, or activate `hintforge-reader` for a player question. The wizard runs once per (user, game) pair.
 - **If the folder is empty or missing**, the first action is to **read [`setup_wizard.md`](setup_wizard.md) end-to-end**, then run the wizard from Step -1. Do not infer answers, do not scaffold files, do not write personas, do not skip Step 8. The wizard's Hard rule (every step DONE / DONE-VIA-PREFILL / ASKED ABOUT) is binding.
 
 1. **Setup wizard.** [`setup_wizard.md`](setup_wizard.md) collects game name, persona cast, dial defaults, game-type classification (which vector extensions to scaffold), source-language set, and other per-game answers. Output: a populated corpus root with the universal core plus the selected vector extensions, all files in `scaffold` state.

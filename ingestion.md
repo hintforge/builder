@@ -6,11 +6,13 @@ This procedure runs in a **fresh session, separate from setup**, when research r
 
 > 🧠 **Run ingestion on a mid-tier, cost-efficient model (Sonnet-class or equivalent) at reasoning effort `high`.** Ingestion makes real judgment calls -- spoiler-tier classification, confidence calibration, routing facts to the right file by vector, reconciling against existing corpus content -- so run it at reasoning effort **`high`** -- the level named `high` (Anthropic `effort: high`, which is Sonnet's default in Claude Code; Codex/GPT-5 `model_reasoning_effort: high`), NOT your runtime's maximum where it exposes higher rungs like `xhigh` / `max` / adaptive. Both levers aim at capable-enough, not overkill: keep the model mid-tier (a flagship over-reasons, drifts off the procedure, and costs more for no better routing) and the effort at `high`, not maxed. Confirm your model and effort setting before triggering. **Run ingestion in the session that loaded this skill; do not hand the pass to a helper agent on another model.** If your runtime has a general rule that sends large jobs to a helper, this procedure is exempt.
 
-> **Why this is its own file.** Ingestion is the largest single context load this guide will see. Loading the full setup wizard alongside the result file wastes context on first-run setup steps (environment check, player name, tier dials, persona research, TTS/PTT, subfolder shape) that ingestion doesn't care about. This file carries only what the ingestion session needs.
+> **Load this procedure, the files it names, and the relevant research/corpus files.** Do not also load the full setup wizard into an ingestion session.
 
 > **Compaction expectation:** EXPECTED at CRPG scale (P2/P3 with many files; P1 with large achievement sets). See [`compaction_policy.md`](compaction_policy.md) for handler discipline. Step 8's Index re-derivation sub-pass is one of this procedure's compaction handlers (it catches index/entity-file drift introduced when post-compact recomposition pulls from a lossy summary).
 
 ## Pre-flight
+
+Procedure map: [Source recovery](#blocked-source-recovery) · [Integration steps](#procedure) · [Integration discipline](#integration-discipline-applies-across-all-phases) · [Regeneration safety](#regeneration-safety).
 
 - The session is **fresh** -- Step 10 of the setup wizard tells the user to start a new chat before saying "ingest the research." If the current session shows wizard-setup activity above, ask the user to restart in a fresh session before continuing.
 - The session is **opened inside the game folder** (`Guides/<game>/`), not at workspace root or inside `hintforge/`. The agent's working directory determines which game's research gets ingested.
@@ -38,7 +40,7 @@ A direct `web_fetch` on `*.fandom.com` is not a numbered rung. From a cloud-host
 
 ### Reddit
 
-Manual paste from a browser session is the default; `archive.ph` is the fallback for threads that have been deleted or are otherwise gone. The historical `old.reddit.com/.../.json` workaround is intentionally omitted -- it works rarely enough that codifying it invites future contributors to over-engineer Reddit ingestion when the right answer is that ingestion should not exceed what a human reading the thread does anyway. Record `capture-method: manual_paste` (or `archive_ph` if the snapshot path was used).
+Use manual paste from a browser session by default, or `archive.ph` for deleted/unavailable threads. Record `capture-method: manual_paste` or `archive_ph` accordingly. Do not add an anonymous JSON retry ladder.
 
 The autonomous Reddit module sweep (see [`reddit_sweep.md`](reddit_sweep.md)) is the framework's structured path for post-P1 community-knowledge harvesting via the `reddit-mcp-buddy` MCP server. The ladder above remains the right tool for individual Reddit-thread citations encountered during P2 / P3 result-file ingestion (a single thread URL that appears as a source in a deep-research result); the sweep is the right tool for systematic community-knowledge coverage scoped to a subreddit. Different shapes of capture, different recovery flows.
 
@@ -47,6 +49,10 @@ The autonomous Reddit module sweep (see [`reddit_sweep.md`](reddit_sweep.md)) is
 Any source that is not Fandom or Reddit and that returns content cleanly via the deep-research tool or direct `web_fetch` records `capture-method: web_fetch`. The ladder above is specifically for blocked-source recovery, not a generic capture-method picker.
 
 ## Procedure
+
+## Before writing: branch and prior-proposal scope
+
+If the guide is git-backed, inspect its current branch and say once at orientation when it is not the default branch; completion applies to that branch, never silently to the canonical guide. Never switch, merge or commit for the player. Read CHECKPOINT Open threads before routing a brief's targets. Reuse format-valid existing organization for cosmetic differences; if a prior proposal and this brief imply materially different player-facing structures or discard meaningful prior work, surface that concrete fork before replacing it. Re-read CHECKPOINT immediately before any edit against its current text, and preserve concurrent sessions' additions.
 
 ### 1. Find the result file
 
@@ -74,6 +80,8 @@ Each result file moves aside on its own in step 11. If only one result is presen
 **Large result files (>25k tokens) must be read in chunks.** Check the file size first -- if Read errors with "exceeds maximum allowed tokens," fall back to repeated Read calls with `offset` and `limit` (e.g., lines 0-499, 499-998, …) to walk the whole file. Result files from external deep-research tools regularly land in the 30-50k-token range; treat single-Read success as a happy path, not the default.
 
 Read [`templates/claim_format.md`](templates/claim_format.md) to confirm the metadata convention before writing.
+
+**Page-reference receipt (read-only, every phase).** Run `python <running-skill>/tools/citation_receipt.py <result-file> --json` for each result just read, before moving it aside. Preserve each receipt's fact total, direct-page and numbered-reference counts, unresolved/site-only remainder, and output in the guide CHECKPOINT; include the compact counts in step 12's recap. If the runtime cannot execute the script, mark the receipt unavailable, never zero or passed. A resolvable page reference proves traceability only, not that the source supports the claim; retain normal source verification and confidence calibration. Carry exact page URLs or resolved reference numbers into the written claims' attribution; do not flatten a page citation into a domain or tool name.
 
 ### 2.5. Entity-scaffold check (mandatory at `corpus-core-version: 5` and later)
 
@@ -124,6 +132,10 @@ Do not overwrite existing content; append or create per-file. **When editing an 
 | `missable` | primary-vector destination + index entry in `sections/<area>.md` |
 | `achievement` | primary-vector destination + aggregated entry in `achievements.md` (one entry per `achievement:` value on the claim). Overlay tag, not a primary vector -- combine with the claim's primary vector, e.g. `vector: nav, achievement: ach_id_1` or `vector: item, achievement: ach_id_2, missable: yes`. Required at `corpus-core-version: 4` and later when a claim documents the trigger or a prerequisite for a platform achievement. See [`templates/claim_format.md`](templates/claim_format.md) for the four fields (`achievement:`, `achievement-hidden:`, `trigger_type:`, `genre:`) and step 8 below for the aggregation contract and trigger-type classification rules. |
 | `mechanic` | `mechanics.md` or `meta_explainer.md` (only when no more-specific vector applies) |
+
+**Unread sources and companion tools (every phase).** Read the result's `## Sources found but not read` as source metadata, not a new vector or confirmed game facts. Merge companion-tool rows into `limitations.md` under `## Companion tools`; other unread sources retain the normal blocked-source and per-topic routes. Preserve name and URL if known, apparent coverage and evidence, uncertainty, plain reason not read, access-check result/date, and human-use instructions. Merge by canonical URL (or a verified identity when no URL exists), retaining conflicting evidence and dated checks rather than creating duplicates or erasing uncertainty. Read collectible-location claims still use `vector: item`, `items/<category>.md`, normal source-confidence and classifier tags.
+
+**One-off directed location pull.** When the guide needs a found tool's locations, the session may perform one directed retrieval of the named page or its data endpoint; robots.txt alone is not a gate for that user-directed pull. Record the original URL, capture date, item count and capture method in the guide CHECKPOINT and each row's source. Apply normal classification, confidence and reconciliation to the retrieved facts; missing fields remain gaps. This is not a general crawler, recurring puller or per-site adapter. A runtime's actual inability/refusal to retrieve remains a recorded limitation, not a reason to invent content or disguise the retrieval.
 
 **For `nav` and `structure` facts:** if `nav/` doesn't exist, create it (stub `index.md` + scaffold `architecture.md` from templates). Set `status: research-integrated` on each newly written file. **Phase scoping (resolves the step 4 / step 6 boundary for `nav`):** P1 does NOT create per-zone `nav/<zone>.md` files. P1 `vector: nav` facts arrive at chapter-summary granularity, below the 5-15-gates-per-zone density `templates/nav_zone.md` expects, so they land in `nav/architecture.md`'s Chapter-Zone Mapping "Mission notes" column; creating premature per-zone stubs at P1 would violate the no-placeholder-stub rule in step 5. Per-zone gate-list files are created starting at **P2** (step 6), which folds the P1 notes into full gate lists. After per-zone files exist (P2+), run a consistency pass: every edge declared in a zone file must appear in `architecture.md`'s edge table, and vice versa. Drift between them is a bug.
 
@@ -208,6 +220,8 @@ The recurring nature lives in the claim's `notes:` field, verbatim shape: `Recur
 - **P2 ingestion.** Extends an existing `nav/architecture.md` (adds support topology + locks-and-keys sections); creates per-zone gate-list files (`nav/<zone>.md`); writes `nav/localization.md` for `landmark` and `hybrid` games. P1 must be ingested first.
 - **P3 ingestion.** Patches gaps + DLC. May extend the zone graph (DLC-introduced zones), optional content registry (DLC quests), and locks-and-keys table (DLC items unlocking base-game content). Merges into existing `architecture.md`; doesn't replace.
 
+**Source disagreement: applicability before votes.** Compare patch version, platform, difficulty and mod/DLC scope before treating conflicting sources as a majority vote. Prefer evidence applicable to the guide's declared game-version/platform. If sources genuinely disagree under the same conditions, retain both values in qualified corpus prose, keep confidence medium or lower, and log the unresolved conflict. Mirrors/echoes remain one source; never manufacture consensus or new metadata syntax.
+
 ### 7. Corpus reconciliation (P2 / P3 only -- skip for P1)
 
 For every gap-fill resolution this phase produced that **drops, contradicts, supersedes, or rewords** prior-phase content, locate the orphaned content in the corpus and edit it. Grep the destination subfolders (`sections/`, `items/`, `nav/`, `puzzles/`, `optional_zones/`, `controls.md`, `settings.md`, plus any entity-class folders that exist -- `npcs/`, `factions/`, `crew/`, `reputation/` at `corpus-core-version: 5` and later; the legacy `enemies/` folder no longer exists in v5 corpora since the v4 → v5 migration renamed it to `npcs/`) for the original claim -- search anchors include distinctive phrases, the `[Single source -- verify]` flag, and the section heading the prior phase wrote it under. For each match:
@@ -219,7 +233,7 @@ For every gap-fill resolution this phase produced that **drops, contradicts, sup
 
 **Source-class informs partial vs. full drops.** If the prior-phase verify-flag carried `class:editorial-non-en` (VGTimes.ru, StopGame.ru, DTF.ru, 4Gamer.net, gry-online.pl, etc.) and this phase's gap-fill could not corroborate the claim from English sources, the default is **partial drop** -- keep the underlying mechanic with a translation-conflation caveat, drop only the unsupported sub-claim. Non-Anglophone editorial sources for non-Anglophone-developed games disproportionately carry mechanics English coverage misses; that is the entire reason the cascade has an internationalization rule. A full drop on a single `editorial-non-en` source requires a positive contradiction from another source, not just absence of English corroboration.
 
-**Why this step exists.** Resolutions captured only in `CHECKPOINT.md` leak past read-time gating: the persona reads from `sections/`, `items/`, `nav/`, etc., not from CHECKPOINT. A "DROPPED" entry in the CHECKPOINT changelog with the original claim still in `sections/<chapter>.md` means the player gets the dropped claim served at read-time without any of the contradiction context. **Corpus state must reflect the resolution, not just metadata.**
+**Update the claim itself.** Propagate each resolution into the relevant `sections/`, `items/`, `nav/`, or other claim home. A CHECKPOINT entry alone does not update the content the reader serves.
 
 **Audit the whole corpus, not only the files you edited this pass -- and emit the ledger.** A prior-phase file carrying `status: research-integrated` is NOT evidence that this phase's supersessions have propagated into it: the status field records that the file was *integrated in its own phase*, not that every later supersession reached it. So for each supersession this phase's result asserts (anything the result marks stale / post-patch / superseded / "earlier guides", or any explicit prior-vs-current contrast), emit a Grep for the affected identifier across **all** claim-bearing files, including ones you did not touch this pass. Before recap, write a **supersession ledger** -- one line per supersession: the identifier, the files grepped, the stale matches found, and the disposition (edited / none found). An empty Grep result is a valid pass; the *absence of the Grep call* is the defect, and the ledger is the falsifiable evidence that the audit actually ran. Do not assert "0 disagreements" or "all propagated" without the ledger behind it.
 
@@ -317,7 +331,7 @@ For every `<category>/index.md` this ingestion session edited, AND every `<categ
 
 Mismatches: edit the index to match the entity files (entity files are authoritative -- they were written from research; index cells may be inherited from earlier-phase stubs). If the entity file is wrong and the index is right, edit the entity file instead. Flag any ambiguous case in the step 12 recap.
 
-**Why this is a separate sub-pass from the grep sweep.** The grep sweep catches "entity Y referenced in 3 files with conflicting status" -- identifier-aware checks. This sub-pass catches "index file's roster row for entity Y says zone X; entity Y's own file says zone Z" -- index-file-aware checks. Different failure mode, complementary detection. Grep can't catch index/entity drift because index cells and prose numerals aren't ambiguous identifiers; re-reading the actual files is the only way to surface them.
+Run index re-derivation separately from identifier grep: re-read roster cells and entity-file facts, and compare their values. Identifier agreement alone does not verify index/entity agreement.
 
 **Compaction note.** This sub-pass is one of the post-compaction handlers prescribed by [`compaction_policy.md`](compaction_policy.md) for ingestion. Even if the session did not compact, run the sub-pass -- it catches inherited-stub errors and post-summary-recomposition errors alike. If the session DID compact, the read-from-disk discipline is non-negotiable; the compaction summary is lossy on counts and table cells, and any post-compact edit that quotes a count or cell from the summary instead of re-reading the source file is a bug.
 
@@ -409,7 +423,7 @@ Rules for this block:
 
 - **If this was the FINAL brief in the cascade:** append explicitly:
 
-  > **Next:** This was the final research brief. Open a new session in this game folder and run `zipper` and then `stitch` to complete the build. **Stitch is the cascade's audit pass** -- it verifies per-edge convergence across systems and surfaces intra-corpus inconsistencies that ingestion can't see on its own. The build is not done until stitch completes. See [`stitch_and_zipper.md`](stitch_and_zipper.md) for the full procedure. For content-light games with few interacting systems, both passes will be short and cheap; for open-world or mechanic-heavy games, stitch is the difference between a corpus that can answer cross-system questions and one that cannot.
+  > **Next:** This was the final research brief. Open a new session in this game folder and run `zipper` and then `stitch` to complete the build. **Stitch is the cascade's audit pass** -- it verifies per-edge convergence across systems and surfaces intra-corpus inconsistencies that ingestion can't see on its own. The build is not done until stitch completes. A full audit that writes zero edges is a complete, legitimate result; corpus size never licenses skipping the initial audit. Later unchanged-input incremental no-op receipts do not replace the first full audit. See [`stitch_and_zipper.md`](stitch_and_zipper.md) for the full procedure. For content-light games with few interacting systems, both passes will be short and cheap; for open-world or mechanic-heavy games, stitch is the difference between a corpus that can answer cross-system questions and one that cannot.
 
   Then ALSO append the optional pre-stitch sweep pointer:
 

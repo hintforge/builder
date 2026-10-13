@@ -16,6 +16,23 @@ Sources I found that look useful but couldn't fully fetch -- paywalls, Cloudflar
 - **search-snippet-only** -- search engine returned a snippet but the page itself wasn't reachable
 - **dead-link** -- URL was in another source but no longer resolves
 
+- **robots-restriction** -- the external research runtime reports a robots access restriction
+- **terms-restriction** -- a stated retrieval restriction was reported; preserve the actual evidence
+- **javascript-dependent** -- useful content requires page execution the available tool did not perform
+- **login-required** -- a signed-in session is required
+- **access-not-checked** -- no content/access check was performed; never call this robots-blocked
+
+## Companion tools
+
+For every useful map, tracker, database or completion tool supplied, recalled or found:
+
+- Name and URL if verified (otherwise mark unknown/unverified)
+- Apparent coverage, evidence for it, and uncertainty; unread coverage is not confirmed game data
+- Reason not read, access-check result, policy evidence if available, and check date
+- How a person could use it, best readable alternative, and wider-spoiler warning where relevant
+
+Merge repeated URLs with dated evidence retained. Read tools can also be recorded here when they offer a useful location fallback. Record an honest empty statement when no candidates were found; do not imply exhaustive discovery.
+
 ## Entries
 
 [One per blocked source as encountered. Template:]

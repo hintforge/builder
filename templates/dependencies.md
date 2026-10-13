@@ -8,6 +8,10 @@
 |---------|----------|----------|------------------------|------------|--------------|
 | DEP-001 | [system name] | [system name] | [one sentence: action/state in A affects state/outcome in B] | high | [file-A.md], [file-B.md] |
 
+### Optional cluster links
+
+Each independently testable relationship gets its own DEP row and audit. A genuinely indivisible relationship stays one row. When several rows describe facets of one cluster, the Cross-system edges table may add `Related DEP(s)` after Source files; list only DEP IDs that exist in this file. The default six-column table remains valid, and existing guides require no migration. A shared name alone does not justify a relationship.
+
 ## PoNR / lockout edges
 
 | Edge ID | Trigger | Locked out | Notes | Source files |
@@ -37,4 +41,3 @@ Stitch's per-edge convergence audit (see [`stitch_and_zipper.md`](https://github
 | YYYY-MM-DD | [file-A.md], [file-B.md] | A says "[X]"; B says "[Y]" | [entity-or-primary-vector file, or blank for user to resolve] | open |
 
 <!-- Status vocabulary: open (just surfaced) | resolved (user picked authoritative value + corrected the other file) | accepted (user accepted both -- rare; usually means the claim is genuinely ambiguous in-game). When status flips to resolved, the next stitch run can re-evaluate the edge. -->
-

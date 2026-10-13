@@ -71,6 +71,12 @@ def find_strings(buf):
 
 Then look for known keys (`World`, `Sublevel_*`, persona names, equipped slot names) by string prefix. This is the most common pattern for UE4/UE5 single-player titles.
 
+### Pattern -- archive with JSON state and blueprint identifiers
+
+Some saves are ZIP-compatible archives containing separate header, player-state and party/unit JSON members. Inspect the member list first, then read only the bounded members needed for the query; do not unpack an entire save by default. Record which layer each value comes from, its timestamp/campaign, and the field's documented meaning. Same-named fields across layers are not interchangeable.
+
+A blueprint GUID/key is an identifier, not a player-facing name or stat. Resolve it from the installed game's own blueprint/localization catalog when that catalog exists; unknown keys remain unresolved identifiers. Keep installed definition data separate from current save state, and validate at least three player-visible facts against the matching save/screen before calling the mapping trustworthy. Summary disclosure uses the reader's default-deny and two-signal gate; a raw archive member is never automatically spoiler-safe. This is a discovery pattern, not a generic decoder or promise that every archive has these members.
+
 ### Pattern 3 -- Encrypted / proprietary binary
 
 **Run these four checks before you classify a save as Pattern 3.** "No readable strings in the first N KB, and the header matches no compression magic" is the usual reason a save gets filed here, and it is not sufficient: it separates *not plaintext* from *plaintext*, and says nothing about encrypted vs obfuscated vs compressed. Obfuscation (a fixed XOR keystream, a byte rotation, a counter) is far more common than encryption in single-player games, and it is readable in an afternoon. Each check is minutes of work and any one of them can settle it:
