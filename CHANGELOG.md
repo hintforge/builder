@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Reader safeguard needs a real skill load; collectible map fixes (v112, 2026-10-17)
+
+- **`templates/reader_gate/`:** the gate no longer counts a hintforge `SKILL.md` path that appears anywhere in the transcript. The path counts only on a line that records a tool call (a read or shell command), so a player's message asking for the skill no longer opens the gate. `self_test.ps1` has seven checks (new: a player message naming `SKILL.md` stays blocked; a recorded read of it is allowed); `README.md` and `_build_for_your_setup.md` list them. Guides that already installed the gate keep the older copy until it is rebuilt.
+
+**Reader changes (same framework version).** The launcher's save helper needs a per-run token on every request and accepts only a JSON true or false for a mark; it now exits when the launcher window closes. The map page keeps confirmed marks in browser storage. A pickup mark no longer tells the reader to commit. Map positions may be missing in either coordinate mode.
+
+**Existing corpus impact.** None required. No format bump.
+
 ### Live collectible map documented in the corpus format (v111, 2026-10-17)
 
 - **`docs/corpus-format.md` section 5** describes the opt-in live collectible map for open-world guides with a per-item location list: `extract_tools/collectible_catalog.json`, `item_status.json` (the only file the reader and the save helper write), `collectible_map.json`, and an `artifacts/artifacts.json` entry with `"writes_state"`. A third-party base picture stays out of a public guide's git unless its owner cleared publishing it.
