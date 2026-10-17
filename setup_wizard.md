@@ -650,11 +650,13 @@ Run pre-research before Step 7's category classification. Use its findings to co
      EXECUTION DISCIPLINE -- REQUIRED IF YOU CAN RUN SUB-AGENTS.
 
      If you can split this research across sub-agents or parallel workers,
-     these limits apply. If you research alone, skip this block.
+     these rules apply. If you research alone, skip this block.
 
-     1. At most 4 sub-agents running at once. You are the lead: count the
-        sub-agents still running before every spawn, and at 4, wait for
-        one to report before starting another. Sub-agents do not spawn
+     1. At most 4 sub-agents running at once. 4 is a default, not a hard
+        rule: if the person who gave you this brief set a different number
+        for their machine, use theirs. You are the lead: count the
+        sub-agents still running before every spawn, and at the limit, wait
+        for one to report before starting another. Sub-agents do not spawn
         sub-agents of their own. No agent teams, no teammates, no peer
         sessions, no relays between sub-agents. Every sub-agent reports
         to the lead only; the lead consolidates.
@@ -674,7 +676,7 @@ Run pre-research before Step 7's category classification. Use its findings to co
         a person is to collect that file.
      ```
 
-     Use this wording verbatim; keep the ceiling at 4. Dispatch every requested topic within that ceiling. List incomplete topics under `## Not covered` for a later pass.
+     Use this wording verbatim. The ceiling of 4 is a default the person can raise or lower for their own machine: if they name a different number, put their number in place of each 4 in item 1. Dispatch every requested topic within that ceiling. List incomplete topics under `## Not covered` for a later pass.
 
    - **Shared evidence and discovery requirements (P1/P2/P3):** include a numbered reference list of exact page URLs (and capture dates when available), with a reference number beside every confirmed or single-source fact. Several independent references may support one fact; do not substitute a site name or a source count for its page address. Missing addresses remain explicitly untraceable, never invented. Include `## Sources found but not read` with name/URL if known, apparent coverage and evidence, reason not read, access-check result/date, and how a person could use it; write an explicit empty statement if none were found. List every supplied, recalled or found companion tool either in that section or the readable source lists, preserving uncertainty and discovery limits. Copy Stage 0 candidates into `## Known companion tools` without local filesystem paths; when Stage 0 was skipped, claim no setup probe. Within each phase's scope, capture enumerable collectibles' expected total when known, usable landmark/container locations, access conditions and missability with normal fact/source/spoiler tags. Report located counts and explicit gaps; use `[location inventory incomplete]` if completeness is unknown or any locations are missing. An unread source supplies no confirmed locations. These requirements also apply to P2 and P3 and their self-checks: P1 stays base-game only, P3 adds only its selected DLC/gaps.
    - **Source floor for location inventories:** add readable location-organized inventories (maps, trackers, databases, completion lists or walkthroughs) as a fourth source class for relevant topics. If none is readable, report the gap; an unread source does not satisfy the readable floor. Never exclude a game solely for its navigation-type label. External research must preserve and respect restrictions its runtime reports; do not instruct it to bypass a refused fetch.

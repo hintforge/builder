@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Research-brief sub-agent limit is a changeable default (v106, 2026-10-16)
+
+- The execution-discipline block in every P1/P2/P3 brief (`setup_wizard.md` Step 8) keeps 4 as the number of sub-agents running at once, but now states it as a default rather than a hard rule. A person can raise or lower it for their own machine; the wizard writes their number into the brief in place of 4. The topic ledger, the end condition and the no-teams rule are unchanged. This restates the fixed ceiling described in the v97 entry below.
+
+**Reader changes (same framework version).** The reader's answer-first rule now says, at the top of its turn order, that only chat counts as an answer: a question answered in thinking, a tool result, a file, an artifact or a save notice is still unanswered. Previously that test sat only inside the queued-question recovery rule, so it did not cover questions asked at the start of a turn.
+
+**Existing corpus impact.** None. No format bump; existing briefs and guides need no change.
+
 ### Explicit research completion check and archive-resolution fixtures (v104, 2026-10-13)
 
 - The research brief's numbered self-check now explicitly accounts for companion-tool dispositions, location totals/counts/gaps and readable class (d), including honest empty results and phase-scoped P2/P3 propagation.
