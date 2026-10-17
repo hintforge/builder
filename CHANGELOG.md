@@ -4,6 +4,13 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Doctor runs a deterministic integrity check (v108, 2026-10-17)
+
+- **New tool `tools/integrity_validator.py`** (Python 3 standard library, report-only, no network). Three checks: every claim has a non-empty `source`; every claim carries both `enemy-tier` and `puzzle-tier`, its own or from an accepted section-tag, table-citation or entry-block container shape; every claim-bearing file has a lifecycle `status` (`scaffold | research-integrated | live-observed | reconciled`). `status: scaffold` files are skipped for the first two. `--only` limits a run to named files; `--json` writes the full result; `--reject-shape` stops excusing a shape; `--exit-code` exits 1 on any violation. Tests: `python tools/test_integrity_validator.py` (27 cases on synthetic fixtures).
+- **`doctor.md` step 6b.** After Branch B or C wrote claims, the doctor runs the validator on the files it edited, reports the violations in the recap and routes them (missing source to Branch C, missing tier to the ingestion classifier, bad status to an in-place fix). It never blocks; without Python it skips and says so.
+
+**Existing corpus impact.** None required. No format bump. The check only reports; the files a doctor run edits may show older gaps the run did not cause.
+
 ### Local browser rung, doctor refresh dates and a session-close ref line (v107, 2026-10-17)
 
 - **Fandom ladder gains a local browser rung.** In `ingestion.md` "Blocked-source recovery", a new rung 3 (after the two `api.php` rungs, before BreezeWiki) uses a local anti-detect browser fetch tool when the runtime offers one, and keeps the text only on an `ok` verdict. Cloud runtimes skip it. The later rungs are renumbered 4-7. A direct `web_fetch` on Fandom is still not a rung.

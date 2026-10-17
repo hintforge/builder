@@ -138,6 +138,16 @@ Skip this step entirely (no flags, no re-run) only if doctor edited values insid
 
 **Concurrent CHECKPOINT edits:** re-read the current file immediately before each write or targeted edit. Preserve other sessions' phase flags, open threads and changelog entries; merge only this run's changes into the current text.
 
+### 6b. Integrity check (after Branch B or C wrote claims)
+
+Run `python <running-skill>/tools/integrity_validator.py <guide-folder> --only <each corpus file this run edited>` (paths relative to the guide folder). It checks three things and edits nothing: every claim has a non-empty `source`, every claim carries both `enemy-tier` and `puzzle-tier` (its own or from an accepted section or container shape), and every claim-bearing file has a lifecycle `status`. Report the violation list in the recap; never block on it. Route each class:
+
+- **Missing `source`** -> a Branch C candidate. Never invent a source.
+- **Missing tier** -> the `ingestion.md` step 3 classifier, under the classification receipt above. Doctor does not assign tiers itself.
+- **Missing or invalid `status`** -> offer the in-place fix.
+
+Log the violation counts and the actions taken in the CHECKPOINT harness changelog. If Python 3 is not available, skip the check and say so in the recap. Skip this step when the run wrote no claims (Branch A alone, or a sweep recommendation only).
+
 ### 7. Update CHECKPOINT and surface a recap
 
 - Add a dated `## Harness changelog` entry per branch that ran: branch letter, one-line description, files touched, pending follow-ups (e.g. "ingestion run pending for `doctor_<date>.txt`", "branch C deferred -- scaffolded fields not yet filled"). Don't merge branches into a single ambiguous entry.
