@@ -100,7 +100,7 @@ It's also designed as a framework for **multi-contributor truth aggregation** --
 - Multi-contributor aggregator with percentage-based truth -- multiple players' agents push observations to a per-game repo; the aggregator weighs claims by source quality and contributor track record and emits a canonical guide. See [`distribution.md`](distribution.md) for the full vision.
 - Static HTML wiki generator with reader-side tier filters -- replaces fan-wiki sites with consensus-merged, spoiler-controlled output.
 - Pluggable persona library + cross-platform TTS (macOS `say`, Linux `piper`).
-- Screenshot-by-command (`/screenshot` slash command + vision-model interpretation of the focused window).
+- Screenshots on macOS and Linux, and a voice trigger for them. (Windows screenshots of the game window shipped with the reader skill: say "ss".)
 - Mobile / hands-free voice loop -- extend PTT/TTS so a player can walk around with phone + headphones and talk to the guide.
 - Offline + local-LLM mode with periodic deep-research drip-feed from generous online free tiers.
 - Mod awareness & suggestions -- optional, token-heavy add-in. Recommends mods by category (QOL, cosmetic, add-ins); surfaces community picks on demand; contextually checks for QOL mods when a player flags something in the game as annoying. Complete-overhaul mods are out of scope (they make the guide itself obsolete).

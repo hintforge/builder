@@ -46,8 +46,9 @@ A guide can have any combination installed -- none, one, two, or all three. PTT 
 These three emerged from a fully-equipped reference guide built during framework development -- PTT for voice in, TTS for voice out, save-watcher for live state. Templates capture the working patterns so new guides don't rebuild from scratch.
 
 Future module candidates (see `../distribution.md`):
-- **Screenshot-by-command** (`/screenshot` slash command + vision model interpretation of focused-window capture)
 - **Cross-platform TTS** (macOS `say` + Linux `piper` variants of the Stop hook)
 - **GPU Whisper** (PTT module variant for users with CUDA, faster transcription)
 
 These are not yet templated. Add to this catalog when promoted.
+
+**Shipped elsewhere:** screenshots of the game window (Windows) ship with the reader skill in `tools/screenshot/`, not as a setup module; the player says "ss" and the reader captures. Nothing to install at setup. See the reader's `docs/screenshot.md`.

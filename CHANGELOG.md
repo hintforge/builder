@@ -4,6 +4,15 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Reader saves web findings with a read-back; game-window screenshots (v109, 2026-10-17)
+
+- **`templates/checkpoint.md` gains a `game_window_process:` line** under Player, left blank at setup. The reader's new Windows screenshot tool fills it with the game's program name on the player's first screenshot request.
+- **`distribution.md` "Screenshot-by-command"** now records the shipped Windows design: the game window is chosen by program name rather than focus, the capture runs through a one-time desktop-session task with a hidden console, and there is no fallback to the whole desktop. `templates/optional_modules.md` and the README roadmap move Windows screenshots from planned to shipped.
+
+**Reader changes (same framework version).** Saving a source-supported web finding is required: after the chat answer the reader writes it, reads the file back, and records any save it cannot complete as an `Unsaved finding:` in `CHECKPOINT.md` (new `persistence.md`). New Windows-only `tools/screenshot/` (capture and markup), used only when the player asks.
+
+**Existing corpus impact.** None required. No format bump. Existing guides gain the `game_window_process:` line when the reader first fills it.
+
 ### Doctor runs a deterministic integrity check (v108, 2026-10-17)
 
 - **New tool `tools/integrity_validator.py`** (Python 3 standard library, report-only, no network). Three checks: every claim has a non-empty `source`; every claim carries both `enemy-tier` and `puzzle-tier`, its own or from an accepted section-tag, table-citation or entry-block container shape; every claim-bearing file has a lifecycle `status` (`scaffold | research-integrated | live-observed | reconciled`). `status: scaffold` files are skipped for the first two. `--only` limits a run to named files; `--json` writes the full result; `--reject-shape` stops excusing a shape; `--exit-code` exits 1 on any violation. Tests: `python tools/test_integrity_validator.py` (27 cases on synthetic fixtures).

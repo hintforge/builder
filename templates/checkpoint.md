@@ -9,6 +9,10 @@ Last played: YYYY-MM-DD
 ## Player
 - **Name:** [PLAYER_NAME -- what the persona calls them; default "Player"]
 
+game_window_process:
+<!-- The game's program name without .exe, for the reader's Windows screenshot tool. Leave blank at setup: the reader fills it on the player's first screenshot request (it can differ by store, so it is per-player). -->
+
+
 ## Goal
 Spoiler-controlled playthrough on [PLATFORM]. Cowork acts as live reference for [puzzles, items, missables, areas, ...] -- no story, no enemy reveals (unless tier raised).
 

@@ -177,7 +177,15 @@ Not for the initial publish. The simple two-voice toggle and the manual-setup sp
 
 ## Screenshot-by-command (visual lookup)
 
-**Concept:** the player asks "what am I looking at?" (via voice or slash command) -- the framework grabs the focused game window, sends the image to a vision-capable AI, and answers based on what's in frame plus the per-game guide content.
+**Concept:** the player asks "what am I looking at?" (via voice, slash command or a plain "ss") -- the framework grabs the game window, sends the image to a vision-capable AI, and answers based on what's in frame plus the per-game guide content.
+
+**Shipped on Windows** in the reader skill: `tools/screenshot/capture.ps1` and `markup.ps1`, documented in the reader's [`docs/screenshot.md`](https://github.com/hintforge/reader/blob/main/docs/screenshot.md). Three differences from the original plan below, each forced by how the plan fails in practice:
+
+- **The game is chosen by program name, not by focus.** While the player talks to the reader, the window in front is the chat, not the game. The guide's `CHECKPOINT.md` holds a `game_window_process:` line; it starts blank and the reader fills it on the first screenshot request (asking the player once only when several windows could be the game).
+- **The capture runs through a one-time scheduled task in the player's desktop session.** An agent shell often runs in Windows session 0, which has no desktop, so a direct screen copy fails. The task starts its console through `conhost.exe --headless`, because a plain hidden PowerShell console still drew a black box over the game.
+- **No fallback to the whole desktop.** A missing, minimized or all-black window (locked PC, exclusive fullscreen) is reported in plain words; a desktop or wrong-window shot is never presented as the game.
+
+The reader takes a screenshot only when the player asks, marks it up only on request (or when a report names a spot), and keeps captures in the temp folder. The voice trigger and the macOS/Linux rows below remain unbuilt plans.
 
 **Why this is interesting:**
 - Eliminates the "describe what you see" friction. The player doesn't have to type or speak a careful description; they just point and ask.
@@ -217,12 +225,12 @@ Per the Hard Rule "Transparent operations" (#6), no surprise installs. Screensho
 
 | Platform | Tool | How |
 |---|---|---|
-| Windows | PowerShell + `System.Drawing` (built-in .NET) | `Add-Type` with the Win32 interop: `GetForegroundWindow()` + `GetWindowRect()` to get the HWND and bounds, then `[System.Drawing.Bitmap]` + `Graphics.CopyFromScreen` to capture the rect. Saves a PNG to a temp path. |
+| Windows (shipped) | PowerShell + `System.Drawing` (built-in .NET) | The game's window is found by program name, its bounds read with `DwmGetWindowAttribute` / `GetWindowRect`, and the rect copied with `Graphics.CopyFromScreen` inside a one-time desktop-session task. Saves a PNG to a temp path. See the reader's `tools/screenshot/capture.ps1`. |
 | macOS | `screencapture -W -o <path>` | `-W` captures the focused window interactively; `-o` removes shadow/border. Built into macOS, no install. |
 | Linux (Wayland) | `grim -t <output>` (focused-output) or `slurp \| grim -g -` (window region) | `grim` ships with most Wayland compositors. |
 | Linux (X11) | `import -window $(xdotool getactivewindow) <path>` | ImageMagick + xdotool, both standard on most distros. |
 
-For Windows specifically, the PowerShell snippet looks roughly like:
+The original focused-window sketch, kept for the unbuilt platforms' reference (the shipped Windows tool replaced it, for the reasons above):
 
 ```powershell
 Add-Type @"
@@ -244,7 +252,7 @@ $g.CopyFromScreen($rect.Left, $rect.Top, 0, 0, $bmp.Size)
 $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
 ```
 
-Zero dependencies. Roughly 30 lines of PowerShell wraps the whole capture path. Falls back to full-desktop if no foreground window is detected.
+Zero dependencies. The shipped tool does not fall back to the full desktop when the game window is not found.
 
 ### Architecture (slash-command path)
 
