@@ -69,7 +69,7 @@ If the maintainer's answer doesn't resolve to a branch, ask three diagnostic que
 | --- | --- |
 | **A** | None online. Read `CHANGELOG.md` and `docs/corpus-format.md` (from the running skill) to identify what changed between the corpus's current `corpus-core-version` and the framework's target. |
 | **B** | Web fetch: patch notes, DLC announcement page, dev blog, or wiki version-history section. Establish what changed in the game world. Single source minimum, two preferred. |
-| **C** | Web fetch only if the gap is factual and existing corpus sources don't cover it. For misclassification or structural issues, no fetch needed -- the gap is in our handling, not in the world. **For achievement gaps:** use the source ladder in [`setup_wizard.md`](setup_wizard.md) Step 6.7 sub-step 4 (WebSearch first, not URL crawling). |
+| **C** | Web fetch only if the gap is factual and existing corpus sources don't cover it. For misclassification or structural issues, no fetch needed -- the gap is in our handling, not in the world. **For achievement gaps:** use the source ladder in [`setup_wizard.md`](setup_wizard.md) Step 6.7 sub-step 4 (WebSearch first, not URL crawling). **For a Fandom page:** walk the Fandom ladder in [`ingestion.md`](ingestion.md) "Blocked-source recovery"; its local browser fetch rung is the free step to try before any paid scraping service. |
 
 Show the user what was fetched and a one-line summary of the change before continuing.
 
@@ -105,7 +105,8 @@ Branch A does not invent content. If a bump introduced a new universal-core fiel
    - **Community-knowledge-shaped gap** (build math, weapon / item interaction patterns, "is this a bug" categories, undocumented mechanics the deep-research cascade missed) -> the [`reddit_sweep.md`](reddit_sweep.md) sweep covers this, but doctor does NOT run it in this session. Recommend the user run **`hintforge doctor, reddit sweep for the <gap>`** in a fresh session (the gap being the specific mechanic, build, or interaction; the sweep runs in its own session per `reddit_sweep.md`). The sweep produces a findings file in `research_inbox/module/`; the user ingests it per ingestion.md's step 4b "Ingesting a reddit_sweep artifact." If the gap is also factually under-researched at the deep-research level (not just community-shaped), pair the sweep with a targeted brief -- sweep covers community knowledge, brief covers structural / wiki / dev-doc coverage. If the `reddit-mcp-buddy` MCP is unreachable, fall back to the targeted-brief path alone.
    - **Misclassification** (right facts, wrong vector tags or wrong spoiler tier) -> run the spoiler-classification sub-agent on the affected facts, move content per `ingestion.md` step 4's vector table.
 3. Reconcile downstream per `ingestion.md` step 7: grep destination subfolders (`sections/`, `items/`, `nav/`, `puzzles/`, `optional_zones/`, `controls.md`, `settings.md`, plus entity-class folders that exist -- `npcs/`, `factions/`, `crew/`, `reputation/` at `corpus-core-version: 5` and later) for orphans, fix them. No "DROPPED -- see CHECKPOINT" stubs in the corpus.
-4. Log each repair in `CHECKPOINT.md`.
+4. Every corpus file a doctor run edits gets its top-line `last_reconciled:` set to today's date (same rule as `ingestion.md` step 4).
+5. Log each repair in `CHECKPOINT.md`.
 
 **Branch C never touches the `## Hintforge manifest` fields.** `game-version`, `game-version-platform`, and `game-version-as-of` are not repair targets: the date moves only via the Manifest check's Route 2 (human-confirmed "nothing changed") or Branch B step 3 (game update), and `corpus-core-version` only via Branch A. A repair fixes content; it does not re-stamp what game state the corpus was reconciled against.
 
@@ -142,6 +143,7 @@ Skip this step entirely (no flags, no re-run) only if doctor edited values insid
 - Add a dated `## Harness changelog` entry per branch that ran: branch letter, one-line description, files touched, pending follow-ups (e.g. "ingestion run pending for `doctor_<date>.txt`", "branch C deferred -- scaffolded fields not yet filled"). Don't merge branches into a single ambiguous entry.
 - One-screen recap to the user: which branches ran, what changed, what research handoffs need to happen, any reconciliation actions taken.
 - **Scope the recap to where the work actually landed.** If this run wrote to a non-default branch (see pre-flight), the recap says so and names the merge as the outstanding step. "Fixed", "updated", "pushed" with no such qualifier are claims about the guide itself, and from a side branch they are false -- the repair is real, the guide does not have it yet.
+- **Close with the ref line** (builder `SKILL.md`, "Session-close ref line"), after the CHECKPOINT entry. On a non-default branch the line names that branch, which is what keeps later analysis scoped to where the work landed.
 
 ## Discipline rules
 

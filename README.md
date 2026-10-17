@@ -314,7 +314,7 @@ Small gaps can often be filled without a full deep-research handoff: tell doctor
 
 Reader updates occasionally change how the corpus is interpreted: new dial behavior, new warning tiers, updated persona rules. These changes do not invalidate the corpus unless the `corpus-core-version` increments.
 
-`corpus-core-version` is a single integer in `architecture.md`. The reader declares `MIN_SUPPORTED_CORE` and `MAX_SUPPORTED_CORE`. If your corpus version falls outside the reader's supported range, the reader will warn you at session start and describe what changed. It will not hard-stop; it will proceed and behave as well as it can under the mismatch.
+`corpus-core-version` is a single integer in `architecture.md`. The reader declares `MIN_SUPPORTED_CORE` and `MAX_SUPPORTED_CORE`. If your corpus version falls outside the reader's supported range, the doctor procedure compares versions and surfaces a migration plan; the reader does not check at session start. The reader does not hard-stop on a mismatch; it proceeds and behaves as well as it can.
 
 To bring a corpus up to a new version, run `hintforge doctor` and tell it the corpus format migrated to version N. Doctor reads the migration notes for that version bump and applies the required structural changes. Migration notes for each version increment are in `CHANGELOG.md`.
 

@@ -2,7 +2,7 @@
 name: hintforge
 description: Build OR maintain a Hintforge-format game guide. Use when starting a new spoiler-controlled companion for a published video game, ingesting research results, running stitch/zipper synthesis, or running the doctor procedure for post-instantiation maintenance (format bumps, game updates, targeted repair). Activates on triggers like "build a guide for X", "ingest the research", "run stitch", or "doctor hintforge" (post-instantiation maintenance).
 license: CC-BY-NC-SA-4.0
-version: 106
+version: 107
 ---
 
 # Hintforge builder
@@ -61,6 +61,14 @@ Corpus scaffolds live in [`templates/`](templates/). The wizard copies the unive
 ## Corpus format contract
 
 The on-disk shape of a corpus -- universal core, vector extensions, runtime discovery mechanism, claim format, architecture-level structures, status field discipline, spoiler tier annotation syntax -- is specified at [`docs/corpus-format.md`](docs/corpus-format.md). The builder is what produces this format; the reader expects it. Maintainers editing either skill should treat the format spec as the authoritative contract between them.
+
+## Session-close ref line
+
+If the guide folder is under git (`git rev-parse --is-inside-work-tree` prints `true`), the last thing a build session emits -- after every corpus and CHECKPOINT write -- is one line:
+
+`HF-CLOSE-REF {"branch": "<git rev-parse --abbrev-ref HEAD>", "commit": "<git rev-parse HEAD>", "dirty_count": <number of lines in git status --porcelain>}`
+
+It lets optional maintainer tooling read the guide exactly as this session left it. Count only, never file names (chat is player-visible). Do not commit, stash or switch branches to produce it. A folder without git emits nothing.
 
 ## What this skill does NOT do
 

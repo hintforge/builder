@@ -268,6 +268,7 @@ The flag resets to `false` when stitch completes.
    5d. **Write run log + CHECKPOINT.** Add a row to `dependencies.md` stitch run log -- include the count from step 4's audit in the `Inconsistencies surfaced` column (count the inconsistencies found, even if they were resolved in 5b). Update `## Phase state` in CHECKPOINT: `stitch: complete YYYY-MM-DD`, `stitch_stale: false`, `stitch_scope: full` (or scoped list). Add `## Harness changelog` entry listing DEP-IDs written (IDs only -- no descriptions), inconsistencies found and resolved, plus an optional aggregate skip count if borderline candidates were common.
 
 6. Chat reply at end of session: bare completion line per **Chat output discipline** above. No edge tables, titles, or rationales.
+   Then emit the session-close ref line (builder `SKILL.md`, "Session-close ref line") as the final line. It carries only a branch, a commit and a count, so it fits the chat output discipline above.
 
 ---
 

@@ -4,6 +4,19 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Local browser rung, doctor refresh dates and a session-close ref line (v107, 2026-10-17)
+
+- **Fandom ladder gains a local browser rung.** In `ingestion.md` "Blocked-source recovery", a new rung 3 (after the two `api.php` rungs, before BreezeWiki) uses a local anti-detect browser fetch tool when the runtime offers one, and keeps the text only on an `ok` verdict. Cloud runtimes skip it. The later rungs are renumbered 4-7. A direct `web_fetch` on Fandom is still not a rung.
+- **New `capture-method` value `browser_fetch`** for claims that came through that rung, added to every value list (`templates/claim_format.md`, `ingestion.md`, `docs/corpus-format.md`, and the reader's compatibility note). Additive vocabulary, no format bump.
+- **Doctor points at the browser rung.** Branch C's fetch row names the Fandom ladder, so a doctor run tries the free local browser step before any paid scraping service.
+- **Doctor sets refresh dates.** Branch C has a new step 4: every corpus file a doctor run edits gets today's `last_reconciled:`, the same rule ingestion step 4 already had. "Log each repair" becomes step 5.
+- **Session-close ref line.** Builder `SKILL.md` gains "Session-close ref line": when the guide folder is under git, a build, ingestion, doctor or stitch session ends with one `HF-CLOSE-REF {...}` line giving the branch, the commit and a count of uncommitted files (never file names). A folder without git emits nothing; the line never commits, stashes or switches branches.
+- **Docs.** The README no longer says the reader warns about corpus version at session start; the doctor compares versions. The game-content issue link points at the org's repository list instead of a single guide's tracker.
+
+**Reader changes (same framework version).** On close, a reader session in a git-backed guide ends with the same `HF-CLOSE-REF` line. The compatibility note lists `mediawiki_parse` and `browser_fetch`. README and issue-template fixes match the builder's.
+
+**Existing corpus impact.** None required. No `corpus-core-version` bump. Files a doctor run edits from now on get a current `last_reconciled:`; older files are not re-stamped.
+
 ### Research-brief sub-agent limit is a changeable default (v106, 2026-10-16)
 
 - The execution-discipline block in every P1/P2/P3 brief (`setup_wizard.md` Step 8) keeps 4 as the number of sub-agents running at once, but now states it as a default rather than a hard rule. A person can raise or lower it for their own machine; the wizard writes their number into the brief in place of 4. The topic ledger, the end condition and the no-teams rule are unchanged. This restates the fixed ceiling described in the v97 entry below.

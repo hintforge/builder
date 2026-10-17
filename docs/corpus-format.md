@@ -107,7 +107,7 @@ Every fact in a corpus that could be falsified is structured as a **claim** with
 
 - `claim` -- the factual statement, exact and testable. Uncertainty goes in `confidence`, not in the claim text.
 - `source` -- where it came from. URL preferred; in-game observation acceptable. Cite the canonical URL even when the actual capture path went through a mirror or archive -- the canonical URL is what the aggregator dedupes against.
-- `capture-method` -- how this claim entered the corpus. One of `web_fetch | special_export | breezewiki | archive_ph | manual_paste`. New required field as of `corpus-core-version: 2`. The value vocabulary maps to the rungs of the Fandom and Reddit recovery ladders in [`../ingestion.md`](../ingestion.md); `web_fetch` is the default for research-cascade-sourced claims that did not need a ladder. Inline-format short form: `capture: <value>`.
+- `capture-method` -- how this claim entered the corpus. One of `web_fetch | special_export | mediawiki_parse | browser_fetch | breezewiki | archive_ph | manual_paste` (authoritative list: [`../templates/claim_format.md`](../templates/claim_format.md)). New required field as of `corpus-core-version: 2`. The value vocabulary maps to the rungs of the Fandom and Reddit recovery ladders in [`../ingestion.md`](../ingestion.md); `web_fetch` is the default for research-cascade-sourced claims that did not need a ladder. Inline-format short form: `capture: <value>`.
 - `contributor` -- who added or last-verified.
 - `confidence` -- `high` / `medium` / `low`.
 - `last-verified` -- date the claim was last re-checked against reality.
