@@ -18,7 +18,7 @@ Already installed? Same line, one word different:
 
 > Update the hintforge skill from github.com/hintforge/builder
 
-Per-runtime details in [`docs/install/`](docs/install/).
+Per-runtime details in [`docs/install/`](docs/install/). Setup can also add a small safeguard to each guide folder that makes the AI load the reader before it reads the guide's files (recommended; see [`templates/reader_gate/`](templates/reader_gate/README.md)).
 
 ## Real tools for real playthroughs
 

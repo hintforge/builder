@@ -113,6 +113,13 @@ ptt = skip
 ptt_hotkey = CapsLock
 
 
+# === Reader safeguard (Step 6.6) ===
+# A small hook that makes the AI load the reader before it reads this guide's
+# files, so answers always follow the spoiler rules. A few messages to build.
+# Options: yes / skip (leave blank to be asked; recommended: yes)
+reader_gate =
+
+
 # === Read-aloud / TTS (Step 6) ===
 # ⚠️ Heads-up: setting up read-aloud takes 5-15 messages on Pro.
 # Most users should leave as "skip".

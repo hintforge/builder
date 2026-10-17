@@ -4,6 +4,15 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Setup offers a reader safeguard built for the player's setup (v110, 2026-10-17)
+
+- **New setup Step 6.6, "Reader safeguard"** (default yes; `reader_gate =` in `setup_answers.txt`, resolves to skip under benchmark auto-confirm). On yes, Step 9 sub-step 6b installs a PreToolUse hook in the guide folder that blocks the first read of a guide file until a hintforge skill has loaded, once per session, failing open on any error. The Step 10 handoff table lists its files.
+- **New `templates/reader_gate/`:** the reference Windows PowerShell gate, Claude Code and Codex registrations, `self_test.ps1` (five checks; a guide never ships a gate that failed it), a README with the contract, and `_build_for_your_setup.md`, an agent prompt that builds the gate for the player's runtime and shell (Claude Code, Codex; anything else records `unsupported`).
+- **The deny message closes the "not a hintforge task" escape:** re-issuing is allowed only when the Skill tool reports no hintforge skill installed; deciding a task is not a hintforge task is not a reason to skip.
+- **Existing guides:** ask the builder to "add the reader safeguard" to run only the Step 6.6 build in that folder. `instantiation.md`, the README and the Claude Code install doc mention it.
+
+**Existing corpus impact.** None required. No format bump. The safeguard is optional and lives in `.claude/` / `.codex/`, outside the corpus files.
+
 ### Reader saves web findings with a read-back; game-window screenshots (v109, 2026-10-17)
 
 - **`templates/checkpoint.md` gains a `game_window_process:` line** under Player, left blank at setup. The reader's new Windows screenshot tool fills it with the game's program name on the player's first screenshot request.

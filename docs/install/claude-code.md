@@ -14,6 +14,8 @@
 
 **Verification.** Ask "build a guide for [game name]" or "set up a new Hintforge corpus". The builder should greet you and start the setup wizard -- collecting game name, persona cast, dial defaults, and vector-extension choices before scaffolding any files.
 
+**Reader safeguard.** Setup offers to add a hook to the guide folder that makes the AI load the reader before it reads the guide's files (Step 6.6, recommended). For a guide that already exists, ask the builder to "add the reader safeguard".
+
 ## Runtime caveats
 
 These are Claude-Code-specific or Cowork-specific notes that don't belong in the OS portability matrix (see [`../../os_compatibility.md`](../../os_compatibility.md)) but matter for anyone running the builder on this runtime.

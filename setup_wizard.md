@@ -134,6 +134,7 @@ After Step -1 reads pre-fills and Step 0 confirms environment, the wizard collec
 - Step 4 -- `enemy_tier`, `puzzle_tier`
 - Step 6 -- `tts`
 - Step 6.5 -- `ptt`, `ptt_hotkey`
+- Step 6.6 -- `reader_gate` (yes/skip; default yes)
 - Step 6.7 -- `stage0` (yes/skip)
 - Step 8 -- `research`
 
@@ -470,6 +471,30 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 - `[PTT_ENABLED]`, `[PTT_HOTKEY]`
 
 **Default for the first-user test:** skipped.
+
+### Step 6.6 -- Reader safeguard (REQUIRED to ASK -- default yes)
+
+> **What this step is about:** without the reader skill loaded, an AI can read the guide's files and answer with no spoiler rules. The safeguard is a small hook in the guide folder that blocks the first read of a guide file until a hintforge skill has loaded, once per session, and lets everything through on any error. Contract and files: [`templates/reader_gate/README.md`](templates/reader_gate/README.md).
+
+**Ask:**
+- "Want me to add a small safeguard so the reader always loads before the AI reads this guide? It stops the AI answering from guide files without the spoiler rules. Built for your setup; takes a few messages. Recommended: yes. (**yes** / skip)"
+
+**If skip:**
+- Record `[READER_GATE] = skipped`. Write no gate files and no registration. Move on.
+
+**If yes (default):**
+- Record the choice now; the build runs at Step 9 sub-step 6b, after the guide folder exists.
+- The build follows [`templates/reader_gate/_build_for_your_setup.md`](templates/reader_gate/_build_for_your_setup.md): detect the runtime (Claude Code, Codex, other) and the shell, install the script and merge its registration, then run the self-test. On Windows with Claude Code it is a straight copy of `templates/reader_gate/claude-code/`.
+- A failed self-test removes the registration and records `unsupported`; a guide never ships a gate that has not been seen to work.
+
+**Capture:**
+- `[READER_GATE]` = `built-claude-code` / `built-codex` / `built-other` / `unsupported` / `skipped` (set to `yes` here; Step 9 sub-step 6b replaces it with the build result).
+
+**Existing guides:** a player can ask the builder to add the safeguard to a guide folder that already exists. Run only this step's build (the `_build_for_your_setup.md` prompt) in that folder; nothing else in setup re-runs.
+
+**Auto-confirm / sandbox behavior:** under the benchmark auto-confirm directive this step resolves to **skip**, so sandbox runs stay comparable with earlier runs.
+
+**Default for the first-user test:** yes.
 
 ### Step 6.7 -- Stage 0 pre-research (REQUIRED -- runs before Step 7; ⚠️ token-aware)
 
@@ -879,6 +904,7 @@ About to set up:
   TTS style:        [TTS_STYLE]              (from setup_answers.txt)     ← Step 6 (or "n/a")
   PTT enabled:      [PTT_ENABLED]            (from setup_answers.txt)     ← Step 6.5
   PTT hotkey:       [PTT_HOTKEY]             (from setup_answers.txt)     ← Step 6.5 (or "n/a")
+  Reader safeguard: [READER_GATE]            (from setup_answers.txt)     ← Step 6.6 ("yes" / "skipped")
   Stage 0 priors:   [STAGE0]                                              ← Step 6.7 ("done" / "skipped")
   Achievement stubs:[ACHIEVEMENT_STUB_COUNT]                              ← Step 6.7 (integer / "0" / "unknown" if Stage 0 skipped)
   Subfolders:       [list]                                                ← Step 7
@@ -933,6 +959,7 @@ If yes (and headroom is sufficient), the AI agent:
 
 5. If `[SAVE_DIR]` provided: scaffolds `<game>/save_watcher.py` from the documented pattern
 6. If TTS enabled and Windows: scaffolds `<game>/.claude/tts_hook.ps1`
+   6b. If `[READER_GATE] = yes`: builds the reader safeguard into `<game>/` per [`templates/reader_gate/_build_for_your_setup.md`](templates/reader_gate/_build_for_your_setup.md) -- script, merged registration, self-test with its output shown -- and replaces `[READER_GATE]` with the result (`built-claude-code` / `built-codex` / `built-other` / `unsupported`). Never print the Step 10 handoff claiming a safeguard whose self-test did not pass.
 7. Adds the project to the workspace ledger (`<WORKSPACE_ROOT>/CLAUDE.md`)
 8. **Only if `[RESEARCH_MODE]` ≠ `none`:** runs the chosen research bundle (in-house) or generates the handoff briefs (handoff mode), announcing each URL or brief file as it's written. For in-house modes (`minimal` / `standard` / `deep`) stops when the budget is consumed. If any page was blocked during in-house research, write it to `<game>/research_inbox/manual/pages_to_save.md` and show the **Blocked pages** message from [`ingestion.md`](ingestion.md) step 12 before the Step 10 handoff.
 9. **Brief-artifact gate (handoff/deep modes only).** If `[RESEARCH_MODE]` is `handoff` or `deep`, verify on disk that `<game>/research_briefs/p1.txt` exists and is non-empty. If `[RUN_P2]` is yes, verify `<game>/research_briefs/p2.txt`. If `[RUN_P3]` is yes, verify `<game>/research_briefs/p3.txt`. **If any required brief is missing, do NOT print the Step 10 handoff message. Stop and report the missing artifact, then back up to the brief-generation sub-procedure of Step 8.** A handoff-mode setup that doesn't ship a P1 brief has not completed Step 8 even if the Step 9 summary table looks fully filled -- the variable-must-have-value enforcement catches missing answers but not missing artifacts; this gate catches the latter.
@@ -999,6 +1026,7 @@ After the files are written, the wizard's final message to the user is the hando
 > | File / folder | What it's for |
 > |---|---|
 > | `CLAUDE.md` / `AGENTS.md` | Tiny shim files that tell the AI "this is a guide -- load the hintforge-reader skill." Optional; the guide works without them. |
+> | `.claude/reader_gate.ps1` / `.codex/reader_gate.ps1` (if you said yes to the safeguard) | The reader safeguard: makes the AI load the reader before it reads the guide's files. It nudges the AI once per session and never stops you using the files. |
 > | `CHECKPOINT.md` | Tracks where you are and what you've done; updates as you play. |
 > | `persona.md` | How the AI talks to you (voice / character settings). |
 > | `warning_tiers.md` | Your spoiler-control settings. |

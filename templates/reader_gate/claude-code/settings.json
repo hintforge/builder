@@ -1,0 +1,16 @@
+{
+  "_comment": "Claude Code settings registering the hintforge reader gate. Merge into <game>/.claude/settings.json (never overwrite an existing file). The gate blocks the first read of this guide's files in a session until a hintforge skill has loaded, then allows; it fails open on any error.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep|Glob|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\reader_gate.ps1\""
+          }
+        ]
+      }
+    ]
+  }
+}
