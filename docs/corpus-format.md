@@ -155,6 +155,8 @@ It also carries the **manifest and vector list** described in §3. In a sanction
 
 The authoritative template lives at [`templates/architecture.md`](../templates/architecture.md).
 
+**Live collectible map (opt-in, open-world guides with a per-item location list).** Four files: `extract_tools/collectible_catalog.json` (one entry per item: stable source-prefixed `id`, `category`, `where`, and a position as `lng`/`lat` or a row in `extract_tools/map_positions.json`), `extract_tools/item_status.json` (`as_of`, `note`, `taken: [ids]`; the only file the reader and the save helper write), `extract_tools/collectible_map.json` (categories, letters, colours, numbering, spoiler rules, list groups), and an `artifacts/artifacts.json` entry for `full_map.html` with `"writes_state": "extract_tools/item_status.json"`, which is the only thing that lets the launcher's save helper write into the guide. The page is built by the reader's `tools/collectible-map/build_map.py`; the fields are documented in that folder's `catalog_schema.md`. A third-party base picture stays out of a public guide's git unless its owner has cleared publishing it.
+
 ## 6. Status field and update discipline
 
 Every per-zone file (and every claim-bearing file produced by ingestion) carries a `status` field at the top with one of these values:

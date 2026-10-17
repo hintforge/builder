@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Live collectible map documented in the corpus format (v111, 2026-10-17)
+
+- **`docs/corpus-format.md` section 5** describes the opt-in live collectible map for open-world guides with a per-item location list: `extract_tools/collectible_catalog.json`, `item_status.json` (the only file the reader and the save helper write), `collectible_map.json`, and an `artifacts/artifacts.json` entry with `"writes_state"`. A third-party base picture stays out of a public guide's git unless its owner cleared publishing it.
+
+**Reader changes (same framework version).** New `tools/collectible-map/` (page builder, item codes, interaction test, schema) and a save helper started by the artifact launcher; a reported pickup is marked with a one-line reply.
+
+**Existing corpus impact.** None required. No format bump; a guide opts in by adding the files above.
+
 ### Setup offers a reader safeguard built for the player's setup (v110, 2026-10-17)
 
 - **New setup Step 6.6, "Reader safeguard"** (default yes; `reader_gate =` in `setup_answers.txt`, resolves to skip under benchmark auto-confirm). On yes, Step 9 sub-step 6b installs a PreToolUse hook in the guide folder that blocks the first read of a guide file until a hintforge skill has loaded, once per session, failing open on any error. The Step 10 handoff table lists its files.
