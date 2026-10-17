@@ -12,6 +12,10 @@
 #   6. a new session where only the player's message names a hintforge SKILL.md -> exit 2
 #      (asking for the skill is not loading it)
 #   7. a new session whose transcript shows a tool call reading a hintforge SKILL.md -> exit 0
+#   8. a new session where the AI's own text names a hintforge SKILL.md beside an unrelated
+#      tool call                                                  -> exit 2
+#   9. a new session whose only shell calls echo a hintforge SKILL.md path -> exit 2
+#  10. a new session whose transcript shows a Codex shell call reading a hintforge SKILL.md -> exit 0
 # -Tool Bash sends shell commands (`cat <file>`) instead of Read calls, for runtimes that read
 # files through the shell (Codex). Prints one PASS/FAIL line per check; exits 0 only when all pass.
 # Cleans up its temporary transcripts and block-once flags.
@@ -36,6 +40,15 @@ Set-Content -LiteralPath $readSkill -Value @(
     '{"type":"user","message":{"role":"user","content":"where was I?"}}',
     '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","input":{"file_path":"C:\\guides\\.agents\\skills\\hintforge-reader\\SKILL.md"}}]}}'
 )
+$aiText = Join-Path $tmp ($run + '_aitext.jsonl')
+$echoed = Join-Path $tmp ($run + '_echoed.jsonl')
+$codexRead = Join-Path $tmp ($run + '_codexread.jsonl')
+Set-Content -LiteralPath $aiText -Value '{"type":"assistant","message":{"content":[{"type":"text","text":"I should read .agents/skills/hintforge-reader/SKILL.md"},{"type":"tool_use","name":"Read","input":{"file_path":"CHECKPOINT.md"}}]}}'
+Set-Content -LiteralPath $echoed -Value @(
+    '{"type":"response_item","payload":{"type":"function_call","name":"shell","arguments":"{\"command\":[\"bash\",\"-lc\",\"echo .agents/skills/hintforge-reader/SKILL.md\"]}"}}',
+    '{"type":"response_item","payload":{"type":"custom_tool_call","name":"exec","input":"text(await tools.exec_command({cmd:\"echo ''.agents/skills/hintforge-reader/SKILL.md''\"}))"}}'
+)
+Set-Content -LiteralPath $codexRead -Value '{"type":"response_item","payload":{"type":"custom_tool_call","name":"exec","input":"text(await tools.exec_command({cmd:\"Get-Content -Raw -LiteralPath ''.agents/skills/hintforge-reader/SKILL.md''\"}))"}}'
 
 function Invoke-Gate([string]$session, [string]$transcript, [string]$file) {
     if ($Tool -eq 'Read') { $input_ = @{ file_path = $file } } else { $input_ = @{ command = "cat `"$file`"" } }
@@ -65,9 +78,15 @@ $r = Invoke-Gate ($run + '_e') $asked $checkpoint
 $results += ,@('6 a player message naming SKILL.md does not count as a load', ($r.Code -eq 2 -and $r.Err -match 'HINTFORGE GATE'), "exit $($r.Code)")
 $r = Invoke-Gate ($run + '_f') $readSkill $checkpoint
 $results += ,@('7 read after a tool call that read a hintforge SKILL.md is allowed', ($r.Code -eq 0), "exit $($r.Code)")
+$r = Invoke-Gate ($run + '_g') $aiText $checkpoint
+$results += ,@('8 the AI naming SKILL.md beside an unrelated tool call does not count as a load', ($r.Code -eq 2 -and $r.Err -match 'HINTFORGE GATE'), "exit $($r.Code)")
+$r = Invoke-Gate ($run + '_h') $echoed $checkpoint
+$results += ,@('9 a shell call that only echoes a SKILL.md path does not count as a load', ($r.Code -eq 2 -and $r.Err -match 'HINTFORGE GATE'), "exit $($r.Code)")
+$r = Invoke-Gate ($run + '_i') $codexRead $checkpoint
+$results += ,@('10 read after a Codex shell call that read a hintforge SKILL.md is allowed', ($r.Code -eq 0), "exit $($r.Code)")
 
-foreach ($s in 'a', 'b', 'c', 'd', 'e', 'f') { Remove-Item -LiteralPath (Join-Path $tmp ('hintforge_guide_gate_' + $run + '_' + $s + '.flag')) -ErrorAction SilentlyContinue }
-Remove-Item -LiteralPath $empty, $loaded, $asked, $readSkill -ErrorAction SilentlyContinue
+foreach ($s in 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i') { Remove-Item -LiteralPath (Join-Path $tmp ('hintforge_guide_gate_' + $run + '_' + $s + '.flag')) -ErrorAction SilentlyContinue }
+Remove-Item -LiteralPath $empty, $loaded, $asked, $readSkill, $aiText, $echoed, $codexRead -ErrorAction SilentlyContinue
 
 $failed = 0
 foreach ($x in $results) {

@@ -29,7 +29,7 @@ Check what can run the script on this machine: `powershell` (Windows PowerShell,
 
 ## 4. Self-test (required)
 
-Windows or `pwsh`: run `self_test.ps1` from this folder against the installed script (`-Tool Bash` for a Codex install) and show its output to the player. For a `.sh` port, run the same seven checks by piping the same payloads into the script yourself:
+Windows or `pwsh`: run `self_test.ps1` from this folder against the installed script (`-Tool Bash` for a Codex install) and show its output to the player. For a `.sh` port, run the same ten checks by piping the same payloads into the script yourself (a port parses each transcript line as JSON, as the reference does; searching a line for the path is not enough):
 
 1. first read of `<game>/CHECKPOINT.md`, empty transcript -> exit 2 and the deny message;
 2. the same call again in the same session -> exit 0;
@@ -37,7 +37,10 @@ Windows or `pwsh`: run `self_test.ps1` from this folder against the installed sc
 4. a read of `<game>/README.md` -> exit 0;
 5. a read of a file outside the guide -> exit 0;
 6. a new session whose only mention of a hintforge `SKILL.md` path is in the player's message -> exit 2 (naming the skill is not loading it);
-7. a new session whose transcript records a tool call that read a hintforge `SKILL.md` -> exit 0.
+7. a new session whose transcript records a tool call that read a hintforge `SKILL.md` -> exit 0;
+8. a new session where the AI's own text names a hintforge `SKILL.md` beside an unrelated tool call -> exit 2;
+9. a new session whose only shell calls echo a hintforge `SKILL.md` path -> exit 2;
+10. a new session whose transcript records a Codex shell call that read a hintforge `SKILL.md` (for example `Get-Content` or `cat` of it) -> exit 0.
 
 Delete the test's block-once flags and temporary transcripts afterward.
 

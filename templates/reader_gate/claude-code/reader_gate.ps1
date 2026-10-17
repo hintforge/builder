@@ -83,24 +83,70 @@ try {
         if ($exclude -contains $base) { exit 0 }
     }
 
-    # Satisfied-if: a hintforge-family skill loaded this session -- a Skill tool call, a
-    # /hintforge slash command, or (runtimes that load skills by reading them) a read of a
-    # hintforge SKILL.md. The SKILL.md path counts only on a transcript line that records a tool
-    # call (Claude Code "tool_use", Codex "function_call" and its shell variants): a player
-    # message that merely names the path has loaded nothing.
-    if (-not [string]::IsNullOrEmpty($tp) -and (Test-Path -LiteralPath $tp)) {
-        $hit = Select-String -LiteralPath $tp -Pattern '"name":\s*"Skill".*"skill":\s*"hintforge|command-name>/hintforge' -List -ErrorAction SilentlyContinue
-        if ($hit) { exit 0 }
-        $toolCall = '"type":\s*"(tool_use|function_call|local_shell_call|custom_tool_call)"'
-        foreach ($m in @(Select-String -LiteralPath $tp -Pattern 'hintforge(-reader)?[\\/]+SKILL\.md' -ErrorAction SilentlyContinue)) {
-            if ($m.Line -match $toolCall) { exit 0 }
-        }
-    }
-
-    # Block once per session.
+    # Block once per session: a session already blocked once goes through (checked first, as it
+    # is the cheaper test and either way the call is allowed).
     $safeSid = ($sid -replace '[^A-Za-z0-9_-]', '_')
     $flag = Join-Path ([System.IO.Path]::GetTempPath()) ('hintforge_guide_gate_' + $safeSid + '.flag')
     if (Test-Path -LiteralPath $flag) { exit 0 }
+
+    # Satisfied-if: the hintforge or hintforge-reader skill loaded this session. Every transcript
+    # line that mentions hintforge is parsed as JSON, and only a recorded tool call counts:
+    #   - a Skill call naming hintforge or hintforge-reader (a plugin prefix like "x:" is allowed);
+    #   - a Read whose file_path is a hintforge SKILL.md;
+    #   - a Codex shell call (function_call, local_shell_call, custom_tool_call) whose command
+    #     reads that file with a read verb (cat, Get-Content, ...), for runtimes that load skills
+    #     through the shell.
+    # Text that names the path -- the player's or the AI's own -- and a shell call that only
+    # echoes it have loaded nothing. A /hintforge slash command, which the runtime writes into the
+    # transcript as the player's message, also counts.
+    $skillName = '(?i)^([A-Za-z0-9_-]+:)?hintforge(-reader)?$'
+    $skillPath = '(?i)(^|[\\/])hintforge(-reader)?[\\/]+SKILL\.md$'
+    $slash     = '<command-name>/([A-Za-z0-9_-]+:)?hintforge(-reader)?</command-name>'
+    $sk        = 'hintforge(-reader)?[\\/]+SKILL\.md'
+    $arg       = '("[^"]*' + $sk + '"|''[^'']*' + $sk + '''|[^\s"'';|&<>]*' + $sk + ')'
+    $shellRead = '(?i)(^\s*|[;&|(]\s*)(cat|type|more|less|head|tail|bat|nl|gc|Get-Content|sed\s+-n\s+(''[^'']*''|"[^"]*"|\S+))(\s+-{1,2}[A-Za-z]+(\s+\d+)?)*\s+' + $arg + '(\s|$|[;|&)])'
+    function Get-ShellCommands($it) {
+        $out = @()
+        $ty = "$($it.type)"
+        $nm = "$($it.name)"
+        if ($ty -eq 'local_shell_call') {
+            $out += @($it.action.command | ForEach-Object { "$_" })
+        }
+        elseif (($ty -eq 'function_call') -and ($nm -match '(?i)shell|exec')) {
+            $a = $null
+            try { $a = "$($it.arguments)" | ConvertFrom-Json } catch {}
+            if ($a) { foreach ($k in 'cmd', 'command') { if ($null -ne $a.$k) { $out += @($a.$k | ForEach-Object { "$_" }) } } }
+        }
+        elseif (($ty -eq 'custom_tool_call') -and ($nm -match '(?i)shell|exec')) {
+            $src = "$($it.input)"
+            $ms = [regex]::Matches($src, '\b(cmd|command)\s*:\s*"((?:[^"\\]|\\.)*)"')
+            if ($ms.Count -eq 0) { $out += $src }
+            foreach ($m in $ms) { $out += ($m.Groups[2].Value -replace '\\(["\\])', '$1') }
+        }
+        return , $out
+    }
+    if (-not [string]::IsNullOrEmpty($tp) -and (Test-Path -LiteralPath $tp)) {
+        foreach ($m in @(Select-String -LiteralPath $tp -Pattern 'hintforge' -SimpleMatch -ErrorAction SilentlyContinue)) {
+            $o = $null
+            try { $o = $m.Line | ConvertFrom-Json } catch { continue }
+            if ($null -eq $o) { continue }
+            $content = $o.message.content
+            if (("$($o.type)" -eq 'user') -and ($content -is [string]) -and ($content -match $slash)) { exit 0 }
+            if (("$($o.type)" -eq 'assistant') -and ($null -ne $content) -and ($content -isnot [string])) {
+                foreach ($b in @($content)) {
+                    if ("$($b.type)" -ne 'tool_use') { continue }
+                    if (("$($b.name)" -eq 'Skill') -and ("$($b.input.skill)" -match $skillName)) { exit 0 }
+                    if (("$($b.name)" -eq 'Read') -and ("$($b.input.file_path)" -match $skillPath)) { exit 0 }
+                }
+            }
+            # Codex rollouts wrap each item in "payload"; older ones put it at the top level.
+            foreach ($it in @($o, $o.payload)) {
+                if ($null -eq $it) { continue }
+                foreach ($c in (Get-ShellCommands $it)) { if ($c -match $shellRead) { exit 0 } }
+            }
+        }
+    }
+
     try { Set-Content -LiteralPath $flag -Value '1' -ErrorAction SilentlyContinue } catch {}
 
     $shellNote = ''
