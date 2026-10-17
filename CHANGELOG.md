@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Reader safeguard reads each transcript line as a record (v113, 2026-10-17)
+
+- **`templates/reader_gate/`:** the gate parses every transcript line instead of searching it for a `SKILL.md` path next to any tool call. Only a recorded tool call loads the skill: a `Skill` call naming `hintforge` or `hintforge-reader`, a `Read` of a hintforge `SKILL.md`, or a Codex shell call whose command reads that file. The AI's own text naming the path, and a shell call that only echoes it, no longer open the gate. `self_test.ps1` has ten checks (new: the AI-text and echo cases stay blocked; a Codex shell read is allowed); `README.md` and `_build_for_your_setup.md` list them. Guides that already installed the gate keep the older copy until it is rebuilt.
+
+**Reader changes (same framework version).** A map opened outside the artifact launcher says its marks stay in that browser and must be ticked again inside the launcher. A map view fitted to the items shows the whole picture when no item has a position yet, instead of stopping the build.
+
+**Existing corpus impact.** None required. No format bump.
+
 ### Reader safeguard needs a real skill load; collectible map fixes (v112, 2026-10-17)
 
 - **`templates/reader_gate/`:** the gate no longer counts a hintforge `SKILL.md` path that appears anywhere in the transcript. The path counts only on a line that records a tool call (a read or shell command), so a player's message asking for the skill no longer opens the gate. `self_test.ps1` has seven checks (new: a player message naming `SKILL.md` stays blocked; a recorded read of it is allowed); `README.md` and `_build_for_your_setup.md` list them. Guides that already installed the gate keep the older copy until it is rebuilt.
