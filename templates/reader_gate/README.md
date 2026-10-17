@@ -30,4 +30,4 @@ Deny message (the last two sentences matter: deciding a task "isn't a hintforge 
 powershell -NoProfile -ExecutionPolicy Bypass -File <builder>/templates/reader_gate/self_test.ps1 -Gate <game>/.claude/reader_gate.ps1
 ```
 
-Add `-Tool Bash` for the Codex copy. Five checks: the first guide read is blocked with the message above; the second is allowed; a session with a hintforge skill loaded is allowed; a shim read is allowed; a read outside the guide is allowed. If any check fails, remove the registration and report the gate as not built.
+Add `-Tool Bash` for the Codex copy. Seven checks: the first guide read is blocked with the message above; the second is allowed; a session with a hintforge skill loaded is allowed; a shim read is allowed; a read outside the guide is allowed; a session where only the player's message names a hintforge `SKILL.md` is still blocked; a session whose transcript records a tool call reading that file is allowed. If any check fails, remove the registration and report the gate as not built.

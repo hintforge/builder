@@ -85,10 +85,16 @@ try {
 
     # Satisfied-if: a hintforge-family skill loaded this session -- a Skill tool call, a
     # /hintforge slash command, or (runtimes that load skills by reading them) a read of a
-    # hintforge SKILL.md.
+    # hintforge SKILL.md. The SKILL.md path counts only on a transcript line that records a tool
+    # call (Claude Code "tool_use", Codex "function_call" and its shell variants): a player
+    # message that merely names the path has loaded nothing.
     if (-not [string]::IsNullOrEmpty($tp) -and (Test-Path -LiteralPath $tp)) {
-        $hit = Select-String -LiteralPath $tp -Pattern '"name":\s*"Skill".*"skill":\s*"hintforge|command-name>/hintforge|hintforge(-reader)?[\\/]+SKILL\.md' -List -ErrorAction SilentlyContinue
+        $hit = Select-String -LiteralPath $tp -Pattern '"name":\s*"Skill".*"skill":\s*"hintforge|command-name>/hintforge' -List -ErrorAction SilentlyContinue
         if ($hit) { exit 0 }
+        $toolCall = '"type":\s*"(tool_use|function_call|local_shell_call|custom_tool_call)"'
+        foreach ($m in @(Select-String -LiteralPath $tp -Pattern 'hintforge(-reader)?[\\/]+SKILL\.md' -ErrorAction SilentlyContinue)) {
+            if ($m.Line -match $toolCall) { exit 0 }
+        }
     }
 
     # Block once per session.

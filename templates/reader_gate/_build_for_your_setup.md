@@ -29,13 +29,15 @@ Check what can run the script on this machine: `powershell` (Windows PowerShell,
 
 ## 4. Self-test (required)
 
-Windows or `pwsh`: run `self_test.ps1` from this folder against the installed script (`-Tool Bash` for a Codex install) and show its output to the player. For a `.sh` port, run the same five checks by piping the same payloads into the script yourself:
+Windows or `pwsh`: run `self_test.ps1` from this folder against the installed script (`-Tool Bash` for a Codex install) and show its output to the player. For a `.sh` port, run the same seven checks by piping the same payloads into the script yourself:
 
 1. first read of `<game>/CHECKPOINT.md`, empty transcript -> exit 2 and the deny message;
 2. the same call again in the same session -> exit 0;
 3. a new session whose transcript contains a hintforge `Skill` call -> exit 0;
 4. a read of `<game>/README.md` -> exit 0;
-5. a read of a file outside the guide -> exit 0.
+5. a read of a file outside the guide -> exit 0;
+6. a new session whose only mention of a hintforge `SKILL.md` path is in the player's message -> exit 2 (naming the skill is not loading it);
+7. a new session whose transcript records a tool call that read a hintforge `SKILL.md` -> exit 0.
 
 Delete the test's block-once flags and temporary transcripts afterward.
 
