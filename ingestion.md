@@ -202,7 +202,9 @@ The recurring nature lives in the claim's `notes:` field, verbatim shape: `Recur
 
 **9. Move-aside on completion.** Apply the **Dated move-aside** rules from step 11: rename and move the ingested artifact to `research_inbox/module/_processed/` (create the subfolder if absent) with the research date embedded in the filename. The "Threads scanned" appendix moves with the file; it stays accessible for re-run reference inside `_processed/`.
 
-### 5. Tag each new section with inline metadata
+### 5. Tag each new claim with inline metadata
+
+One `_source:` line per claim, at the start of its own line directly under the claim it covers; a table takes one table tag under it, with a `tier` column when its rows differ in tier. The shapes, and the rule that a `_source:` line covers only what is above it, are in [`templates/claim_format.md`](templates/claim_format.md). One shared line per section is not a substitute: it leaves every claim below it untagged.
 
 `_source: <tool> <date> · capture: <method> · confidence: <high|medium|low> · enemy-tier: <N> · puzzle-tier: <N> · category: mainline · spoiler: <tier>_`
 
