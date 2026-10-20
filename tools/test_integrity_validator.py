@@ -122,8 +122,24 @@ class SyntheticTests(unittest.TestCase):
         # A numeric row tier (legacy `E / P` pair, tech-tree tiers) is left alone: shape_table.md has one.
         self.assertFalse({v for v in self.f if v[0] == "shape_table.md" and v[1] == line_of(SYN, "shape_table.md", "Pick the left door")})
 
+    def test_section_level_only_metadata_fails(self):
+        f = "section_level_only.md"
+        self.assertEqual(
+            {v for v in self.f if v[0] == f},
+            {(f, 2, "source"), (f, line_of(SYN, f, "Default metadata"), "source")})
+        details = {v["line"]: v["detail"] for v in self.r["violations"] if v["file"] == f}
+        self.assertIn("parses no claim", details[2])
+
+    def test_midline_source_fails_and_a_bare_mention_does_not(self):
+        f = "midline_source.md"
+        self.assertEqual(
+            {v for v in self.f if v[0] == f},
+            {(f, line_of(SYN, f, "The Beta Charm"), "source"), (f, line_of(SYN, f, "- Gamma Charm"), "source")})
+        # The one start-of-line claim in the file still parses, so the file is not a zero-claim file.
+        self.assertIn(f"{f}:{line_of(SYN, f, 'Delta Charm') + 1}:inline", self.r["claim_index"])
+
     def test_totals(self):
-        self.assertEqual(self.r["counts"], {"source": 2, "tier": 8, "status": 1})
+        self.assertEqual(self.r["counts"], {"source": 6, "tier": 8, "status": 1})
 
 
 class CanonicalShapePlugInTests(unittest.TestCase):
@@ -217,18 +233,36 @@ class EdgeCaseTests(unittest.TestCase):
         self.assertEqual(r["counts"]["source"], 1)
 
     def test_inner_three_backtick_does_not_close_four_backtick_fence(self):
-        text = ("**status:** research-integrated\n\n````markdown\n```\ninner\n```\n"
-                "_source: · enemy-tier: 0_\n````\n")
+        text = ("**status:** research-integrated\n\n_source: https://e.org/a · enemy-tier: 0 · puzzle-tier: 0_\n\n"
+                "````markdown\n```\ninner\n```\n_source: · enemy-tier: 0_\n````\n")
         r = self._run(text)
         self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
-        self.assertEqual(r["claims_checked"], 0)
+        self.assertEqual(r["claims_checked"], 1)  # only the real claim; the fenced one is an example
 
     def test_claim_line_inside_inner_example_of_longer_fence_is_not_content(self):
-        text = ("**status:** research-integrated\n\n````markdown\n```\n"
-                "_source: · enemy-tier: 0_\n```\n````\n")
+        text = ("**status:** research-integrated\n\n_source: https://e.org/a · enemy-tier: 0 · puzzle-tier: 0_\n\n"
+                "````markdown\n```\n_source: · enemy-tier: 0_\n```\n````\n")
         r = self._run(text)
         self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
-        self.assertEqual(r["claims_checked"], 0)
+        self.assertEqual(r["claims_checked"], 1)
+
+    def test_zero_claim_file_flagged_only_when_it_is_a_content_file(self):
+        # status + metadata fields mentioned, no claim parsed: flagged
+        r = self._run("**status:** research-integrated\n\nSee enemy-tier: 0 here, nothing parsed.\n")
+        self.assertEqual(r["counts"], {"source": 1, "tier": 0, "status": 0})
+        # status but no metadata anywhere (an index): not flagged
+        r = self._run("**status:** research-integrated\n\nJust an index of files.\n")
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+        # no status (a readme): not flagged
+        r = self._run("# Readme\n\nJust prose, `_source:` mentioned, no status field.\n")
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+
+    def test_placeholder_example_and_bare_mention_are_not_midline_violations(self):
+        text = ("**status:** research-integrated\n\n_source: https://e.org/a · enemy-tier: 0 · puzzle-tier: 0_\n\n"
+                "Add a line: `_source: <what you saw> · enemy-tier: 0 · puzzle-tier: <1 or 2>`.\n"
+                "The `_source:` field names the origin.\n")
+        r = self._run(text)
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
 
 
 if __name__ == "__main__":

@@ -13,6 +13,17 @@ Exactly THREE checks are wired:
             scaffold | research-integrated | live-observed | reconciled.
             `status: scaffold` files are skipped for source/tier (SS6).
 
+Two things count as a `source` violation because they mean claim metadata the parser cannot read:
+  - a non-scaffold file that has a top-of-file `status`, mentions claim metadata fields (`_source:`,
+    `enemy-tier:`, `puzzle-tier:`) outside code fences, and yet parses ZERO claims -- a content file
+    whose metadata is shared per section passes the other checks by having nothing to check. A file with
+    no `status`, or with status but no metadata field anywhere (an index, a manifest, a README), is not
+    treated as a content file and is not flagged;
+  - a `_source:` that is not at the start of its own line (trailing the claim, behind a bullet or a
+    `>` quote marker, inside a table row) and is followed by another metadata key or a closing
+    underscore. Prose that only names the field (`_source:` directly followed by a backtick) and
+    instruction text whose metadata holds a `<placeholder>` are not flagged.
+
 NOT wired, deliberately: whether each source citation resolves.
 
 Parser shapes. Two guide-format questions are still open, so every shape
@@ -57,7 +68,7 @@ import re
 import sys
 from pathlib import Path
 
-RULES_REVISION = "iv-2026.10.16-1"
+RULES_REVISION = "iv-2026.10.19-1"
 KNOWN_MAX_CORE = 6
 
 CHECKS = ("source", "tier", "status")
@@ -100,6 +111,8 @@ BULLET_FIELD_LINE_RE = re.compile(r"^\s*[-*]\s+\*\*_?[A-Za-z][\w-]*\s*:\*\*")
 BULLET_FIELD_RE = re.compile(r"\*\*(_?[A-Za-z][\w-]*)\s*:\*\*")
 FILE_STATUS_RE = re.compile(r"^(?:\*\*status:\*\*|status:)\s*(.*)$", re.I)
 STATUS_WORD_RE = re.compile(r"[A-Za-z][A-Za-z_-]*")
+# A file that mentions claim metadata fields (outside code fences) was meant to carry claims.
+METADATA_SIGNAL_RE = re.compile(r"(?<![\w])_source\s*:|(?<![\w-])(?:enemy|puzzle)-tier\s*:", re.I)
 # A `_source:` that sits anywhere but the start of its own line (trailing a claim, behind a bullet or
 # quote marker, inside a table row). `_source:` directly followed by a backtick is a bare mention of
 # the field name, not metadata.
@@ -241,6 +254,8 @@ def midline_source(stripped: str) -> bool:
     if not m:
         return False
     rest = m.group(1)
+    if re.search(r"<[^<>\s][^<>]*>", rest):  # `<placeholder>` text: a template or instruction example
+        return False
     return bool(METADATA_KEY_RE.search(rest) or re.search(r"\S_\s*(?:\[[^\]]*\]\s*)?$", rest))
 
 
@@ -420,6 +435,12 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
             return
         violation(line_no, ident, "tier", f"missing {', '.join(missing)}")
 
+    # Metadata the claim parser cannot see: a `_source:` that is not at the start of its own line.
+    for i in range(n):
+        if not in_fence[i] and not heading[i] and midline_source(stripped[i]):
+            violation(i + 1, stripped[i][:60], "source",
+                      "`_source:` is not at the start of its own line, so it is not read as claim metadata")
+
     # Row tier column: a tagged table (a `_source:` line directly under it) whose header has a `tier`
     # cell must hold `spoiler:` vocabulary in that column (empty = inherit the table tag).
     inline_idx = {i for i, _, _ in inline_claims}
@@ -466,6 +487,8 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
             violation(i + 1, ident, "source", "missing or empty source field")
         own = {t: tier_present(fields.get(t)) for t in ("enemy-tier", "puzzle-tier")}
         check_tiers(i, i + 1, ident, own, {t: True for t in own}, None)
+
+    return any(not in_fence[k] and METADATA_SIGNAL_RE.search(lines[k]) for k in range(n))
 
 
 # --------------------------------------------------------------- guide level
@@ -538,7 +561,14 @@ def validate_guide(guide_dir: Path, accepted_shapes=None, only=None) -> dict:
             result["files_skipped_scaffold"] += 1
             continue
         claims_before = result["claims_checked"]
-        analyze_file(rel, lines, accepted, result)
+        mentions_metadata = analyze_file(rel, lines, accepted, result)
+        if (word is not None and "source" in active and mentions_metadata
+                and result["claims_checked"] == claims_before):
+            result["violations"].append({
+                "file": rel, "line": status_line, "claim": None, "check": "source",
+                "detail": "non-scaffold file mentions claim metadata but parses no claim: write one "
+                          "`_source:` line per claim, at the start of its own line (templates/claim_format.md)"})
+            result["counts"]["source"] += 1
         if (raw is None and "status" in active
                 and result["claims_checked"] > claims_before):
             result["violations"].append({

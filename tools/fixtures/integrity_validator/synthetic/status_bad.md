@@ -1,4 +1,5 @@
 # Invalid status value
 **status:** drafty
 
-No claims here.
+One valid claim, so only the status is wrong.
+_source: https://example.org/s · enemy-tier: 0 · puzzle-tier: 0_
