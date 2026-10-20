@@ -4,6 +4,17 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Setup and research briefs: P2 nav-skip branch, pinned reference format, receipt reads more shapes (v116, 2026-10-20)
+
+- **`setup_wizard.md`:** the reader safeguard install is "copy the script, merge the registration" (never a straight copy over an existing settings file); the P2 brief has a nav-skip branch for games whose setup skipped `nav/` (progression gates per run stage plus an unlock-dependency table, tagged `vector: mechanic` or `vector: item`); the P2 localization toolkit falls back to Stage 0's localization class when the brief is written before P1's class is known; the P1 brief carries the achievement stub names and count inline and never cites the stub file's path; the shared evidence requirement pins the reference format (a `1.` numbered list, cited `[1]` beside the attribution label, in a table in the same cell), with the four attribution labels unchanged.
+- **`tools/citation_receipt.py`:** reads `R1`-style reference ids (list lines, table rows, `[R1]`, `R4-R6` ranges, `refs 3, 5`) and Ref / Refs column cells in addition to `[1]` markers, and reports unresolved references (a cited id with no reference entry) and rows that carry a reference column but no source label. Result files already written in those shapes read correctly. Tests: `tools/test_citation_receipt.py`.
+- **`templates/warning_tiers.md`:** drops two links to framework files a guide does not ship.
+- **`templates/dependencies.md`, `stitch_and_zipper.md`:** a non-zero `Inconsistencies surfaced` count whose rows were all resolved in step 5b is written `N (resolved in 5b)`.
+
+**Receipt check on four earlier P2 research results.** Before: 395 labelled facts, 1 traceable. After (facts / traceable / reference-column rows / unresolved references): 52 / 50 / 104 / 0; 85 / 84 / 36 / 0; 44 / 43 / 72 / 0; 214 / 214 / 22 / 0.
+
+**Existing corpus impact.** None required. Results already in an `R1` or table-column format need no rewrite; new briefs ask for the `[N]` form.
+
 ### Confidence and source counting: one source per site, a corpus form for the single-source flag (v115, 2026-10-20)
 
 - **`ingestion.md` step 5:** a source count is distinct publications, not reference numbers. Every page of one wiki or site is ONE source, and the same page cited by two research phases is one source; a claim whose references all resolve to one site is single-source. A claim's confidence and count are those of its weakest detail: split a claim when a second source backs only part of it. The research result's corroboration label now travels onto the claim's `_source:` line.
