@@ -41,6 +41,36 @@ The metadata line is italicized and starts with `_source:` -- easy to scan, does
 - **conflicts-with:** none yet
 ```
 
+### Tables -- a table tag and an optional row tier column
+
+A table of claims (items, enemies, upgrades) takes ONE metadata line directly under it, the **table tag**. It covers every row.
+
+```
+| Name | Effect |
+|---|---|
+| Frost Charm | Slows nearby enemies |
+| Ember Charm | Burns nearby enemies |
+
+_source: https://example.org/charms · capture: web_fetch · confidence: high · enemy-tier: 0 · puzzle-tier: 0 · spoiler: none_
+```
+
+When one table mixes spoiler tiers, add a **row tier column**: a column headed `tier` whose values use the `spoiler:` vocabulary (`none | progression | late-game | story | dlc:<name>`). A row's `tier` value maps through the spoiler table below to BOTH `enemy-tier` and `puzzle-tier` for that row and overrides the table tag for that row only. An empty `tier` cell means the row takes the table tag.
+
+```
+| Name | Effect | tier |
+|---|---|---|
+| Frost Charm | Slows nearby enemies | none |
+| Crown of Ash | Revives the wearer once | story |
+
+_source: https://example.org/charms · capture: web_fetch · confidence: medium · enemy-tier: 3 · puzzle-tier: 3 · spoiler: story_
+```
+
+Here the table tag is the strictest tier in the table (`story`); the Frost Charm row overrides it with `none`. A reader below the story tier sees only the `none` row. Tag a mixed table at its strictest row so a row without a `tier` value is never under-tagged.
+
+### Reach rule -- a `_source:` line covers what is ABOVE it
+
+A `_source:` line covers the claim, paragraph or table immediately above it, never anything below it. Content below a `_source:` line needs a `_source:` line of its own. Write the line at the start of its own line: not trailing the claim's text, not behind a bullet or quote marker. A line the validator cannot see at the start of a line is a claim it cannot check.
+
 ## Field meanings
 
 - **claim** -- the factual statement, exact and testable. Avoid hedging language ("probably", "I think") -- uncertainty goes in `confidence`, not in the claim text.

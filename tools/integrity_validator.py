@@ -31,6 +31,12 @@ ACCEPTED_SHAPES below (default: all accepted) or `--reject-shape NAME`:
         bullet blocks carrying their own tiers is a container citation.
 Reject a shape and the claims it excused fall through to the plain tier check.
 
+Row tier column (templates/claim_format.md "Tables"). In a table with a `_source:` table tag directly
+under it, a column headed `tier` must hold `spoiler:` vocabulary (none | progression | late-game | story |
+dlc:<name>) or be empty (inherit the table tag). Any other text is a `tier` violation on that row. A
+purely numeric value (`2`, `0 / 0`) is left alone: numeric `Tier` columns exist for meanings that are not
+spoiler tiers (tech-tree tiers) and for the older `enemy / puzzle` pair.
+
 Parse tolerance (not shape choices): inline metadata separators are middle-dot, pipe and
 spaced hyphen; the status value is the first word (trailing free text is
 allowed); `artifacts/` is outside the corpus-format file set.
@@ -94,6 +100,16 @@ BULLET_FIELD_LINE_RE = re.compile(r"^\s*[-*]\s+\*\*_?[A-Za-z][\w-]*\s*:\*\*")
 BULLET_FIELD_RE = re.compile(r"\*\*(_?[A-Za-z][\w-]*)\s*:\*\*")
 FILE_STATUS_RE = re.compile(r"^(?:\*\*status:\*\*|status:)\s*(.*)$", re.I)
 STATUS_WORD_RE = re.compile(r"[A-Za-z][A-Za-z_-]*")
+# A `_source:` that sits anywhere but the start of its own line (trailing a claim, behind a bullet or
+# quote marker, inside a table row). `_source:` directly followed by a backtick is a bare mention of
+# the field name, not metadata.
+MIDLINE_SOURCE_RE = re.compile(r"(?<![\w])_source\s*:(?!`)(.*)$", re.I)
+METADATA_KEY_RE = re.compile(
+    r"(?<![\w-])(?:enemy-tier|puzzle-tier|capture|confidence|spoiler|category)\s*:", re.I)
+# Row tier column (templates/claim_format.md "Tables"): `spoiler:` vocabulary.
+ROW_TIER_RE = re.compile(r"^(?:none|progression|late-game|story|dlc:\S.*)$", re.I)
+NUMERIC_TIER_RE = re.compile(r"^\d+(?:\s*/\s*\d+)?$")
+TABLE_SEPARATOR_CELL_RE = re.compile(r"^:?-{1,}:?$")
 
 
 # ---------------------------------------------------------------- manifest
@@ -213,6 +229,23 @@ def parse_bullet_run(lines: list[str], i: int):
 
 def tier_present(val: str | None) -> bool:
     return bool(val) and re.match(r"\s*\d", val) is not None
+
+
+def midline_source(stripped: str) -> bool:
+    """True when this (non-fenced) line carries claim metadata that is not at the start of its own
+    line, so the claim parser never sees it. Only counts when the text after `_source:` looks like
+    metadata (another metadata key, or a closing underscore); prose that merely names the field does not."""
+    if stripped.startswith("_"):
+        return False
+    m = MIDLINE_SOURCE_RE.search(stripped)
+    if not m:
+        return False
+    rest = m.group(1)
+    return bool(METADATA_KEY_RE.search(rest) or re.search(r"\S_\s*(?:\[[^\]]*\]\s*)?$", rest))
+
+
+def table_cells(row: str) -> list[str]:
+    return [c.strip().strip("*`").strip() for c in row.strip().strip("|").split("|")]
 
 
 # ------------------------------------------------------------ file analysis
@@ -386,6 +419,30 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
             excused(line_no, rule, f"container citation; missing {', '.join(missing)} carried by its entries")
             return
         violation(line_no, ident, "tier", f"missing {', '.join(missing)}")
+
+    # Row tier column: a tagged table (a `_source:` line directly under it) whose header has a `tier`
+    # cell must hold `spoiler:` vocabulary in that column (empty = inherit the table tag).
+    inline_idx = {i for i, _, _ in inline_claims}
+    i = 0
+    while i < n:
+        if in_fence[i] or not is_table_row(stripped[i]):
+            i += 1
+            continue
+        end = i
+        while end + 1 < n and not in_fence[end + 1] and is_table_row(stripped[end + 1]):
+            end += 1
+        header = table_cells(stripped[i])
+        sep_ok = end > i and all(TABLE_SEPARATOR_CELL_RE.match(c) for c in table_cells(stripped[i + 1]))
+        tagged = next_nonblank(end) in inline_idx
+        col = next((k for k, c in enumerate(header) if c.lower() == "tier"), None)
+        if sep_ok and tagged and col is not None:
+            for r in range(i + 2, end + 1):
+                cells = table_cells(stripped[r])
+                val = cells[col] if col < len(cells) else ""
+                if val and not ROW_TIER_RE.match(val) and not NUMERIC_TIER_RE.match(val):
+                    violation(r + 1, (cells[0] if cells else "")[:60], "tier",
+                              f"row tier '{val[:30]}' is not none | progression | late-game | story | dlc:<name>")
+        i = end + 1
 
     for i, body, source_val in inline_claims:
         result["claims_checked"] += 1

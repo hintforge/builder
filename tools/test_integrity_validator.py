@@ -113,8 +113,17 @@ class SyntheticTests(unittest.TestCase):
         self.assertFalse({v for v in self.f if v[0] == ok})
         self.assertEqual({v for v in self.f if v[0] == bad}, {(bad, line_of(SYN, bad, "_source:"), "tier")})
 
+    def test_row_tier_column_vocabulary(self):
+        ok, bad = "row_tier_ok.md", "row_tier_bad.md"
+        self.assertFalse({v for v in self.f if v[0] == ok})
+        self.assertEqual(
+            {v for v in self.f if v[0] == bad},
+            {(bad, line_of(SYN, bad, "late game"), "tier"), (bad, line_of(SYN, bad, "endgame"), "tier")})
+        # A numeric row tier (legacy `E / P` pair, tech-tree tiers) is left alone: shape_table.md has one.
+        self.assertFalse({v for v in self.f if v[0] == "shape_table.md" and v[1] == line_of(SYN, "shape_table.md", "Pick the left door")})
+
     def test_totals(self):
-        self.assertEqual(self.r["counts"], {"source": 2, "tier": 6, "status": 1})
+        self.assertEqual(self.r["counts"], {"source": 2, "tier": 8, "status": 1})
 
 
 class CanonicalShapePlugInTests(unittest.TestCase):
