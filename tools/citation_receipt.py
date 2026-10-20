@@ -18,6 +18,9 @@ KNOWN_KINDS = {"forum", "community-wiki", "editorial-en", "editorial-non-en", "d
 LABEL = re.compile(r"\[(?:Confirmed|Corroborated|Single[ -]source)[^\]]*\]", re.IGNORECASE)
 URL = re.compile(r"https?://[^\s)\]>\"']+", re.IGNORECASE)
 MARKER = re.compile(r"\\\[(\d{1,3})\\\]|(?<![\w\]])\[(\d{1,3})\](?!\()|\[\^(\d{1,3})\]")
+# A chain of numbered markers after the first ("[1][4]", the brief's pinned form): each id counts.
+# The chain must start at a marker MARKER itself accepts, so a reference link "[map][1]" stays out.
+MARKER_CHAIN = re.compile(r"(?<![\w\]])\[\d{1,3}\]((?:\[\d{1,3}\])+)(?!\()")
 REF_NUMBERED = re.compile(r"^\s*(?:\\\[|\[)?(\d{1,3})(?:\\\]|\]|\.|\))\s+.*https?://", re.IGNORECASE)
 REF_FOOTNOTE = re.compile(r"^\s*\[\^(\d{1,3})\]:\s*.*https?://", re.IGNORECASE)
 # Reference entries written with an R prefix: "R12 https://...", "R12. https://...", "[R12] https://...",
@@ -63,6 +66,8 @@ def ids_in_text(text: str) -> set[int]:
     found: set[int] = set()
     for m in MARKER.finditer(text):
         found.add(int(next(g for g in m.groups() if g)))
+    for m in MARKER_CHAIN.finditer(text):
+        found.update(int(n) for n in re.findall(r"\d{1,3}", m.group(1)))
     for m in R_TOKEN.finditer(text):
         found.update(span(m.group(1), m.group(2)))
     for m in REFS_PHRASE.finditer(text):

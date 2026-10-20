@@ -52,6 +52,14 @@ class ReferenceShapeTests(unittest.TestCase):
         self.assertEqual(r["table_rows"], 3)
         self.assertEqual(r["table_rows_resolved"], 2)
 
+    def test_chained_markers_are_each_read(self):
+        # The pinned brief format cites "[1][4]"; both ids count, so a missing [4] is reported.
+        # A Markdown reference link "[map][1]" is not a citation chain.
+        r = C.receipt(FIX / "multi_marker.md")
+        self.assertEqual(r["facts"], 2)
+        self.assertEqual(r["unresolved_ids"], [4])
+        self.assertEqual(C.ids_in_text("[map][1]"), set())
+
     def test_unresolved_references_are_listed_by_id(self):
         r = C.receipt(FIX / "unresolved_refs.md")
         self.assertEqual(r["facts"], 4)
