@@ -327,6 +327,21 @@ class TierSweepTests(unittest.TestCase):
         self.assertEqual([(h["name"], [p["line"] for p in h["also_at"]], [p["tier"] for p in h["also_at"]])
                           for h in r["hits"]], [("Iron Warden", [6], [None])])
 
+    def test_blockquoted_tag_line_is_read(self):
+        # `> _source: ...` is the form claim_format.md shows; the validator reads it, so the sweep must too.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "nav").mkdir()
+            (root / "nav" / "architecture.md").write_text("corpus-core-version: 6\n", encoding="utf-8")
+            (root / "c.md").write_text(
+                "**status:** research-integrated\n\nThe **Hollow Crown** ends the run.\n"
+                "> _source: https://e.org/a · enemy-tier: 3 · puzzle-tier: 3_\n\n"
+                "Carry the Hollow Crown early.\n"
+                "_source: https://e.org/b · enemy-tier: 0 · puzzle-tier: 0_\n", encoding="utf-8")
+            r = self.S.sweep_guide(root)
+        self.assertEqual([(h["name"], [tuple(p["tier"]) for p in h["also_at"]]) for h in r["hits"]],
+                         [("Hollow Crown", [(0, 0)])])
+
     def test_cli_report_only_and_exit_codes(self):
         def run(*a):
             return subprocess.run([sys.executable, "-I", str(self.SWEEP), *a],

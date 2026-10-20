@@ -96,7 +96,8 @@ def map_file(lines: list[str]):
     """Per-line tiers plus the name definitions found in tagged content.
     Returns (tiers, meta, in_fence, defs) -- tiers[i] is (e, p) or None; defs is a list of (name, (e, p), i)."""
     n = len(lines)
-    stripped = [ln.strip() for ln in lines]
+    # Same reading as the validator: a leading blockquote marker is dropped (`> _source: ...`).
+    stripped = [re.sub(r"^(?:>\s*)+", "", ln.strip()) for ln in lines]
     in_fence, heading = V.mark_structure(lines)
     tiers = [None] * n
     meta = [False] * n
