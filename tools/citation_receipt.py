@@ -39,7 +39,7 @@ KIND = re.compile(r"class:\s*([A-Za-z][A-Za-z-]*)")
 DOMAIN = re.compile(r"\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|org|net|ru|gg|io|wiki|de|fr|jp|cn|co|uk|tv|info|ws)\b", re.IGNORECASE)
 # Words a bare head-count label is made of; anything else in the label is taken as a named source.
 TEMPLATE_WORDS = {
-    "confirmed", "single", "source", "sources", "verify", "language", "languages", "lang", "official",
+    "confirmed", "corroborated", "single", "source", "sources", "verify", "language", "languages", "lang", "official",
     "en", "ru", "and", "plus", "independent", "class", "s", "multiple", "community", "unverified",
 }
 

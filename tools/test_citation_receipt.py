@@ -27,6 +27,10 @@ class LabelTests(unittest.TestCase):
         ):
             self.assertTrue(C.LABEL.search(text), text)
 
+    def test_bare_corroborated_label_is_a_head_count_not_a_named_source(self):
+        self.assertFalse(C.names_sources("[Corroborated: 2 sources, 1 language]"))
+        self.assertFalse(C.names_sources("[Confirmed: 2 sources, 1 language]"))
+
     def test_label_rejects_other_brackets(self):
         self.assertFalse(C.LABEL.search("[Hypothesis -- unverified]"))
 
