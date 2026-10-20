@@ -8,7 +8,7 @@
 |---------|----------|----------|------------------------|------------|------|--------------|
 | DEP-001 | [system name] | [system name] | [one sentence: action/state in A affects state/outcome in B] | high | [none \| progression \| late-game \| story \| dlc:<name>] | [file-A.md], [file-B.md] |
 
-<!-- The `tier` column uses the `spoiler:` vocabulary from templates/claim_format.md and holds the strictest tier of anything the row's description names. The reader hides a row until the player's dials cover its tier. Same column on the PoNR and sequencing tables below. -->
+<!-- The `tier` column uses the `spoiler:` vocabulary (none | progression | late-game | story | dlc:<name>) and holds the strictest tier of anything the row's description names. The reader hides a row until the player's dials cover its tier. Same column on the PoNR and sequencing tables below. -->
 
 ### Optional cluster links
 
