@@ -67,6 +67,20 @@ _source: https://example.org/charms · capture: web_fetch · confidence: medium 
 
 Here the table tag is the strictest tier in the table (`story`); the Frost Charm row overrides it with `none`. A reader below the story tier sees only the `none` row. Tag a mixed table at its strictest row so a row without a `tier` value is never under-tagged.
 
+### Corroboration label -- how the single-source flag lives in the corpus
+
+Research results label each fact `[Confirmed: N sources, M languages]` or `[Single source -- verify · class:<class>]` (the two corroboration labels; no others). The label travels with the claim into the corpus: write it on the claim's `_source:` line, after the closing underscore, separated by one space.
+
+```
+> The Aegis Talisman costs 60 mana shards to craft.
+> _source: https://example.org/talisman · capture: web_fetch · confidence: medium · enemy-tier: 0 · puzzle-tier: 0 · spoiler: none_ [Single source -- verify · class:community-wiki]
+```
+
+- **Which label.** Count distinct publications, not references: every page of one wiki or site is ONE source (see [`../ingestion.md`](../ingestion.md) step 5, "What counts as one source"). One publication gets `[Single source -- verify · class:<class>]` and `confidence: medium` at most; two or more get `[Confirmed: N sources, M languages]`.
+- **Tables.** The label goes on the table tag line and covers every row, so it carries the lowest count in the table. A row with a different count goes in its own table.
+- **Lifecycle.** A later phase that finds a second publication replaces the flag with a `Confirmed` label; one that drops or contradicts the claim removes it ([`../ingestion.md`](../ingestion.md) step 7). To find every open flag, grep the corpus for `Single source -- verify`.
+- A flag left in the research result and absent from the corpus is the defect this rule closes: gap-fill cannot find what was never written.
+
 ### Reach rule -- a `_source:` line covers what is ABOVE it
 
 A `_source:` line covers the claim, paragraph or table immediately above it, never anything below it. Content below a `_source:` line needs a `_source:` line of its own. Write the line at the start of its own line: not trailing the claim's text, not behind a bullet or quote marker. A line the validator cannot see at the start of a line is a claim it cannot check.
