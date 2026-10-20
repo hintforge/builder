@@ -69,6 +69,7 @@ STOP_NAMES = {
     "general", "mechanics", "items", "enemies", "bosses", "puzzles", "locations", "lore", "story",
     "boss", "entry", "exit", "enemy", "item", "reward", "rewards", "location", "type", "goal", "objective",
     "requirement", "requirements", "prerequisite", "prereq", "result", "outcome", "puzzle", "zone", "zones",
+    "cross-system dependency",  # the label stitch writes on every inline cross-ref
 }
 BOLD_RE = re.compile(r"\*\*([^*\n]+?)\*\*")
 TICK_RE = re.compile(r"`([^`\n]+)`")
