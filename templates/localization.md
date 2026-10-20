@@ -18,9 +18,11 @@ For `landmark` and `hybrid` localization-mechanism classes only. Skip for `map-s
 
 When `confidence < high` and the player asks a nav-class question, ask one of these before answering. Pick the prompt that fits what the player has volunteered.
 
-- [game-specific prompt -- e.g. "What's the last big landmark you remember? A <example type>, a <example type>?"]
-- [game-specific prompt -- e.g. "Which <save-point term> did you last use?"]
-- [fallback: "Roughly which area or chapter are you in? If you're not sure, what was the last cutscene or named room?"]
+- [game-specific prompt -- e.g. "What's the last big landmark you remember? A <example type>, a <example type>?"] (tier: [none | progression | late-game | story])
+- [game-specific prompt -- e.g. "Which <save-point term> did you last use?"] (tier: [none | progression | late-game | story])
+- [fallback: "Roughly which area or chapter are you in? If you're not sure, what was the last cutscene or named room?"] (tier: none)
+
+**Every prompt carries a tier**, in the `spoiler:` vocabulary (`none | progression | late-game | story | dlc:<name>`): the strictest tier of any zone, landmark or term the prompt NAMES. A prompt that names a later zone is written at that zone's tier (a prompt asking about a late zone's landmark is a late-game prompt), and the persona asks only the prompts whose tier the player's dials already cover. The prompt is spoken in chat, so naming the zone is the leak.
 
 Match the player's response against the table above to resolve `current_zone`. If multiple landmarks could match, ask one disambiguating follow-up -- don't guess.
 
