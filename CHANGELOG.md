@@ -4,6 +4,13 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Tool fixes: chained citations, labelled fact rows, escaped pipes, blockquoted tags in the sweep; brief stub wording (v119, 2026-10-20)
+
+- **`tools/citation_receipt.py`:** every id in a chained marker such as `[1][4]` (the brief's pinned form) counts, so a missing `[4]` is reported; a table row carrying a source label is a fact, never a reference entry, even when its second cell is an address; a bare `[Corroborated: N sources ...]` label is a head count, not a named source.
+- **`tools/integrity_validator.py`, `tools/tier_sweep.py`:** an escaped `\|` stays inside its table cell, so the row tier column is read from the right cell; the sweep reads a blockquoted `> _source:` line, as the validator already does.
+- **`setup_wizard.md`:** standing prompt 9 points the researcher at the brief's inline achievement stub list, not at a local file it cannot open.
+- Existing corpus impact: none.
+
 ### Stitch: cross-ref runs get their own tier under the reach rule; per-table lint recipe; sweep ignores tier values (v118, 2026-10-20)
 
 - **`stitch_and_zipper.md`:** the write-time cross-ref check now follows the reach rule: a run of cross-ref lines placed after a claim's tag line is its own block and reads as tier 0, so it either keeps every summary at tier 0 (bare pointers for the rest) or gets its own `_source:` tag line directly under it at the strictest tier it names. The step 3b structural-lint recipe resets at every non-table line, so each table is checked against its own header instead of the file's first table.
