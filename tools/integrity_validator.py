@@ -260,7 +260,8 @@ def midline_source(stripped: str) -> bool:
 
 
 def table_cells(row: str) -> list[str]:
-    return [c.strip().strip("*`").strip() for c in row.strip().strip("|").split("|")]
+    # Markdown's escaped `\|` is a literal pipe inside a cell, not a column break.
+    return [c.strip().strip("*`").strip() for c in re.split(r"(?<!\\)\|", row.strip().strip("|"))]
 
 
 # ------------------------------------------------------------ file analysis

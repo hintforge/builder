@@ -226,6 +226,15 @@ class EdgeCaseTests(unittest.TestCase):
         r = self._run("# T\n\nJust prose.\n")
         self.assertEqual(r["counts"]["status"], 0)
 
+    def test_escaped_pipe_stays_inside_its_cell(self):
+        self.assertEqual(V.table_cells(r"| Plain Charm | switches A \| B | none |"),
+                         ["Plain Charm", r"switches A \| B", "none"])
+        r = self._run("**status:** research-integrated\n\n"
+                      "| Name | Effect | tier |\n|---|---|---|\n"
+                      "| Plain Charm | switches A \\| B | none |\n"
+                      "_source: https://e.org/a · enemy-tier: 3 · puzzle-tier: 3 · spoiler: story_\n")
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+
     def test_empty_source_before_leading_pipe_is_flagged(self):
         r = self._run("**status:** research-integrated\n\n_source: | enemy-tier: 0 | puzzle-tier: 0_\n")
         self.assertEqual(r["counts"]["source"], 1)
