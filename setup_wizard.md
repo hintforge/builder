@@ -484,7 +484,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 
 **If yes (default):**
 - Record the choice now; the build runs at Step 9 sub-step 6b, after the guide folder exists.
-- The build follows [`templates/reader_gate/_build_for_your_setup.md`](templates/reader_gate/_build_for_your_setup.md): detect the runtime (Claude Code, Codex, other) and the shell, install the script and merge its registration, then run the self-test. On Windows with Claude Code it is a straight copy of `templates/reader_gate/claude-code/`.
+- The build follows [`templates/reader_gate/_build_for_your_setup.md`](templates/reader_gate/_build_for_your_setup.md): detect the runtime (Claude Code, Codex, other) and the shell, install the script and merge its registration, then run the self-test. On Windows with Claude Code, copy the script and merge the registration into the existing settings file (never overwrite it), as in that file's install step.
 - A failed self-test removes the registration and records `unsupported`; a guide never ships a gate that has not been seen to work.
 
 **Capture:**
