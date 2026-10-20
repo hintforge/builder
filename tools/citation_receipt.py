@@ -13,7 +13,9 @@ from pathlib import Path
 
 KNOWN_KINDS = {"forum", "community-wiki", "editorial-en", "editorial-non-en", "datamining", "official-pr"}
 
-LABEL = re.compile(r"\[(?:Confirmed|Single[ -]source)[^\]]*\]", re.IGNORECASE)
+# "Corroborated" is read-side tolerance only: results written before the label set was fixed to
+# Confirmed / Single source used it. Briefs must not ask for it.
+LABEL = re.compile(r"\[(?:Confirmed|Corroborated|Single[ -]source)[^\]]*\]", re.IGNORECASE)
 URL = re.compile(r"https?://[^\s)\]>\"']+", re.IGNORECASE)
 MARKER = re.compile(r"\\\[(\d{1,3})\\\]|(?<![\w\]])\[(\d{1,3})\](?!\()|\[\^(\d{1,3})\]")
 REF_NUMBERED = re.compile(r"^\s*(?:\\\[|\[)?(\d{1,3})(?:\\\]|\]|\.|\))\s+.*https?://", re.IGNORECASE)
