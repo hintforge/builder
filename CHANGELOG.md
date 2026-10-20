@@ -4,6 +4,18 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Confidence and source counting: one source per site, a corpus form for the single-source flag (v115, 2026-10-20)
+
+- **`ingestion.md` step 5:** a source count is distinct publications, not reference numbers. Every page of one wiki or site is ONE source, and the same page cited by two research phases is one source; a claim whose references all resolve to one site is single-source. A claim's confidence and count are those of its weakest detail: split a claim when a second source backs only part of it. The research result's corroboration label now travels onto the claim's `_source:` line.
+- **`templates/claim_format.md`:** new "Corroboration label" section defines the corpus form of `[Single source -- verify · class:<class>]` and `[Confirmed: N sources, M languages]` (after the closing underscore of the `_source:` line; a table's label sits on its table tag and carries the lowest count). The `capture` vocabulary gains `derived` (the guide reasoned the claim out itself, nothing fetched), and a screenshot the player supplies is `manual_paste`. `achievement-hidden` accepts `unknown` (no source shows the flag), which readers treat as `yes`. The same value is added to `templates/achievements.md` (`hidden:`) and `docs/corpus-format.md`.
+- **`setup_wizard.md`:** research briefs use only the four attribution labels (no invented ones such as `Corroborated`), use `Confirmed` for any fact with two or more sources even below the five-source target, and count N by publication. The achievement fetch records the hidden flag as `unknown` when the page does not show it.
+- **`ingestion.md` step 8:** the live achievement recount takes names from the fetched page only; a page that shows part of the list gives a partial recount (`recount: partial -- N of M names seen`), never completed by hand.
+- **`tools/citation_receipt.py`:** also counts facts labelled `[Corroborated: ...]`, so earlier research results read correctly. Test: `tools/test_citation_receipt.py`.
+
+**Reader changes (same framework version).** `achievement-hidden: unknown` is gated exactly like `yes` (`corpus_compatibility.md`, `persona_universal.md`, `SKILL.md` routing table). `corpus_compatibility.md` lists `derived` among the capture values.
+
+**Existing corpus impact.** None required. A guide whose tags count references rather than sites (for example several pages of one wiki counted as several sources) is over-confident: doctor should recount those tags by publication. A guide with no corroboration label on its claims is unaffected until its next ingestion pass.
+
 ### Spoiler safety: table tags, row tiers, write-time cross-ref rule, tier sweep (v114, 2026-10-19)
 
 - **`templates/claim_format.md`:** new shapes for tables. One `_source:` line directly under a table is the **table tag** and covers every row; an optional `tier` column (values `none | progression | late-game | story | dlc:<name>`) sets a tier per row and overrides the table tag for that row. Reach rule: a `_source:` line covers the claim, paragraph or table immediately ABOVE it, never anything below, and sits at the start of its own line.
