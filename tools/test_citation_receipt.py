@@ -37,6 +37,40 @@ class LabelTests(unittest.TestCase):
         self.assertEqual(r["url"], 1)
         self.assertEqual(r["count-only"], 0)
         self.assertEqual(r["traceable"], 4)
+        self.assertEqual(r["unresolved"], 0)
+
+
+class ReferenceShapeTests(unittest.TestCase):
+    def test_r_style_ids_ranges_and_table_rows_resolve(self):
+        r = C.receipt(FIX / "r_style_refs.md")
+        self.assertEqual(r["reference_entries"], 5)
+        self.assertEqual(r["facts"], 7)
+        self.assertEqual(r["footnote"], 7)
+        self.assertEqual(r["unresolved"], 0)
+        self.assertEqual(r["unresolved_ids"], [])
+        # Rows with a Ref column and no source label: two cite entries, one ("key: unknown", "-") cites none.
+        self.assertEqual(r["table_rows"], 3)
+        self.assertEqual(r["table_rows_resolved"], 2)
+
+    def test_unresolved_references_are_listed_by_id(self):
+        r = C.receipt(FIX / "unresolved_refs.md")
+        self.assertEqual(r["facts"], 4)
+        self.assertEqual(r["footnote"], 4)
+        self.assertEqual(r["unresolved_ids"], [7, 9, 10, 12, 13])
+        self.assertEqual(r["unresolved"], 5)
+        self.assertEqual(r["table_rows"], 1)
+        self.assertEqual(r["table_rows_resolved"], 0)
+
+    def test_id_helpers(self):
+        self.assertEqual(C.ids_in_text("see R31-R33 and [^4]"), {31, 32, 33, 4})
+        self.assertEqual(C.ids_in_text("(corroborated: refs 3, 5, 9-11; more prose 12)"), {3, 5, 9, 10, 11})
+        self.assertEqual(C.ref_cell_ids("1, 4-6"), {1, 4, 5, 6})
+        self.assertEqual(C.ref_cell_ids("a 5-card hand"), set())
+
+    def test_table_prints_unresolved_column(self):
+        out = C.table([C.receipt(FIX / "unresolved_refs.md")])
+        self.assertIn("Unresolved references", out)
+        self.assertIn("7, 9, 10, 12, 13", out)
 
 
 if __name__ == "__main__":
