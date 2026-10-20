@@ -261,7 +261,7 @@ The flag resets to `false` when stitch completes.
    - Re-read the cited sources to confirm the contradiction is still live.
    - Identify the authoritative source (entity files > index files > narrative files; explicit P3 research > inherited P2 stub).
    - Edit the wrong source to match the authoritative value. If the edge text itself is wrong, edit the edge text and propagate to inline cross-refs.
-   - Remove the inconsistency row from `## Corpus inconsistencies`.
+   - Remove the inconsistency row from `## Corpus inconsistencies` (the run log's `Inconsistencies surfaced` count still includes it; see 5d).
 
 
    5c. **Propagation check (mandatory after every edge-text correction in 5b).** When step 5b edits an edge's text (not just a source file) to replace a wrong value with the authoritative one, the wrong value may live in inline cross-refs, sibling-file summaries, and unrelated-looking cross-references scattered across the corpus. The audit cannot reach these because its read scope is `(edge × cited-source)` -- inline propagation surfaces are not part of any edge's cited list. For each edge-text correction:
@@ -273,7 +273,7 @@ The flag resets to `false` when stitch completes.
    **Propagation completion gate.** Before proceeding to 5d, the completion gate (5a) extends: in addition to `audits-done == edges-in-dependencies`, the model must enumerate `propagation-done == edge-text-corrections-in-5b`. Every 5b edit that changed an edge's text must have a corresponding grep run with classified matches. If any 5b edit lacks a propagation grep, return to 5c for that edit. Do not proceed to 5d until both lists match.
 
 
-   5d. **Write run log + CHECKPOINT.** Add a row to `dependencies.md` stitch run log -- include the count from step 4's audit in the `Inconsistencies surfaced` column (count the inconsistencies found, even if they were resolved in 5b). Update `## Phase state` in CHECKPOINT: `stitch: complete YYYY-MM-DD`, `stitch_stale: false`, `stitch_scope: full` (or scoped list). Add `## Harness changelog` entry listing DEP-IDs written (IDs only -- no descriptions), inconsistencies found and resolved, plus an optional aggregate skip count if borderline candidates were common.
+   5d. **Write run log + CHECKPOINT.** Add a row to `dependencies.md` stitch run log -- include the count from step 4's audit in the `Inconsistencies surfaced` column (count the inconsistencies found, even if they were resolved in 5b; when 5b resolved and removed every row, write the cell as `N (resolved in 5b)` so a non-zero count with an empty `## Corpus inconsistencies` section is explained; rows still open stay in the section). Update `## Phase state` in CHECKPOINT: `stitch: complete YYYY-MM-DD`, `stitch_stale: false`, `stitch_scope: full` (or scoped list). Add `## Harness changelog` entry listing DEP-IDs written (IDs only -- no descriptions), inconsistencies found and resolved, plus an optional aggregate skip count if borderline candidates were common.
 
 6. Chat reply at end of session: bare completion line per **Chat output discipline** above. No edge tables, titles, or rationales.
    Then emit the session-close ref line (builder `SKILL.md`, "Session-close ref line") as the final line. It carries only a branch, a commit and a count, so it fits the chat output discipline above.

@@ -32,7 +32,7 @@ Each independently testable relationship gets its own DEP row and audit. A genui
 |------|-------|---------------|--------------------------|--------------------------|-------|
 | YYYY-MM-DD | full | [N] | [N] | [N] | sonnet-class |
 
-<!-- Inconsistencies surfaced: count from the per-edge convergence audit (stitch_and_zipper.md Phase B). Counts must be derived by reading this file, not recalled. A non-zero count requires an explicit chat call-out and at least one populated row in the Corpus inconsistencies section below. -->
+<!-- Inconsistencies surfaced: count from the per-edge convergence audit (stitch_and_zipper.md Phase B). Counts must be derived by reading this file, not recalled. A non-zero count requires an explicit chat call-out and, in the Corpus inconsistencies section below, either at least one populated row (inconsistencies still open) or, when every one was resolved in stitch step 5b and its row removed, the cell written as `N (resolved in 5b)`. -->
 
 ## Corpus inconsistencies
 
