@@ -265,10 +265,10 @@ def table_cells(row: str) -> list[str]:
 
 # ------------------------------------------------------------ file analysis
 
-def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
+def mark_structure(lines: list[str]):
+    """(in_fence, heading) per line: in_fence is True on fenced lines and the fence markers; heading is
+    the 1-6 heading level of a non-fenced heading line, else 0."""
     n = len(lines)
-    stripped = [ln.strip() for ln in lines]
-
     in_fence = [False] * n
     fence = None  # (char, length) of the open fence, or None
     for i, ln in enumerate(lines):
@@ -290,6 +290,13 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
             m = HEADING_RE.match(lines[i])
             if m:
                 heading[i] = len(m.group(1))
+    return in_fence, heading
+
+
+def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
+    n = len(lines)
+    stripped = [ln.strip() for ln in lines]
+    in_fence, heading = mark_structure(lines)
 
     tag = [None] * n
     for i in range(n):

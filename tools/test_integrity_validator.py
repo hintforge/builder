@@ -265,5 +265,74 @@ class EdgeCaseTests(unittest.TestCase):
         self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
 
 
+class TierSweepTests(unittest.TestCase):
+    """tier_sweep.py: lists where a name tagged above tier 0 also appears at a lower tier or untagged."""
+
+    SWEEP = HERE / "tier_sweep.py"
+    LEAKY = FIX.parent / "tier_sweep" / "leaky"
+    CLEAN = FIX.parent / "tier_sweep" / "clean"
+
+    @classmethod
+    def setUpClass(cls):
+        import tier_sweep as S
+        cls.S = S
+
+    def places(self, result):
+        return {h["name"]: {(p["file"], p["line"], None if p["tier"] is None else tuple(p["tier"]))
+                            for p in h["also_at"]} for h in result["hits"]}
+
+    def test_planted_late_names_are_listed(self):
+        r = self.S.sweep_guide(self.LEAKY)
+        got = self.places(r)
+        self.assertEqual(set(got), {"Crown of Ash", "Hollow King", "Vault of Echoes"})
+        # a story name under a `none` block, a story name in untagged prose, a late-game name under tier 1
+        self.assertEqual(got["Crown of Ash"], {("mechanics.md", line_of(self.LEAKY, "mechanics.md", "Crown of Ash"), (0, 0))})
+        self.assertEqual(got["Hollow King"], {("overview.md", line_of(self.LEAKY, "overview.md", "Hollow King"), None)})
+        self.assertEqual(got["Vault of Echoes"], {("mechanics.md", line_of(self.LEAKY, "mechanics.md", "Vault of Echoes"), (1, 1))})
+
+    def test_clean_guide_lists_nothing(self):
+        r = self.S.sweep_guide(self.CLEAN)
+        self.assertTrue(r["parsed"])
+        self.assertEqual(r["hits"], [])
+        self.assertGreater(r["names_above_tier_0"], 0)  # it read real names; it just found no leak
+
+    def test_none_row_of_a_story_table_supplies_no_name(self):
+        r = self.S.sweep_guide(self.LEAKY)
+        self.assertNotIn("Plain Charm", {h["name"] for h in r["hits"]})  # `none` row, also named in a tier-0 block
+        self.assertNotIn("Ember Charm", {h["name"] for h in r["hits"]})  # story row, named nowhere else
+
+    def test_tag_line_covers_only_what_is_above_it(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "nav").mkdir()
+            (root / "nav" / "architecture.md").write_text("corpus-core-version: 6\n", encoding="utf-8")
+            (root / "c.md").write_text(
+                "**status:** research-integrated\n\nThe **Iron Warden** guards the gate.\n"
+                "_source: https://e.org/a · enemy-tier: 3 · puzzle-tier: 0_\n\n"
+                "The Iron Warden also appears below the tag line.\n", encoding="utf-8")
+            r = self.S.sweep_guide(root)
+        self.assertEqual([(h["name"], [p["line"] for p in h["also_at"]], [p["tier"] for p in h["also_at"]])
+                          for h in r["hits"]], [("Iron Warden", [6], [None])])
+
+    def test_cli_report_only_and_exit_codes(self):
+        def run(*a):
+            return subprocess.run([sys.executable, "-I", str(self.SWEEP), *a],
+                                  capture_output=True, text=True, timeout=120)
+        self.assertEqual(run(str(self.LEAKY), "--quiet").returncode, 0)  # report tool: never blocks
+        self.assertEqual(run(str(self.LEAKY), "--quiet", "--exit-code").returncode, 1)
+        self.assertEqual(run(str(self.CLEAN), "--quiet", "--exit-code").returncode, 0)
+        self.assertEqual(run("--no-such-flag").returncode, 2)
+        with tempfile.TemporaryDirectory() as td:
+            a, b = Path(td) / "a.json", Path(td) / "b.json"
+            run(str(self.LEAKY), "--json", str(a))
+            run(str(self.LEAKY), "--json", str(b))
+            self.assertEqual(a.read_bytes(), b.read_bytes())
+
+    def test_sweep_never_edits_the_guide(self):
+        before = {p: p.read_bytes() for p in self.LEAKY.rglob("*.md")}
+        self.S.sweep_guide(self.LEAKY)
+        self.assertEqual(before, {p: p.read_bytes() for p in self.LEAKY.rglob("*.md")})
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
