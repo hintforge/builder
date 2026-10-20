@@ -101,7 +101,7 @@ def receipt(path: Path) -> dict:
     entry_lines = set()
     for i, line in enumerate(lines):
         m = REF_NUMBERED.match(line) or REF_FOOTNOTE.match(line) or REF_R_ENTRY.match(line) or REF_TABLE_ENTRY.match(line)
-        if m:
+        if m and not LABEL.search(line):  # a line carrying a source label is a fact, not a reference entry
             refs.add(int(m.group(1)))
             entry_lines.add(i)
     counts = {"url": 0, "footnote": 0, "site-named": 0, "count-only": 0}

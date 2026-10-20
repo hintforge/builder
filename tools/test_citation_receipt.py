@@ -60,6 +60,14 @@ class ReferenceShapeTests(unittest.TestCase):
         self.assertEqual(r["unresolved_ids"], [4])
         self.assertEqual(C.ids_in_text("[map][1]"), set())
 
+    def test_labelled_table_row_is_a_fact_not_a_reference_entry(self):
+        # A numbered fact row whose second cell is a URL carries a source label, so it is a fact:
+        # it is counted, its R99 is reported missing, and its row number invents no reference 1.
+        r = C.receipt(FIX / "fact_table_url.md")
+        self.assertEqual(r["reference_entries"], 1)
+        self.assertEqual(r["facts"], 2)
+        self.assertEqual(r["unresolved_ids"], [99])
+
     def test_unresolved_references_are_listed_by_id(self):
         r = C.receipt(FIX / "unresolved_refs.md")
         self.assertEqual(r["facts"], 4)
