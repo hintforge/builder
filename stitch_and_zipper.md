@@ -139,6 +139,14 @@ Stitch writes two things per high-confidence or user-confirmed edge:
 > **Cross-system dependency** -- see `dependencies.md` DEP-[NNN]: [one-sentence summary of the dependency].
 ```
 
+**Write-time spoiler rule (cross-refs and edge rows).** A cross-ref line sits inside a file or block that carries a tier, and the reader sees it at that tier. The summary may name only content at or below the tier of the block it sits in. When the dependency involves content above that tier, write the bare pointer instead, and keep the full description in the `dependencies.md` row:
+
+```
+> **Cross-system dependency** -- see `dependencies.md` DEP-[NNN].
+```
+
+Every edge row carries a `tier` (the strictest tier of anything its description names), so the reader can hide the row until the player's dials cover it. Check each cross-ref against the tag above it before writing it, not afterwards.
+
 ### Chat output discipline
 
 Stitch is a builder operation, but the builder is often also a future player who has not seen the rest of the corpus yet. Edge descriptions are full strategy spoilers (boss kill orders, achievement requirements, ability counters, missable lockouts). Stitch must not surface them in chat.

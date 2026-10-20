@@ -4,9 +4,11 @@
 
 ## Cross-system edges
 
-| Edge ID | System A | System B | Dependency description | Confidence | Source files |
-|---------|----------|----------|------------------------|------------|--------------|
-| DEP-001 | [system name] | [system name] | [one sentence: action/state in A affects state/outcome in B] | high | [file-A.md], [file-B.md] |
+| Edge ID | System A | System B | Dependency description | Confidence | tier | Source files |
+|---------|----------|----------|------------------------|------------|------|--------------|
+| DEP-001 | [system name] | [system name] | [one sentence: action/state in A affects state/outcome in B] | high | [none \| progression \| late-game \| story \| dlc:<name>] | [file-A.md], [file-B.md] |
+
+<!-- The `tier` column uses the `spoiler:` vocabulary from templates/claim_format.md and holds the strictest tier of anything the row's description names. The reader hides a row until the player's dials cover its tier. Same column on the PoNR and sequencing tables below. -->
 
 ### Optional cluster links
 
@@ -14,15 +16,15 @@ Each independently testable relationship gets its own DEP row and audit. A genui
 
 ## PoNR / lockout edges
 
-| Edge ID | Trigger | Locked out | Notes | Source files |
-|---------|---------|------------|-------|--------------|
-| PON-001 | [action or zone entry] | [what becomes inaccessible] | [timing window if known] | [file.md] |
+| Edge ID | Trigger | Locked out | Notes | tier | Source files |
+|---------|---------|------------|-------|------|--------------|
+| PON-001 | [action or zone entry] | [what becomes inaccessible] | [timing window if known] | [spoiler vocabulary] | [file.md] |
 
 ## Missable / sequencing dependencies
 
-| Edge ID | Action | Window | Consequence | Source files |
-|---------|--------|--------|-------------|--------------|
-| SEQ-001 | [action] | [before/after what] | [what is missed or altered] | [file.md] |
+| Edge ID | Action | Window | Consequence | tier | Source files |
+|---------|--------|--------|-------------|------|--------------|
+| SEQ-001 | [action] | [before/after what] | [what is missed or altered] | [spoiler vocabulary] | [file.md] |
 
 ## Stitch run log
 
