@@ -133,7 +133,7 @@ Every fact in a corpus that could be falsified is structured as a **claim** with
 **Achievement overlay (`corpus-core-version: 4` and later):**
 
 - `achievement` -- optional, repeatable. Platform achievement API name when known, display name slugified otherwise. Presence binds this claim to the named achievement as the trigger or a prerequisite. Aggregated up into [`../templates/achievements.md`](../templates/achievements.md) at corpus root via `vector-binding`.
-- `achievement-hidden` -- `yes | no`. Required when `achievement:` is present. Surfaces the platform's hidden flag; a hidden achievement's name may itself be a spoiler.
+- `achievement-hidden` -- `yes | no | unknown`. Required when `achievement:` is present. Surfaces the platform's hidden flag; a hidden achievement's name may itself be a spoiler. `unknown` (no source shows the flag) is read as `yes`.
 - `trigger_type` -- one of `progression | branch | mastery | collection | threshold | discovery`. Required when `achievement:` is present. Decision questions and disambiguation rules at category boundaries live in [`../ingestion.md`](../ingestion.md) step 8.
 - `genre` -- optional, repeatable. Open-vocabulary overlay; conventional values `social | roguelike | mission | multiplayer | meta | class`. Corpora may declare their own values with a one-line definition in their `achievements.md` "Genre vocabulary" section.
 

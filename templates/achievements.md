@@ -76,7 +76,7 @@ Each achievement gets one entry under the H2 for its `trigger_type`. Format:
 ### [Achievement name -- verbatim from platform list]
 
 - **id:** [API name from platform if known; else display name slugified]
-- **hidden:** [yes | no -- from platform's hidden flag]
+- **hidden:** [yes | no | unknown -- from platform's hidden flag; `unknown` when no source shows it, read as `yes`]
 - **trigger_type:** [progression | branch | mastery | collection | threshold | discovery -- see "How to classify an achievement into a trigger type" above]
 - **genre:** [optional, repeatable. Conventional vocabulary: social | roguelike | mission | multiplayer | meta | class. See Genre vocabulary section below; corpora may add their own values with a one-line definition.]
 - **trigger:** [paraphrased trigger condition in maintainer's own words -- never reproduce the platform's description verbatim]
@@ -90,7 +90,7 @@ Each achievement gets one entry under the H2 for its `trigger_type`. Format:
 - **notes:** [maintainer notes -- common gotchas, contested triggers, boundary calls between trigger types, version-specific bugs. Optional.]
 ```
 
-**On hidden achievements.** A hidden achievement's *name* may itself be a spoiler. Treat the entry's `enemy-tier` and `puzzle-tier` as gating the entire entry (heading included) for hidden achievements, not just the trigger description. The reader hides the heading entirely at read-time when the player's dials are below the threshold.
+**On hidden achievements.** A hidden achievement's *name* may itself be a spoiler. An entry with `hidden: unknown` is treated as hidden. Treat the entry's `enemy-tier` and `puzzle-tier` as gating the entire entry (heading included) for hidden achievements, not just the trigger description. The reader hides the heading entirely at read-time when the player's dials are below the threshold.
 
 **On the developer's description.** Steam, PSN, and Xbox achievement descriptions are publisher IP. Cite the achievement *name* verbatim (it's the lookup key the player types when they see the popup). Paraphrase the trigger condition in your own words. Never reproduce the full developer-authored description text. This is the same posture the framework takes toward all third-party-authored source material: names, identifiers, and short factual labels travel verbatim; descriptive prose is paraphrased.
 
