@@ -137,6 +137,8 @@ class SyntheticTests(unittest.TestCase):
             {(f, line_of(SYN, f, "The Beta Charm"), "source"), (f, line_of(SYN, f, "- Gamma Charm"), "source")})
         # The one start-of-line claim in the file still parses, so the file is not a zero-claim file.
         self.assertIn(f"{f}:{line_of(SYN, f, 'Delta Charm') + 1}:inline", self.r["claim_index"])
+        # A blockquoted metadata line (the form claim_format.md shows) is a start-of-line claim.
+        self.assertIn(f"{f}:{line_of(SYN, f, 'Epsilon Charm') + 1}:inline", self.r["claim_index"])
 
     def test_totals(self):
         self.assertEqual(self.r["counts"], {"source": 6, "tier": 8, "status": 1})

@@ -295,7 +295,8 @@ def mark_structure(lines: list[str]):
 
 def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
     n = len(lines)
-    stripped = [ln.strip() for ln in lines]
+    # A leading blockquote marker is dropped: claim_format.md shows the metadata line as `> _source: ...`.
+    stripped = [re.sub(r"^(?:>\s*)+", "", ln.strip()) for ln in lines]
     in_fence, heading = mark_structure(lines)
 
     tag = [None] * n

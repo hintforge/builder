@@ -11,3 +11,6 @@ A bare mention of the `_source:` field in prose is not metadata.
 
 Delta Charm doubles gold.
 _source: https://example.org/charms · capture: web_fetch · confidence: high · enemy-tier: 0 · puzzle-tier: 0_
+
+Epsilon Charm lights dark rooms.
+> _source: https://example.org/charms · capture: web_fetch · confidence: high · enemy-tier: 0 · puzzle-tier: 0_
