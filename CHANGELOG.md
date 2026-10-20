@@ -4,6 +4,20 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Spoiler safety: table tags, row tiers, write-time cross-ref rule, tier sweep (v114, 2026-10-19)
+
+- **`templates/claim_format.md`:** new shapes for tables. One `_source:` line directly under a table is the **table tag** and covers every row; an optional `tier` column (values `none | progression | late-game | story | dlc:<name>`) sets a tier per row and overrides the table tag for that row. Reach rule: a `_source:` line covers the claim, paragraph or table immediately ABOVE it, never anything below, and sits at the start of its own line.
+- **`stitch_and_zipper.md`, `templates/dependencies.md`:** a cross-ref line may name only content at or below the tier of the block it sits in; otherwise it is a bare `see dependencies.md DEP-NNN` pointer. The edge, PoNR and sequencing tables gain a `tier` column.
+- **`ingestion.md` step 5:** "Tag each new claim" (was "each new section") and points at the claim shapes: one `_source:` line per claim, not one shared line per section.
+- **`templates/localization.md`:** each ask-the-player prompt carries a tier; a prompt naming a later zone sits at that zone's tier.
+- **`doctor.md`:** the reader reads the guide CHECKPOINT at every start, so changelog text there names nothing above tier 0 (the line saying the persona does not read it is corrected). When files disagree on a name's tier the strictest tagged tier wins unless a source dates the content earlier. Tier repairs and the integrity step end with the new tier sweep.
+- **`tools/integrity_validator.py`:** reports, under `source`, a non-scaffold content file that mentions claim metadata but parses no claim, and a `_source:` that is not at the start of its own line. In a tagged table with a `tier` column, a value outside the spoiler vocabulary is a `tier` violation (purely numeric values are left alone).
+- **New `tools/tier_sweep.py`** (Python 3 standard library, report-only): lists every name that appears in content tagged above tier 0 and also appears at a lower tier or untagged, with the places. Fixtures and tests run in `tools/test_integrity_validator.py`.
+
+**Reader changes (same framework version).** `persona_universal.md`: a table with a `tier` column is filtered row by row, so a row above either dial is left out while the table's other rows stay visible.
+
+**Existing corpus impact.** None required; guides that already use one `_source:` line per claim keep passing. Doctor will now report claims written as a shared per-section line or trailing a claim as unreadable, and names found at more than one tier. Dependency tables written before this version have no `tier` column; add it at the next stitch.
+
 ### Reader safeguard reads each transcript line as a record (v113, 2026-10-17)
 
 - **`templates/reader_gate/`:** the gate parses every transcript line instead of searching it for a `SKILL.md` path next to any tool call. Only a recorded tool call loads the skill: a `Skill` call naming `hintforge` or `hintforge-reader`, a `Read` of a hintforge `SKILL.md`, or a Codex shell call whose command reads that file. The AI's own text naming the path, and a shell call that only echoes it, no longer open the gate. `self_test.ps1` has ten checks (new: the AI-text and echo cases stay blocked; a Codex shell read is allowed); `README.md` and `_build_for_your_setup.md` list them. Guides that already installed the gate keep the older copy until it is rebuilt.
