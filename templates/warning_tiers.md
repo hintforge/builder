@@ -67,7 +67,7 @@ A "Lvl 2" or "Lvl 3" request on a specific puzzle is a **one-off escalation** fo
 
 Before delivering preemptive info, check **both** tier settings here. When in doubt between tiers, err stricter. the player can always raise.
 
-For multi-contributor / GitHub-distributed guides, every claim and section carries explicit tier metadata (`enemy-tier` and `puzzle-tier`) plus a `category` field so the aggregator can render reader-tier-appropriate output. See `../distribution.md` and `./claim_format.md`.
+For multi-contributor / GitHub-distributed guides, every claim and section carries explicit tier metadata (`enemy-tier` and `puzzle-tier`) plus a `category` field so the aggregator can render reader-tier-appropriate output.
 
 ## Breach log
 
