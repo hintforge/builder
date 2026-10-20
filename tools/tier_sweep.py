@@ -57,9 +57,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import integrity_validator as V  # noqa: E402
 
-RULES_REVISION = "ts-2026.10.19-1"
+RULES_REVISION = "ts-2026.10.20-1"
 
 SPOILER_TIER = {"none": 0, "progression": 1, "late-game": 2, "story": 3}
+ROW_ID_RE = re.compile(r"^[A-Z]{2,5}-\d+[a-z]?$")
 STOP_NAMES = {
     "note", "notes", "warning", "important", "overview", "summary", "source", "sources", "claim", "claims",
     "confidence", "status", "caution", "tip", "tips", "example", "examples", "details", "detail", "todo",
@@ -165,7 +166,9 @@ def map_file(lines: list[str]):
             col = next((k for k, c in enumerate(header) if c.lower() == "tier"), None)
             for r in range(i + 2, end + 1):
                 cells = V.table_cells(stripped[r])
-                row_first[r] = cells[0] if cells else ""
+                # The row's name is its first cell that reads as a name, so a table numbered in its
+                # first column (`| 106 | <name> | ...`) still yields the name.
+                row_first[r] = next((c for c in cells if usable_name(c)), cells[0] if cells else "")
                 if col is not None and col < len(cells) and cells[col].lower() in SPOILER_TIER:
                     t = SPOILER_TIER[cells[col].lower()]
                     tiers[r] = (t, t)
@@ -213,9 +216,12 @@ def map_file(lines: list[str]):
 
 def usable_name(name: str) -> bool:
     """4-60 characters, at most 6 words, starts with a letter, has a capital or a `_`/`-` (game names are
-    capitalized; ordinary lowercase phrases are noise), no `:` or quote mark, not a structural word."""
+    capitalized; ordinary lowercase phrases are noise), no `:` or quote mark, not a structural word,
+    and not a corpus row id such as `DEP-012` (stitch writes bare id pointers precisely so that lower-tier
+    text can point at higher-tier rows without naming them)."""
     return (4 <= len(name) <= 60 and len(name.split()) <= 6 and name[0].isalpha()
             and re.search(r"[A-Z_\-]", name) is not None and not re.search(r"[:\"]", name)
+            and not ROW_ID_RE.match(name)
             and name.lower() not in STOP_NAMES)
 
 

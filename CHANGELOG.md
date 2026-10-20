@@ -4,6 +4,11 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Tier sweep reads names in numbered tables and skips row-id pointers (v117, 2026-10-20)
+
+- **`tools/tier_sweep.py`:** a table row's name is its first cell that reads as a name, so a table numbered in its first column (`| 106 | <name> | ...`) no longer hides every name in it; corpus row ids such as `DEP-012` are not treated as names, so the bare pointers stitch writes into lower-tier text (the v114 cross-ref rule) are no longer listed as leaks. Fixtures and tests extended.
+- Existing corpus impact: none; re-run the sweep at the next doctor pass for a fuller list.
+
 ### Setup and research briefs: P2 nav-skip branch, pinned reference format, receipt reads more shapes (v116, 2026-10-20)
 
 - **`setup_wizard.md`:** the reader safeguard install is "copy the script, merge the registration" (never a straight copy over an existing settings file); the P2 brief has a nav-skip branch for games whose setup skipped `nav/` (progression gates per run stage plus an unlock-dependency table, tagged `vector: mechanic` or `vector: item`); the P2 localization toolkit falls back to Stage 0's localization class when the brief is written before P1's class is known; the P1 brief carries the achievement stub names and count inline and never cites the stub file's path; the shared evidence requirement pins the reference format (a `1.` numbered list, cited `[1]` beside the attribution label, in a table in the same cell), with the four attribution labels unchanged.

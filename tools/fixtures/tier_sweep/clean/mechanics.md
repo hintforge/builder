@@ -1,7 +1,7 @@
 # Mechanics
 **status:** research-integrated
 
-Gold doubles when you carry a lantern into town.
+Gold doubles when you carry a lantern into town (see dependencies.md DEP-001).
 _source: https://example.org/gold · capture: web_fetch · confidence: high · enemy-tier: 0 · puzzle-tier: 0 · spoiler: none_
 
 The first shop sells the Plain Charm for 40 gold.

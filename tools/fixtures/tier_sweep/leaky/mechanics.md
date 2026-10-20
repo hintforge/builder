@@ -4,7 +4,7 @@
 Gold doubles when you carry the Crown of Ash into town.
 _source: https://example.org/gold · capture: web_fetch · confidence: high · enemy-tier: 0 · puzzle-tier: 0 · spoiler: none_
 
-The first shop sells the Plain Charm for 40 gold.
+The first shop sells the Plain Charm for 40 gold, and later the Ember Lantern.
 _source: https://example.org/shop · capture: web_fetch · confidence: high · enemy-tier: 0 · puzzle-tier: 0 · spoiler: none_
 
 Lanterns reveal the Vault of Echoes door from the start.

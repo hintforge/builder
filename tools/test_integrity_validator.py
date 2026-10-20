@@ -286,7 +286,9 @@ class TierSweepTests(unittest.TestCase):
     def test_planted_late_names_are_listed(self):
         r = self.S.sweep_guide(self.LEAKY)
         got = self.places(r)
-        self.assertEqual(set(got), {"Crown of Ash", "Hollow King", "Vault of Echoes"})
+        self.assertEqual(set(got), {"Crown of Ash", "Hollow King", "Vault of Echoes", "Ember Lantern"})
+        # a name in the second column of a table numbered in its first column is still read
+        self.assertEqual(got["Ember Lantern"], {("mechanics.md", line_of(self.LEAKY, "mechanics.md", "Ember Lantern"), (0, 0))})
         # a story name under a `none` block, a story name in untagged prose, a late-game name under tier 1
         self.assertEqual(got["Crown of Ash"], {("mechanics.md", line_of(self.LEAKY, "mechanics.md", "Crown of Ash"), (0, 0))})
         self.assertEqual(got["Hollow King"], {("overview.md", line_of(self.LEAKY, "overview.md", "Hollow King"), None)})
@@ -295,7 +297,7 @@ class TierSweepTests(unittest.TestCase):
     def test_clean_guide_lists_nothing(self):
         r = self.S.sweep_guide(self.CLEAN)
         self.assertTrue(r["parsed"])
-        self.assertEqual(r["hits"], [])
+        self.assertEqual(r["hits"], [])  # a bare `DEP-001` pointer at tier 0 is the prescribed form, not a leak
         self.assertGreater(r["names_above_tier_0"], 0)  # it read real names; it just found no leak
 
     def test_none_row_of_a_story_table_supplies_no_name(self):
