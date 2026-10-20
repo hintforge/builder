@@ -4,6 +4,12 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Stitch: cross-ref runs get their own tier under the reach rule; per-table lint recipe; sweep ignores tier values (v118, 2026-10-20)
+
+- **`stitch_and_zipper.md`:** the write-time cross-ref check now follows the reach rule: a run of cross-ref lines placed after a claim's tag line is its own block and reads as tier 0, so it either keeps every summary at tier 0 (bare pointers for the rest) or gets its own `_source:` tag line directly under it at the strictest tier it names. The step 3b structural-lint recipe resets at every non-table line, so each table is checked against its own header instead of the file's first table.
+- **`tools/tier_sweep.py`:** the `tier` column is never read as a row's name, and spoiler-tier words (`none`, `progression`, `late-game`, `story`, `dlc:<name>`) are never names. Fixture and test extended.
+- Existing corpus impact: a guide stitched under v114-v117 may have cross-ref runs with no tag line of their own; the next stitch or doctor pass applies the rule above.
+
 ### Tier sweep reads names in numbered tables and skips row-id pointers (v117, 2026-10-20)
 
 - **`tools/tier_sweep.py`:** a table row's name is its first cell that reads as a name, so a table numbered in its first column (`| 106 | <name> | ...`) no longer hides every name in it; corpus row ids such as `DEP-012` are not treated as names, so the bare pointers stitch writes into lower-tier text (the v114 cross-ref rule) are no longer listed as leaks. Fixtures and tests extended.

@@ -145,7 +145,7 @@ Stitch writes two things per high-confidence or user-confirmed edge:
 > **Cross-system dependency** -- see `dependencies.md` DEP-[NNN].
 ```
 
-Every edge row carries a `tier` (the strictest tier of anything its description names), so the reader can hide the row until the player's dials cover it. Check each cross-ref against the tag above it before writing it, not afterwards.
+Every edge row carries a `tier` (the strictest tier of anything its description names), so the reader can hide the row until the player's dials cover it. Check each cross-ref against the tier of the block it sits in before writing it, not afterwards. Under the reach rule in [`templates/claim_format.md`](templates/claim_format.md) a tag line covers what sits directly above it, so a run of cross-ref lines placed after a claim's tag line is a block of its own and reads as tier 0: either keep every summary in that run at tier 0 (bare pointers for the rest), or put a `_source:` tag line directly under the run, at the strictest tier it names.
 
 ### Chat output discipline
 
@@ -215,9 +215,9 @@ The flag resets to `false` when stitch completes.
 3. **Corpus size check (mandatory).** Scans file list, reports total count and approximate KB. Proceeds with full pass by default regardless of size.
 3b. **Dependencies-file structural lint (mandatory).** Before reading corpus content, verify every `|`-delimited table in `dependencies.md`: each data row must have the same cell count as its header. Report mismatches with file:line and the column-count delta. Do not auto-fix during stitch; flag for the user or a doctor branch C repair.
 
-   Implementation recipe (bash/git-bash, one line per table):
+   Implementation recipe (bash/git-bash; any non-table line ends a table, so each table is checked against its own header):
    ```
-   awk -F'|' 'BEGIN{h=0} /^\|/{n=NF; if(h==0){h=n; next} if(n!=h) print FILENAME":"NR": "n" cells (header has "h")"}' dependencies.md
+   awk -F'|' '!/^\|/{h=0; next} {n=NF; if(h==0){h=n; next} if(n!=h) print FILENAME":"NR": "n" cells (header has "h")"}' dependencies.md
    ```
    PowerShell equivalent uses `Get-Content | ForEach-Object` with `Split('|').Count`. Run per `## ` section to scope each table; tables in different sections legitimately have different schemas.
 

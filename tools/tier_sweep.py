@@ -57,7 +57,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import integrity_validator as V  # noqa: E402
 
-RULES_REVISION = "ts-2026.10.20-1"
+RULES_REVISION = "ts-2026.10.20-2"
 
 SPOILER_TIER = {"none": 0, "progression": 1, "late-game": 2, "story": 3}
 ROW_ID_RE = re.compile(r"^[A-Z]{2,5}-\d+[a-z]?$")
@@ -168,7 +168,8 @@ def map_file(lines: list[str]):
                 cells = V.table_cells(stripped[r])
                 # The row's name is its first cell that reads as a name, so a table numbered in its
                 # first column (`| 106 | <name> | ...`) still yields the name.
-                row_first[r] = next((c for c in cells if usable_name(c)), cells[0] if cells else "")
+                row_first[r] = next((c for k, c in enumerate(cells) if k != col and usable_name(c)),
+                                    cells[0] if cells else "")
                 if col is not None and col < len(cells) and cells[col].lower() in SPOILER_TIER:
                     t = SPOILER_TIER[cells[col].lower()]
                     tiers[r] = (t, t)
@@ -222,7 +223,8 @@ def usable_name(name: str) -> bool:
     return (4 <= len(name) <= 60 and len(name.split()) <= 6 and name[0].isalpha()
             and re.search(r"[A-Z_\-]", name) is not None and not re.search(r"[:\"]", name)
             and not ROW_ID_RE.match(name)
-            and name.lower() not in STOP_NAMES)
+            and name.lower() not in STOP_NAMES and name.lower() not in SPOILER_TIER
+            and not name.lower().startswith("dlc:"))
 
 
 # ------------------------------------------------------------------ sweep
