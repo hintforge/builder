@@ -10,7 +10,7 @@ A guide for any game, on any system, where you choose how much help you want and
 
 ## Install & update
 
-Paste this into Claude Code, Codex, or OpenClaw:
+Paste this into any AI agent that can read files on your computer:
 
 > Install the hintforge skill from github.com/hintforge/builder
 
