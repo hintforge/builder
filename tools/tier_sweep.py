@@ -29,14 +29,15 @@ and only from these name-bearing places:
   - a **bold span** that is not a field label (no trailing colon);
   - every cell of a table row except the `tier` cell, split on `;`, and a piece holding a comma read
     both whole ("Sol, Lord of Cinders") and split on the commas (a list); a one-word value that repeats
-    down a column, such as a rarity or "yes", is a category and is skipped, except in the row's first
-    name cell (a repeated name of several words, such as a shared destination, is kept);
+    down a column headed as a category (Rarity, Type, Cost, Status ... see CATEGORY_HEADER_RE) is
+    skipped, except in the row's first name cell; any other repeated value, such as a destination
+    several rows share, is kept;
   - a `backticked identifier` that has a capital, digit, `_` or `-` and is not a path, file name or
     `key: value`.
 A name must be 4-60 characters, at most 6 words, start with a letter, contain a capital letter (or, for
 a backticked identifier only, `_`/`-`), be in title case when it has several words (sentence-case
-labels such as "Unlock edges" are not names; a backticked identifier is exempt, so a sentence-cased
-proper name is caught when it is written in backticks), hold no `:` or quote mark, and not be in STOP_NAMES
+labels such as "Unlock edges" are not names; a sentence-cased name built on "of", such as "Voice of the
+void", passes, and a backticked identifier is exempt), hold no `:` or quote mark, and not be in STOP_NAMES
 (structural words such as "Notes" or "Overview"), a numbered structural label ("Chapter 4", "Tier 2")
 or the game's own title (the manifest H1 before ` -- `). A leading "The"/"A"/"An" is dropped when two
 or more words remain; a one-word name keeps it ("The Ox"). Names match as whole words anywhere in the
@@ -87,6 +88,9 @@ JOIN_WORDS = {"a", "an", "the", "of", "and", "or", "in", "on", "at", "to", "for"
 STRUCT_LABEL_RE = re.compile(
     r"^(?:chapter|act|tier|stage|level|part|phase|step|ante|wave|round|zone|day|episode|mission|floor|"
     r"world|season|page|section)\s+\d+[a-z]?$", re.I)
+CATEGORY_HEADER_RE = re.compile(
+    r"\b(?:rarity|type|types|class|category|kind|status|rank|grade|quality|cost|price|difficulty|mode|"
+    r"platform|dlc|required|missable|availability|yes|no)\b", re.I)
 BOLD_RE = re.compile(r"\*\*([^*\n]+?)\*\*")
 TICK_RE = re.compile(r"`([^`\n]+)`")
 IDENT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.\- ]*$")
@@ -195,10 +199,12 @@ def map_file(lines: list[str], skip_names=frozenset()):
                               if k != col and any(usable_name(clean_name(p)) for p in cell_parts(c))), None)
                 cands = []
                 for k, c in enumerate(cells):
-                    # A repeated one-word value is a category; a repeated name of several words (a shared
-                    # destination, a boss several rows lead to) is still a name.
+                    # A repeated one-word value in a column headed as a category (Rarity, Type, Cost ...) is a
+                    # category value; anywhere else a repeated value is a shared name (a destination or boss
+                    # several rows lead to), one word or several.
                     if k == col or (k != first and seen[(k, c.strip().lower())] > 1
-                                    and len(clean_name(c).split()) < 2):
+                                    and len(clean_name(c).split()) < 2
+                                    and k < len(header) and CATEGORY_HEADER_RE.search(header[k])):
                         continue
                     cands.extend(cell_parts(c))
                 row_names[r] = cands
@@ -277,7 +283,11 @@ def clean_name(text: str) -> str:
 
 
 def is_title_case(name: str) -> bool:
-    """Every word but a short joining word (of, and, the ...) starts with a capital or a digit."""
+    """Every word but a short joining word (of, and, the ...) starts with a capital or a digit. A name
+    built on "of" ("Voice of the void") passes in sentence case too: that is a proper-name shape, and
+    structural labels ("Unlock edges", "Decks and stakes") do not take it."""
+    if re.search(r"\S\s+of\s+\S", name) and name[0].isupper():
+        return True
     for w in name.split():
         if w.lower() in JOIN_WORDS:
             continue

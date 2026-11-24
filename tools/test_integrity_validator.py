@@ -374,24 +374,27 @@ class TierSweepTests(unittest.TestCase):
             (root / "nav" / "architecture.md").write_text("corpus-core-version: 6\n", encoding="utf-8")
             (root / "late.md").write_text(
                 "**status:** research-integrated\n\n"
-                "| Key | Opens | Guard |\n|---|---|---|\n"
-                "| Copper Key | Glass Spire | Rare |\n"
-                "| Silver Key | Glass Spire | Rare |\n"
-                "| Ashen Gate; Iron Stair | Bone Hall | Sol, Lord of Cinders |\n"
+                "| Key | Opens | Then | Guard | Rarity |\n|---|---|---|---|---|\n"
+                "| Copper Key | Glass Spire | Obsidian | Bone Hall | Rare |\n"
+                "| Silver Key | Glass Spire | Obsidian | Bone Hall | Rare |\n"
+                "| Ashen Gate; Iron Stair | Bone Hall | Quartz | Sol, Lord of Cinders | Common |\n"
                 "_source: https://e.org/a · enemy-tier: 2 · puzzle-tier: 2_\n\n"
-                "The `Voice of the void` waits at the end.\n"
-                "_source: https://e.org/c · enemy-tier: 3 · puzzle-tier: 3_\n", encoding="utf-8")
+                "The `Mask of the deep` waits at the end.\n"
+                "_source: https://e.org/c · enemy-tier: 3 · puzzle-tier: 3_\n\n"
+                "### Voice of the void\n\nIts **Choir of ash** sings.\n"
+                "_source: https://e.org/d · enemy-tier: 3 · puzzle-tier: 3_\n", encoding="utf-8")
             (root / "early.md").write_text(
                 "**status:** research-integrated\n\n"
-                "The Glass Spire, the Ashen Gate, Sol, Lord of Cinders and the Voice of the void are ahead; "
-                "a rare find.\n"
+                "The Glass Spire, Obsidian, the Ashen Gate, Sol, Lord of Cinders, the Mask of the deep, the "
+                "Voice of the void and its Choir of ash are ahead; a Rare find.\n"
                 "_source: https://e.org/b · enemy-tier: 0 · puzzle-tier: 0_\n", encoding="utf-8")
             r = self.S.sweep_guide(root)
         got = {h["name"] for h in r["hits"]}
-        # a repeated name of several words is kept; a first-column list is split; a comma name is read whole
-        # (and its parts); a backticked sentence-case name counts; a repeated one-word value is a category
-        self.assertEqual(got, {"Glass Spire", "Ashen Gate", "Sol, Lord of Cinders", "Lord of Cinders",
-                               "Voice of the void"})
+        # a repeated name is kept, one word or several, unless its column is headed as a category (Rarity);
+        # a first-column list is split; a comma name is read whole (and its parts); a backticked, heading or
+        # bold sentence-case name built on "of" counts
+        self.assertEqual(got, {"Glass Spire", "Obsidian", "Ashen Gate", "Sol, Lord of Cinders", "Lord of Cinders",
+                               "Mask of the deep", "Voice of the void", "Choir of ash"})
 
     def test_cli_report_only_and_exit_codes(self):
         def run(*a):
