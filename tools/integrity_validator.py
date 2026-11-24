@@ -84,7 +84,7 @@ import re
 import sys
 from pathlib import Path
 
-RULES_REVISION = "iv-2026.11.24-1"
+RULES_REVISION = "iv-2026.11.24-2"
 KNOWN_MAX_CORE = 6
 
 CHECKS = ("source", "tier", "status")

@@ -4,6 +4,17 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Integrity validator reports spoiler and tier marks a reader cannot see; corpus-format lists the allowed tier shapes (v122, 2026-11-24)
+
+- **`tools/integrity_validator.py`** (rules revision `iv-2026.11.24-2`): three new findings.
+  - `spoiler-mark-line` (counted under `source`): a line that opens with `_spoiler:` instead of `_source:`.
+  - `spoiler-mark-undercovered` (counted under `tier`): an inline `_spoiler:` mark at the end of a claim or in a table cell whose covering `_source:` line is at a lower tier, or that has no covering line.
+  - `tier-mark-undercovered` (counted under `tier`): the same check for `_enemy-tier:` and `_puzzle-tier:` marks, on the mark's own axis.
+  - How marks are read: every mark on a line is ranked. A covering line's own tier fields beat the section tag. A mark inside a bullet-field entry block is compared with that block's fields. Text in backticks and fenced blocks is ignored. Tests added.
+- **`docs/corpus-format.md`:** new "Allowed shapes" paragraph covering per-claim metadata, the section tag line (which covers what is below it), and table or entry-block citations. It states that a spoiler tier lives only in a `_source:` line or a tag line.
+- **`doctor.md`:** step 6b lists the three new finding names and their repair: convert the mark to a full `_source:` line at the mark's tier.
+- Existing corpus impact: a guide that still carries old tag-only marks now reports them. Repair each one at the next doctor pass.
+
 ### Runs kept apart in the CHECKPOINT template; tier sweep keeps shared names, splits first-column lists, reads comma names whole (v121, 2026-11-24)
 
 - **`templates/checkpoint.md`:** new `run: 1` line under `## Player`, the name of the current run (playthrough). When the player starts over, the reader shelves the old run's state to `runs/<name>.md` and resets the run parts, and each run's collectible-map marks live in their own file, `runs/<name>/extract_tools/item_status.json`; dials, player name and guide knowledge carry over. `docs/corpus-format.md` lists `runs/` as optional personal play state, never published.
