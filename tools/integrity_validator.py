@@ -33,8 +33,9 @@ only, so a `_spoiler:` mark written any other way carries no tier. Two findings,
     paragraph or table) is at a lower tier, or that has no covering line. The covering line's tier is the
     highest of its `enemy-tier`, `puzzle-tier` and `spoiler:` values (a tier axis the line does not state comes
     from the section tag in force). Every mark on a line is ranked. A mark inside a bullet-field entry block that
-    carries its own tier or spoiler fields is compared with those fields instead (a field that wraps onto an
-    unbulleted continuation line keeps that line in the block). Repair:
+    carries its own tier or spoiler fields is compared with those fields instead (an indented line
+    wrapping a free-text field such as the claim stays in the block; an unindented line, or a line under a
+    typed field such as a source, tier or spoiler, does not). Repair:
     give the marked text its own `_source:` line at the mark's tier. `dlc:` and free-text marks are not ranked.
   - `tier-mark-undercovered` (a `tier` violation): the same for an `_enemy-tier: N ..._` or `_puzzle-tier: N ..._`
     mark (inline, in a table cell, or on a line of its own), compared with the covering line's value on the SAME
@@ -253,11 +254,24 @@ def scan_tag_line(stripped: str):
 LIST_ITEM_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s")
 
 
-def is_continuation_line(line: str) -> bool:
-    """A line that carries on the field above it: non-blank prose that is not a heading, fence, list item,
-    table row, quote, `_source:` metadata line or section tag line (each of those starts something new)."""
+TYPED_FIELD_KEYS = frozenset({
+    "source", "capture", "capture-method", "confidence", "enemy-tier", "puzzle-tier", "tier", "spoiler",
+    "category", "status", "last-verified", "contributor"})
+
+
+def is_typed_field(key: str) -> bool:
+    """A metadata field with a fixed vocabulary (a source, a tier, a spoiler word ...): it never wraps."""
+    return key in TYPED_FIELD_KEYS or key.endswith("-tier")
+
+
+def is_continuation_line(line: str, last_key: str | None) -> bool:
+    """A line that carries on the field above it. Fail closed: it must start with whitespace, the field above
+    must not be a typed metadata field, and it must not be a heading, fence, list item, table row, quote,
+    `_source:` metadata line or section tag line (each of those starts something new)."""
     s = line.strip()
-    if not s or HEADING_RE.match(line) or FENCE_RE.match(line) or LIST_ITEM_RE.match(line):
+    if not s or line[0] not in " \t" or last_key is None or is_typed_field(last_key):
+        return False
+    if HEADING_RE.match(line) or FENCE_RE.match(line) or LIST_ITEM_RE.match(line):
         return False
     if s[0] in ">|" or scan_tag_line(s) is not None:
         return False
@@ -265,9 +279,10 @@ def is_continuation_line(line: str) -> bool:
 
 
 def parse_bullet_run(lines: list[str], i: int):
-    """Contiguous `- **key:** value` lines starting at i -> (fields, end_i). A field that wraps onto an
-    unbulleted line (indented or not) keeps that line in the run and in its value; a blank line or any line
-    that starts something new ends the run."""
+    """Contiguous `- **key:** value` lines starting at i -> (fields, end_i). An INDENTED unbulleted line under a
+    free-text field (a claim, a note) keeps that line in the run and in the field's value; an unindented line,
+    a line under a typed metadata field (source, tiers, spoiler, capture ...), a blank line, or any line that
+    starts something new ends the run."""
     fields: dict[str, str] = {}
     n = len(lines)
     last = None
@@ -281,7 +296,7 @@ def parse_bullet_run(lines: list[str], i: int):
                 val = line[m.end():end].strip().rstrip("|").strip()
                 fields[key] = (fields[key] + ", " + val) if key in fields else val
                 last = key
-        elif last is not None and is_continuation_line(line):
+        elif is_continuation_line(line, last):
             fields[last] = (fields[last] + " " + line.strip()).strip()
         else:
             break
