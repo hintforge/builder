@@ -45,6 +45,11 @@ ARCHIVE_HEADER = b"# Harness changelog archive"
 SECTION = b"## Harness changelog"
 
 
+UNKNOWN_ORDER = ("cannot tell whether the section is oldest first or newest first "
+                 "(the headings give no one consistent direction in version numbers and dates); "
+                 "not touching it")
+
+
 class Refuse(Exception):
     pass
 
@@ -107,7 +112,7 @@ def split_checkpoint(data):
 
 
 def _key_version(entry):
-    m = re.match(rb"###\s+v?(\d+)\b", entry)
+    m = re.match(rb"###\s+[vV](\d+)\b", entry)
     return int(m.group(1)) if m else None
 
 
@@ -214,10 +219,8 @@ def plan(guide, reverse_flag):
             raise Refuse("the section reads oldest first; rerun with --reverse-if-oldest-first")
         entries = entries[::-1]
         reversed_now = True
-    elif order is None and (reverse_flag or len(entries) > KEEP or len(cp) > LIMIT):
-        raise Refuse("cannot tell whether the section is oldest first or newest first "
-                     "(the headings give no one consistent direction in version numbers and dates); "
-                     "not touching it")
+    elif order is None and reverse_flag:
+        raise Refuse(UNKNOWN_ORDER)
     if not entries:
         raise Refuse("the changelog section holds no `### ` entries")
     if older and any(_strip_eol(x) != POINTER for x in older):
@@ -251,6 +254,8 @@ def plan(guide, reverse_flag):
         k -= 1
         out = render(k)
     moved = entries[k:]
+    if moved and order is None:
+        raise Refuse(UNKNOWN_ORDER)
     if ar_exists and moved:
         already = set(archive_entries(split_archive(ar)[2]))
         dup = [heading(e) for e in moved if e in already]
@@ -351,6 +356,16 @@ def main(argv=None):
     except OSError as e:
         msg = "FAILED while writing: %s" % e
         if wrote_ar:
+            try:
+                with open(p["ar_path"], "rb") as f:
+                    current = f.read()
+            except OSError:
+                current = None
+            if current != p["new_ar"]:
+                msg += ("; CHECKPOINT.md was not written, and archive/harness_changelog.md changed since this "
+                        "run wrote it, so it was left untouched; both files need a manual check")
+                print(msg, file=sys.stderr)
+                return 1
             try:
                 if p["ar_exists"]:
                     write_atomic(p["ar_path"], p["ar"])

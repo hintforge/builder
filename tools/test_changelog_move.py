@@ -303,6 +303,77 @@ def test_rerun_after_partial_write_refused(tmp):
     _refused_unchanged(tmp, text, archive=archive)
 
 
+def _dated(days):
+    return [f"### 2026-11-{d:02d} -- repair\nbody {d}\n\n" for d in days]
+
+
+def test_date_first_headings_newest_first_move(tmp):
+    es = _dated((24, 23, 22, 21))
+    setup(tmp, checkpoint(es))
+    assert run(tmp) == 0
+    assert rd(tmp, "archive", "harness_changelog.md").decode() == "# Harness changelog archive\n\n" + es[3]
+
+
+def test_date_first_headings_oldest_first(tmp):
+    es = _dated((21, 22, 23, 24))
+    text = checkpoint(es)
+    _refused_unchanged(tmp, text)
+    with tempfile.TemporaryDirectory() as t2:
+        setup(t2, text)
+        assert run(t2, "--reverse-if-oldest-first") == 0
+        assert rd(t2, "archive", "harness_changelog.md").decode() == "# Harness changelog archive\n\n" + es[0]
+        assert rd(t2, "CHECKPOINT.md").decode().index("2026-11-24") < rd(t2, "CHECKPOINT.md").decode().index("2026-11-22")
+
+
+def test_pointer_push_over_limit_with_unknown_order_refused(tmp):
+    def build(pad):
+        es = ["### alpha\n" + "x" * pad + "\n\n", "### beta\nb\n\n", "### gamma\ng\n\n"]
+        return checkpoint(es, after="")
+    pad = 0
+    base = len(build(0).encode())
+    text = build(23990 - base)
+    assert len(text.encode()) == 23990
+    _refused_unchanged(tmp, text, archive="# Harness changelog archive\n\n" + entry(0))
+
+
+def test_rollback_skipped_when_archive_changed_between_writes(tmp, monkeypatch, capsys):
+    es = [entry(n) for n in (5, 4, 3, 2, 1)]
+    text = checkpoint(es)
+    archive = "# Harness changelog archive\n\n" + entry(0)
+    setup(tmp, text, archive)
+    real = cm.write_atomic
+    other = b"# Harness changelog archive\n\nsomeone else wrote this\n"
+
+    def fake(path, data):
+        if os.path.basename(path) == "CHECKPOINT.md":
+            with open(os.path.join(tmp, "archive", "harness_changelog.md"), "wb") as f:
+                f.write(other)
+            raise OSError("locked")
+        return real(path, data)
+    monkeypatch.setattr(cm, "write_atomic", fake)
+    assert run(tmp) == 1
+    assert rd(tmp, "CHECKPOINT.md") == text.encode()
+    assert rd(tmp, "archive", "harness_changelog.md") == other
+    assert "manual check" in capsys.readouterr().err
+
+
+def test_rollback_skipped_when_new_archive_changed_between_writes(tmp, monkeypatch):
+    es = [entry(n) for n in (5, 4, 3, 2, 1)]
+    setup(tmp, checkpoint(es))
+    real = cm.write_atomic
+    other = b"# Harness changelog archive\n\nsomeone else\n"
+
+    def fake(path, data):
+        if os.path.basename(path) == "CHECKPOINT.md":
+            with open(os.path.join(tmp, "archive", "harness_changelog.md"), "wb") as f:
+                f.write(other)
+            raise OSError("locked")
+        return real(path, data)
+    monkeypatch.setattr(cm, "write_atomic", fake)
+    assert run(tmp) == 1
+    assert rd(tmp, "archive", "harness_changelog.md") == other
+
+
 def test_missing_section_fails_closed(tmp):
     setup(tmp, "# Status\n\n## Next step\nGo.\n")
     assert run(tmp) == 1
