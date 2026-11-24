@@ -218,6 +218,19 @@ class EdgeCaseTests(unittest.TestCase):
             (root / "c.md").write_text(text, encoding="utf-8")
             return V.validate_guide(root)
 
+    def test_save_schema_is_outside_the_corpus_walk(self):
+        claim = "A field.\n\n_source: x · capture: manual_paste · confidence: high · enemy-tier: 0 · puzzle-tier: 0_\n"
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "nav").mkdir()
+            (root / "nav" / "architecture.md").write_text("corpus-core-version: 6\n", encoding="utf-8")
+            (root / "save_schema.md").write_text(claim, encoding="utf-8")
+            (root / "c.md").write_text(claim, encoding="utf-8")
+            files = [rel for rel, _ in V.iter_corpus_files(root)]
+            r = V.validate_guide(root)
+        self.assertNotIn("save_schema.md", files)
+        self.assertEqual(r["counts"]["status"], 1)  # c.md only
+
     def test_missing_status_on_claim_bearing_file_is_a_violation(self):
         r = self._run("# T\n\n_source: https://e.org/a · enemy-tier: 0 · puzzle-tier: 0_\n")
         self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 1})

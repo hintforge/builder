@@ -109,6 +109,8 @@ EXCLUDED_DIR_NAMES = {
     "research_briefs", "research_inbox", "ptt", "save_state", ".claude",
     ".git", "__pycache__", "archive", "reference", "roster", "artifacts",
 }
+# Local-only tooling files outside the status system (corpus-format.md SS6).
+EXCLUDED_FILE_NAMES = {"save_schema.md"}
 
 FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})(.*)$")
 HEADING_RE = re.compile(r"^ {0,3}(#{1,6})\s+\S")
@@ -171,7 +173,7 @@ def iter_corpus_files(guide_dir: Path):
     found = []
     for p in guide_dir.rglob("*.md"):
         rel_parts = p.relative_to(guide_dir).parts
-        if any(part in EXCLUDED_DIR_NAMES for part in rel_parts):
+        if any(part in EXCLUDED_DIR_NAMES for part in rel_parts) or p.name in EXCLUDED_FILE_NAMES:
             continue
         found.append((p.relative_to(guide_dir).as_posix(), p))
     found.sort(key=lambda t: t[0])
