@@ -344,6 +344,27 @@ class SpoilerMarkTests(unittest.TestCase):
         self.assertEqual(r["counts"]["tier"], 1)
         self.assertIn("tier 3", self._details(r, "tier")[0])
 
+    def test_inline_enemy_tier_mark_under_lower_enemy_tier_source_is_flagged(self):
+        r = self._run("| Room | Note |\n|---|---|\n| Vault | holds the boss _enemy-tier: 2 note_ |\n" + self.LOW)
+        self.assertEqual(r["counts"], {"source": 0, "tier": 1, "status": 0})
+        d = self._details(r, "tier")[0]
+        self.assertTrue(d.startswith("tier-mark-undercovered:") and "enemy-tier" in d and "tier 2" in d, d)
+
+    def test_tier_mark_on_its_own_line_is_compared_on_its_own_axis(self):
+        # puzzle axis is covered (3), enemy axis is not (0): only the enemy mark is flagged
+        src = "_source: https://e.org/a · capture: web_fetch · enemy-tier: 0 · puzzle-tier: 3_\n"
+        r = self._run("Boss arena.\n_enemy-tier: 2 note: twins_\n\nA riddle. _puzzle-tier: 3_\n" + src)
+        self.assertEqual(r["counts"]["tier"], 1)  # the line-start enemy mark has no covering line; the puzzle mark is covered
+        r = self._run("A riddle. _puzzle-tier: 3_ And a foe. _enemy-tier: 2_\n" + src)
+        self.assertEqual(r["counts"]["tier"], 1)
+        self.assertIn("enemy-tier", self._details(r, "tier")[0])
+
+    def test_tier_marks_covered_on_their_axis_or_inside_a_source_line_are_not_flagged(self):
+        r = self._run("Foe. _enemy-tier: 2_\n" + self.HIGH + "\n"
+                      "Foe again. _enemy-tier: 0_\n" + self.LOW + "\n"
+                      "Prose naming `_enemy-tier: 5` in backticks.\n" + self.LOW)
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+
     def test_section_tag_in_force_counts_as_the_covering_tier(self):
         r = self._run("# Part\n\nenemy-tier 3, puzzle-tier 3\n\nDetail. _spoiler: story_\n"
                       "_source: https://e.org/a · capture: web_fetch_\n")

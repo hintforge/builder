@@ -143,7 +143,7 @@ Every fact in a corpus that could be falsified is structured as a **claim** with
 - **Section-level tag line** (`section-tier-tag`): one standalone line carrying `enemy-tier` and `puzzle-tier` (for example `enemy-tier 2, puzzle-tier 1`) governs the claims under it until the next H1-H3 heading or the next such line. Unlike a `_source:` line, it covers what is BELOW it. A claim that carries its own tiers keeps them. A section-opening `_source:` citation directly above subheadings whose sections carry these tag lines is a container citation, not a claim.
 - **Table or entry-block citation** (`table-citation`, `entry-block-container`): one `_source:` line directly under a table cites the whole table; one `_source:` line above headings whose sections hold per-entry blocks carrying their own tiers is a container citation. See [`../templates/claim_format.md`](../templates/claim_format.md) "Tables".
 
-Whatever the shape, a spoiler tier is stated only in a `_source:` line (its `spoiler:` field) or a tag line. A `_spoiler: <tier>_` mark written on its own line or at the end of a claim or table cell is not read, and the validator reports it.
+Whatever the shape, a spoiler tier is stated only in a `_source:` line (its `spoiler:` field) or a tag line. A `_spoiler: <tier>_`, `_enemy-tier: N_` or `_puzzle-tier: N_` mark written on its own line or at the end of a claim or table cell is not read, and the validator reports it.
 
 Opinions, recommendations, tier rankings, hint-ladder Lvl 1 nudges, section overviews, and procedural advice are **not** claims and should not carry metadata. Prose is fine.
 
