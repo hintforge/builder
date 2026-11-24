@@ -4,6 +4,11 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Boss tiers: a narrator or ally who becomes the boss (v131, 2026-11-24)
+
+- **`templates/warning_tiers.md`** and **`ingestion.md`** step 2: the met-first order rule now also covers a boss the player first meets as a non-hostile character (a narrator, guide or ally). Before the turn their name takes no boss tier; any line saying they become the boss, or describing the fight, takes the boss tiers, headings included.
+- **Existing corpora:** run doctor Branch C "Tier rule changed in the template" where a guide raised such a character's name to Tier 3 everywhere, or left a heading that names them as the boss.
+
 ### Uncovered-block warning: a bullet line ends the header (v130, 2026-11-24)
 
 - **`tools/integrity_validator.py`** (rules revision `iv-2026.11.24-6`): the header-metadata exemption no longer accepts a bulleted `- **key:** ...` line, so a bullet-field entry directly under the header is checked like any other content.

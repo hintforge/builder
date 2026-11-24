@@ -29,7 +29,7 @@ To change: "set enemy warning to tier N" / "set puzzle tier to N." Update this s
 - No boss name, no mechanics, no recommended loadout.
 
 ### Tier 3 -- Boss prep
-- Tier 2 + name the boss and recommend loadout swaps. This is the first tier at which a boss's own name may be said; a boss the game gives no name gets a generic description ("a heavy mech," "a mutant cluster").
+- Tier 2 + name the boss and recommend loadout swaps. This is the first tier at which a boss's own name may be said (a name the player meets before the boss is the exception: see "A name a boss shares with a common enemy" below); a boss the game gives no name gets a generic description ("a heavy mech," "a mutant cluster").
 - No mechanics walkthrough, no phase descriptions.
 
 ### Tier 4 -- Boss prep + materials
@@ -45,6 +45,7 @@ Some games give a boss the same name as an ordinary enemy. Where the player meet
 - A file's place in the story never lowers the name's tier. The player can ask about places they have not reached.
 - Where the ordinary enemy comes before the boss, its name is an ordinary-enemy name. Only boss-fight lines take the boss tiers.
 - If the guide does not say which comes first, treat the name as a boss name and correct the facts.
+- The same order rule covers a boss the player first meets as a non-hostile character, such as a narrator, guide or ally who speaks to them from the start. Before the turn, the name is that character's name and takes no boss tier. Any line that says they become the boss, or describes the fight, takes the boss tiers; a heading counts as such a line.
 
 ---
 
