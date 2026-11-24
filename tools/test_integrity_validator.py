@@ -675,5 +675,124 @@ class TierSweepTests(unittest.TestCase):
         self.assertEqual(before, {p: p.read_bytes() for p in self.LEAKY.rglob("*.md")})
 
 
+SRC0 = "_source: https://e.org/a · capture: web_fetch · confidence: high · enemy-tier: 0 · puzzle-tier: 0_"
+SRC1 = "_source: https://e.org/b · capture: web_fetch · confidence: high · enemy-tier: 1 · puzzle-tier: 0_"
+SRC3 = "_source: https://e.org/c · capture: web_fetch · confidence: high · enemy-tier: 3 · puzzle-tier: 0_"
+
+
+class UncoveredBlockTests(unittest.TestCase):
+    """The `uncovered` warning: a content block that no `_source:` line directly below it, no section tag line
+    above it and no tiered entry block covers. Cut-down shapes of real re-tag misses, game names replaced."""
+
+    def _run(self, text, files=None):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "nav").mkdir()
+            (root / "nav" / "architecture.md").write_text("corpus-core-version: 6\n", encoding="utf-8")
+            for rel, body in (files or {"c.md": text}).items():
+                (root / rel).write_text(body, encoding="utf-8")
+            return V.validate_guide(root)
+
+    def spans(self, r):
+        return [(w["file"], w["line"], w["end_line"]) for w in r["warnings"]]
+
+    def test_steps_above_a_later_item_source_are_uncovered(self):
+        # A source under step 4 covers step 4 only, not the list of steps 1-3 above the blank line.
+        text = ("# Zone\n**status:** research-integrated\n\n## Sequence\n\n"
+                "1. Drop into the <area> and clear the <enemy> infestation.\n2. Solve the <puzzle>.\n3. Save room.\n\n"
+                f"4. Optional <boss> encounter.\n\n{SRC3}\n")
+        self.assertEqual(self.spans(self._run(text)), [("c.md", 6, 8)])
+
+    def test_paragraph_above_a_covered_paragraph_is_uncovered(self):
+        text = (f"# Story\nstatus: research-integrated\n\n## Story connection\n\n"
+                f"Sequel paragraph. Final boss: **<boss>**.\n\nNote: the designation is <code>.\n\n{SRC3}\n")
+        self.assertEqual(self.spans(self._run(text)), [("c.md", 6, 6)])
+
+    def test_paragraph_before_a_heading_is_uncovered(self):
+        text = (f"# Zone\nstatus: research-integrated\n\nA note.\n\n{SRC1}\n\n## Traversal\n\n"
+                "An underwater section where the player must avoid the <boss> creature.\n[Confirmed: 2 sources]\n\n"
+                "## Registry\n")
+        self.assertEqual(self.spans(self._run(text)), [("c.md", 10, 10)])
+
+    def test_entry_list_under_a_header_source_is_uncovered(self):
+        # The header's source covers the italic location line above it, not the attack list below it.
+        text = (f"# Enemies\nstatus: research-integrated\n\n## <enemy>\n*Where it appears.*\n\n{SRC1}\n"
+                "[Confirmed: 3 sources]\n\n- **Attacks:** a charged melee.\n- **Weaknesses:** <element>.\n\n---\n")
+        self.assertEqual(self.spans(self._run(text)), [("c.md", 10, 11)])
+
+    def test_each_block_with_its_own_source_is_clean(self):
+        text = ("# Zone\n**status:** research-integrated\n**zone-id:** z1\n\n## Sequence\n\n"
+                f"1. Clear the <enemy> infestation.\n2. Solve the <puzzle>.\n\n{SRC1}\n\n"
+                f"4. Optional <boss> encounter.\n\n{SRC3}\n\n## Story\n\nSequel paragraph.\n{SRC3}\n")
+        r = self._run(text)
+        self.assertEqual(r["warnings"], [])
+        self.assertEqual(r["warning_counts"], {"uncovered": 0})
+
+    def test_structure_that_is_not_a_claim_is_exempt(self):
+        text = ("# Title\n**status:** research-integrated\n**zone-id:** z1\nresearch_run: P2\n\n---\n\n"
+                "<!-- a comment\nover two lines -->\n\n## Section\n\n```\nfenced example text\n```\n\n"
+                "[Confirmed: 2 sources]\n\n_[spoiler: story]_\n\n***\n\n"
+                f"A claim.\n\n{SRC0}\n")
+        self.assertEqual(self.r_spans(text), [])
+
+    def r_spans(self, text):
+        return self.spans(self._run(text))
+
+    def test_file_with_no_source_line_and_scaffold_file_are_not_read(self):
+        r = self._run(None, files={
+            "index.md": "# Index\n\nSome prose that names the <boss>.\n",
+            "s.md": f"# S\nstatus: scaffold\n\nProse.\n\n## H\n\nMore prose.\n\n{SRC0}\n"})
+        self.assertEqual(r["warnings"], [])
+
+    def test_section_tag_line_covers_below_until_the_next_heading(self):
+        text = ("# T\nstatus: research-integrated\n\n## Tagged\n\nenemy-tier 1, puzzle-tier 0\n\n"
+                f"Covered by the tag.\n\n- a list, also covered\n\n## Untagged\n\nNot covered.\n\nA claim.\n{SRC0}\n")
+        self.assertEqual(self.r_spans(text), [("c.md", 14, 14)])
+
+    def test_table_needs_a_source_directly_under_it(self):
+        text = ("# T\nstatus: research-integrated\n\n## A\n\n| Name | Note |\n|---|---|\n| x | y |\n\n"
+                f"{SRC1}\n\n## B\n\n| Name | Note |\n|---|---|\n| <enemy> | z |\n\n## C\n")
+        self.assertEqual(self.r_spans(text), [("c.md", 14, 16)])
+
+    def test_entry_block_with_its_own_source_or_tiers_is_covered(self):
+        text = ("# T\nstatus: research-integrated\n\n## A\n\n- **claim:** a thing.\n"
+                "- **source:** https://e.org/a\n- **enemy-tier:** 1\n- **puzzle-tier:** 0\n\n"
+                "## B\n\n- **name:** <enemy>\n- **enemy-tier:** 1\n- **puzzle-tier:** 0\n\n"
+                f"## C\n\n- **name:** <enemy>\n- **note:** no tiers here\n\n## D\n\nA claim.\n{SRC0}\n")
+        self.assertEqual(self.r_spans(text), [("c.md", 19, 20)])
+
+    def test_wrapped_source_line_is_one_source_line(self):
+        text = ("# T\nstatus: research-integrated\n\nA claim.\n\n_source: https://e.org/a · capture: web_fetch ·\n"
+                "enemy-tier: 1 · puzzle-tier: 0_\n\n## Next\n")
+        self.assertEqual(self.r_spans(text), [])
+
+    def test_text_after_a_source_line_in_the_same_paragraph_is_its_own_block(self):
+        text = f"# T\nstatus: research-integrated\n\nA claim.\n{SRC0}\nTrailing text with no source.\n\n## Next\n"
+        self.assertEqual(self.r_spans(text), [("c.md", 6, 6)])
+
+    def test_warnings_change_no_check_count_and_no_exit_code(self):
+        text = f"# T\nstatus: research-integrated\n\nUncovered paragraph.\n\n## H\n\nA claim.\n\n{SRC0}\n"
+        r = self._run(text)
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+        self.assertEqual(r["warning_counts"], {"uncovered": 1})
+        self.assertEqual(r["violations"], [])
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "nav").mkdir()
+            (root / "nav" / "architecture.md").write_text("corpus-core-version: 6\n", encoding="utf-8")
+            (root / "c.md").write_text(text, encoding="utf-8")
+            p = subprocess.run([sys.executable, "-I", str(TOOL), str(root), "--exit-code"],
+                               capture_output=True, text=True, timeout=120)
+        self.assertEqual(p.returncode, 0)
+        self.assertIn("TOTALS: source=0, tier=0, status=0\n", p.stdout)
+        self.assertIn("WARNINGS: uncovered=1", p.stdout)
+        self.assertIn("c.md:4 [uncovered]", p.stdout)
+
+    def test_synthetic_check_counts_are_unchanged(self):
+        r = V.validate_guide(SYN)
+        self.assertEqual(r["counts"], {"source": 6, "tier": 8, "status": 1})
+        self.assertIn("uncovered", r["warning_counts"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

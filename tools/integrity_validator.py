@@ -42,6 +42,17 @@ only, so a `_spoiler:` mark written any other way carries no tier. Two findings,
     axis (its `enemy-tier` / `puzzle-tier` field, else the section tag in force, else 0).
 A `spoiler:` or tier field inside a normal `_source:` line is the correct form and is never flagged.
 
+One WARNING class, counted apart from the three checks (its own `WARNINGS:` summary line; never in
+`TOTALS:`, never a cause for `--exit-code`):
+  uncovered -- a content block (a run of non-blank lines ended by a blank line, a heading, a fence, a
+        `_source:` line or a tag line) that nothing covers: no `_source:` line directly below it (blank lines,
+        `[...]` label lines and HTML comments in between are skipped), no section tag line in force above it,
+        and no bullet-field entry block in it carrying its own source or tiers. Not content: headings,
+        horizontal rules, fences, HTML comments, lines holding only `[...]` labels, a line opening with
+        `_spoiler:`, and `key: value` metadata lines above the first H2. A file with no `_source:` line is
+        not read. A warning, not a violation: prose that is not a claim (an overview, a pointer, advice)
+        legitimately carries no metadata, so a spoiler-bearing paragraph and a neutral one look alike here.
+
 NOT wired, deliberately: whether each source citation resolves.
 
 Parser shapes. Two guide-format questions are still open, so every shape
@@ -86,10 +97,12 @@ import re
 import sys
 from pathlib import Path
 
-RULES_REVISION = "iv-2026.11.24-3"
+RULES_REVISION = "iv-2026.11.24-4"
 KNOWN_MAX_CORE = 6
 
 CHECKS = ("source", "tier", "status")
+# Warning classes: reported and counted apart from CHECKS, never in the TOTALS line or `--exit-code`.
+WARNINGS = ("uncovered",)
 # Per-check floor on corpus-core-version. All three apply from v1; the table exists so a later version-gated
 # check has one obvious place to be declared.
 CHECK_MIN_CORE = {"source": 1, "tier": 1, "status": 1}
@@ -344,6 +357,68 @@ def spoiler_mark_rank(rest: str):
     return max(ranks) if ranks else None
 
 
+HR_RE = re.compile(r"^(?:(?:-\s*){3,}|(?:\*\s*){3,}|(?:_\s*){3,})$")
+# `[Confirmed: ...]`, `[C:3]`, `[spoiler: ...]` alone on a line, bare or wrapped in `_` / `*` emphasis.
+LABEL_LINE_RE = re.compile(r"^[_*]{0,2}(?:\[[^\[\]]*\]\s*)+[_*]{0,2}$")
+HEADER_FIELD_RE = re.compile(r"^(?:[-*]\s+)?(?:\*\*[^*]{1,40}?:\*\*|[A-Za-z][\w -]{0,30}:(?:\s|$))")
+
+
+def uncovered_blocks(lines, stripped, in_fence, heading, tag, gov_tag, source_lines, covered_lines, accepted):
+    """[(first, last), ...] 0-based line spans of content blocks no accepted shape covers (the reach rule:
+    a `_source:` line covers only the claim, paragraph or table directly above it; a section tag line covers
+    what is below it until the next H1-H3 heading or tag line). A block is a run of content lines ended by a
+    blank line, a heading, a fence, a `_source:` line or a tag line. Not content: those lines themselves,
+    horizontal rules, HTML comments, lines holding only `[...]` labels, a line opening with `_spoiler:`, and
+    the `key: value` metadata lines above the file's first H2 heading. covered_lines are lines of bullet-field
+    entry blocks that carry their own source or tiers."""
+    n = len(lines)
+    first_h2 = next((k for k in range(n) if heading[k] >= 2), n)
+    in_comment = False
+    transparent = [False] * n  # not content, and does not end a block
+    for i in range(n):
+        s = stripped[i]
+        if in_fence[i]:
+            continue
+        if in_comment:
+            transparent[i] = True
+            in_comment = "-->" not in s
+            continue
+        if s.startswith("<!--"):
+            transparent[i] = True
+            in_comment = "-->" not in s[4:]
+            continue
+        if LABEL_LINE_RE.match(s) or HR_RE.match(s) or SPOILER_MARK_RE.match(s):
+            transparent[i] = True
+        elif i < first_h2 and HEADER_FIELD_RE.match(s):
+            transparent[i] = True
+
+    def ends_block(i):
+        return (not stripped[i] or in_fence[i] or heading[i] or i in source_lines or tag[i] is not None)
+
+    out = []
+    i = 0
+    while i < n:
+        if ends_block(i) or transparent[i]:
+            i += 1
+            continue
+        first = i
+        content = []
+        while i < n and not ends_block(i):
+            if not transparent[i]:
+                content.append(i)
+            i += 1
+        # i is the line that ended the block (or n)
+        j = i
+        while j < n and (not stripped[j] or transparent[j]) and not in_fence[j]:
+            j += 1
+        covered = (j < n and j in source_lines
+                   or ("section-tier-tag" in accepted and gov_tag[first] is not None)
+                   or any(k in covered_lines for k in content))
+        if content and not covered:
+            out.append((content[0], content[-1]))
+    return out
+
+
 def covering_source_index(i: int, n: int, stripped, in_fence, heading, source_idx):
     """Index of the `_source:` line that covers line i under the reach rule (a `_source:` line covers the
     claim, paragraph or table immediately above it), or None. Scans the contiguous block holding line i
@@ -417,6 +492,7 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
     # claim candidates
     inline_claims = []  # (i, body, source_val)
     block_runs = []     # (i, fields)
+    source_lines = set()  # every line of every `_source:` line, wrapped ones included
     i = 0
     while i < n:
         if in_fence[i]:
@@ -432,6 +508,7 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
                 # whitespace a leading `| ` / `- ` separator needs (empty source).
                 source_val = SEP_RE.split(" " + m.group(1), 1)[0].strip()
                 inline_claims.append((i, body, source_val))
+                source_lines.update(range(i, last + 1))
                 i = last + 1
                 continue
             i += 1
@@ -686,6 +763,22 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
         own = {t: tier_present(fields.get(t)) for t in ("enemy-tier", "puzzle-tier")}
         check_tiers(i, i + 1, ident, own, {t: True for t in own}, None)
 
+    # Uncovered blocks (a warning class, not a check): content no `_source:` line, tag line or tiered entry
+    # block covers. A file with no `_source:` line at all (a scaffold, index or meta file) is not read.
+    if source_lines:
+        covered_lines = {k for k, f in block_at.items()
+                         if "claim" in f or "source" in f or tiered_block(f)}
+        covered_lines |= {k for k in range(n) if not in_fence[k] and midline_source(stripped[k])}
+        for first, last in uncovered_blocks(lines, stripped, in_fence, heading, tag, gov_tag, source_lines,
+                                            covered_lines, accepted):
+            result["warnings"].append({
+                "file": rel, "line": first + 1, "end_line": last + 1, "warning": "uncovered",
+                "text": stripped[first][:60],
+                "detail": "uncovered: no `_source:` line directly below this block and no section tag line above "
+                          "it, so it carries no tier (a `_source:` line covers only the claim, paragraph or "
+                          "table directly above it). If it is a claim, give it its own `_source:` line"})
+            result["warning_counts"]["uncovered"] += 1
+
     return any(not in_fence[k] and METADATA_SIGNAL_RE.search(lines[k]) for k in range(n))
 
 
@@ -714,6 +807,8 @@ def validate_guide(guide_dir: Path, accepted_shapes=None, only=None) -> dict:
         "violations": [],
         "excused": [],
         "claim_index": [],
+        "warnings": [],
+        "warning_counts": {w: 0 for w in WARNINGS},
     }
     manifest_path = find_manifest(guide_dir)
     if manifest_path is None:
@@ -779,6 +874,7 @@ def validate_guide(guide_dir: Path, accepted_shapes=None, only=None) -> dict:
                             if v["check"] in active or v["check"] == "read-error"]
     result["violations"].sort(key=lambda v: (v["file"], v["line"] or 0, v["check"]))
     result["excused"].sort(key=lambda v: (v["file"], v["line"] or 0, v["rule"]))
+    result["warnings"].sort(key=lambda w: (w["file"], w["line"], w["warning"]))
     result["claim_index"].sort()
     return result
 
@@ -801,9 +897,18 @@ def print_report(results: list[dict], quiet: bool):
             for v in r["violations"]:
                 where = f"{v['file']}:{v['line']}" if v["line"] else v["file"]
                 print(f"      - {where} [{v['check']}] {v['detail']}")
+        for w in WARNINGS:
+            print(f"    {w:8s} {r['warning_counts'][w]} warning(s)")
+        if not quiet:
+            for w in r["warnings"]:
+                span = f"{w['line']}-{w['end_line']}" if w["end_line"] != w["line"] else f"{w['line']}"
+                print(f"      - {w['file']}:{span} [{w['warning']}] {w['text']}")
     print("=" * 78)
     total = {c: sum(r["counts"][c] for r in results if r["parsed"]) for c in CHECKS}
     print("TOTALS: " + ", ".join(f"{c}={n}" for c, n in total.items()))
+    wtotal = {w: sum(r["warning_counts"][w] for r in results if r["parsed"]) for w in WARNINGS}
+    print("WARNINGS: " + ", ".join(f"{w}={n}" for w, n in wtotal.items())
+          + " (not violations; `--exit-code` ignores them)")
     unparsed = [r["guide"] for r in results if not r["parsed"]]
     if unparsed:
         print("UNPARSED: " + ", ".join(unparsed))
@@ -825,7 +930,9 @@ def main(argv=None) -> int:
     except SystemExit as e:
         return 2 if e.code else 0
     accepted = [s for s in ACCEPTED_SHAPES if s not in args.reject_shape]
-    results = [validate_guide(Path(g).resolve(), accepted, args.only) for g in args.guides]
+    if hasattr(sys.stdout, "reconfigure"):  # warning lines quote corpus text; a narrow console must not crash
+        sys.stdout.reconfigure(errors="replace")
+    results =[validate_guide(Path(g).resolve(), accepted, args.only) for g in args.guides]
     print_report(results, args.quiet)
     if args.json_out:
         out = Path(args.json_out)
