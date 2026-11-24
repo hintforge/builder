@@ -4,7 +4,9 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
-### CHECKPOINT size limit and changelog archive; `save_schema.md` defined as a local-only tooling file (next framework version, 2026-11-24)
+### CHECKPOINT size limit and changelog archive; `save_schema.md` defined as a local-only tooling file; validator reads wrapped entry-block fields (v123, 2026-11-24)
+
+- **`tools/integrity_validator.py`** (rules revision `iv-2026.11.24-3`): an entry-block field that wraps onto an indented line under a free-text field keeps that line in its block, so a mark there is ranked against the block's tier instead of reported as uncovered. The rule fails closed: an unindented line, prose after a finished block, and a line under a typed metadata field (source, capture, confidence, any tier, spoiler, category, status, last-verified, contributor, in hyphen or underscore spelling) end the block. `save_schema.md` is left out of the corpus walk (and so out of the tier sweep). Tests added.
 
 - **`docs/corpus-format.md` §1:** new "CHECKPOINT size and the changelog archive" rule, the one place the limit is stated. `CHECKPOINT.md` stays at or under 24,000 bytes (bytes, not lines). `## Harness changelog` lists entries newest first and keeps the newest 3, then an `Older entries: archive/harness_changelog.md` line; older entries move there verbatim. The move edits only that section and the archive, and is allowed where a rule otherwise keeps a procedure out of CHECKPOINT.
 - **`ingestion.md` step 9, `stitch_and_zipper.md` zipper step 5 and stitch step 5d, `doctor.md` step 7:** each runs the changelog move after writing its entry.
@@ -14,7 +16,7 @@ All notable, user-visible changes to the hintforge builder land here.
 - **`templates/folder_structure.md`:** the CHECKPOINT line points at the size rule instead of "≤80 lines"; lists `archive/harness_changelog.md`; the save-watcher section names `save_schema.md`.
 - **`docs/corpus-format.md` §6 and §1, `ingestion.md` step 8 scope:** `save_schema.md` is a local-only tooling file outside the status system: no `status`, no `_source:` or tier lines, each field mapping marked `candidate` or `confirmed`, not part of the published corpus. The status-exempt lists in both files now match.
 - **Reader, `principles.md` §9:** "≤80 lines" replaced by a pointer to the size rule; the reader does not read `archive/harness_changelog.md` at session start.
-- Existing corpus impact: a guide whose CHECKPOINT holds more than 3 changelog entries or is over 24,000 bytes is moved to the new shape by the next ingestion, stitch, zipper or doctor entry, or by a doctor Branch A run. A guide whose `save_schema.md` carries a `status` line or `_source:` lines needs a doctor Branch C repair: drop the status line, turn the `_source:` lines into plain text, and mark each mapping `candidate` or `confirmed`. The integrity validator does not yet skip `save_schema.md`; until it does, a schema with no status and no claim lines passes it.
+- Existing corpus impact: a guide whose CHECKPOINT holds more than 3 changelog entries or is over 24,000 bytes is moved to the new shape by the next ingestion, stitch, zipper or doctor entry, or by a doctor Branch A run. A guide whose `save_schema.md` carries a `status` line or `_source:` lines needs a doctor Branch C repair: drop the status line, turn the `_source:` lines into plain text, and mark each mapping `candidate` or `confirmed`. The integrity validator no longer reads `save_schema.md`.
 
 ### Integrity validator reports spoiler and tier marks a reader cannot see; corpus-format lists the allowed tier shapes (v122, 2026-11-24)
 
