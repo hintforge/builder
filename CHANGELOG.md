@@ -4,6 +4,10 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Uncovered-block warning: a bullet line ends the header (v130, 2026-11-24)
+
+- **`tools/integrity_validator.py`** (rules revision `iv-2026.11.24-6`): the header-metadata exemption no longer accepts a bulleted `- **key:** ...` line, so a bullet-field entry directly under the header is checked like any other content.
+
 ### Uncovered-block warning: three missed shapes (v129, 2026-11-24)
 
 - **`tools/integrity_validator.py`** (rules revision `iv-2026.11.24-5`):

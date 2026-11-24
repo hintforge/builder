@@ -741,6 +741,11 @@ class UncoveredBlockTests(unittest.TestCase):
                 f"A sourced claim.\n{SRC1}\n")
         self.assertEqual(self.spans(self._run(text)), [("c.md", 4, 4)])
 
+    def test_bullet_field_right_under_the_header_is_content(self):
+        text = (f"# Zone\nstatus: research-integrated\n- **Attacks:** <boss> ambushes the player here.\n\n"
+                f"## Notes\n\nA sourced claim.\n{SRC1}\n")
+        self.assertEqual(self.spans(self._run(text)), [("c.md", 3, 3)])
+
     def test_each_block_with_its_own_source_is_clean(self):
         text = ("# Zone\n**status:** research-integrated\n**zone-id:** z1\n\n## Sequence\n\n"
                 f"1. Clear the <enemy> infestation.\n2. Solve the <puzzle>.\n\n{SRC1}\n\n"

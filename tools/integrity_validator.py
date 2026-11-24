@@ -97,7 +97,7 @@ import re
 import sys
 from pathlib import Path
 
-RULES_REVISION = "iv-2026.11.24-5"
+RULES_REVISION = "iv-2026.11.24-6"
 KNOWN_MAX_CORE = 6
 
 CHECKS = ("source", "tier", "status")
@@ -360,7 +360,8 @@ def spoiler_mark_rank(rest: str):
 HR_RE = re.compile(r"^(?:(?:-\s*){3,}|(?:\*\s*){3,}|(?:_\s*){3,})$")
 # `[Confirmed: ...]`, `[C:3]`, `[spoiler: ...]` alone on a line, bare or wrapped in `_` / `*` emphasis.
 LABEL_LINE_RE = re.compile(r"^[_*]{0,2}(?:\[[^\[\]]*\]\s*)+[_*]{0,2}$")
-HEADER_FIELD_RE = re.compile(r"^(?:[-*]\s+)?(?:\*\*[^*]{1,40}?:\*\*|[A-Za-z][\w -]{0,30}:(?:\s|$))")
+# Header metadata is a bare `key: value` or `**key:** value` line; a bullet line is content and ends the header.
+HEADER_FIELD_RE = re.compile(r"^(?:\*\*[^*]{1,40}?:\*\*|[A-Za-z][\w -]{0,30}:(?:\s|$))")
 
 
 def uncovered_blocks(lines, stripped, in_fence, heading, tag, gov_tag, source_lines, covered_lines, accepted):
