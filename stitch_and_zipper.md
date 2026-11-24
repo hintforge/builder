@@ -37,7 +37,7 @@ Focus targets:
 
 ### Spoiler discipline
 
-Zipper reads headings, metadata lines, and vector tags only. When characterizing a file's contents in a proposal, it uses the file's own headings and vector tags -- not the content beneath them. If a heading is itself spoiler-tagged (e.g., a boss name as an H2 with `spoiler: late-game`), zipper redacts it in the proposal using the same tier-gating the persona uses at read-time: `[late-game content -- heading redacted at current tier]`. Read the user's current tier setting from CHECKPOINT before surfacing anything.
+Zipper reads headings, metadata lines, and vector tags only. When characterizing a file's contents in a proposal, it uses the file's own headings and vector tags -- not the content beneath them. If a heading is itself spoiler-tagged (e.g., a boss name as an H2 at `enemy-tier: 3`), zipper redacts it in the proposal using the same tier-gating the persona uses at read-time: `[tier 3 content -- heading redacted at current tier]`. Read the user's current tier setting from CHECKPOINT before surfacing anything.
 
 ### Output: autonomous resolution
 

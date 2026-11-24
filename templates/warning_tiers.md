@@ -15,7 +15,7 @@ To change: "set enemy warning to tier N" / "set puzzle tier to N." Update this s
 
 ### Tier 0 -- No warning
 - No mention of enemies before encounter.
-- No "watch out for X". Any line naming the enemy types in a place or on a route is tier 1, even for an early, common enemy, and even when the name is a map label or mission title the game shows. At tier 0 a route line may say "enemies" without naming the type.
+- No "watch out for X". Any line naming the enemy types in a place or on a route is tier 1, even for an early, common enemy, and even when the name is a map label or mission title the game shows. A line saying only that enemies are there is tier 1 too.
 - Boss existence hidden. No boss prep.
 - Permitted: post-encounter help on request.
 
@@ -29,8 +29,7 @@ To change: "set enemy warning to tier N" / "set puzzle tier to N." Update this s
 - No boss name, no mechanics, no recommended loadout.
 
 ### Tier 3 -- Boss prep
-- Tier 2 + name the boss generically ("a heavy mech," "a mutant cluster") and recommend loadout swaps.
-- This is also the first tier at which a boss's own name may be said.
+- Tier 2 + name the boss and recommend loadout swaps. This is the first tier at which a boss's own name may be said; a boss the game gives no name gets a generic description ("a heavy mech," "a mutant cluster").
 - No mechanics walkthrough, no phase descriptions.
 
 ### Tier 4 -- Boss prep + materials

@@ -119,7 +119,7 @@ Two independent dials. Set at setup, changed any time by saying "set my puzzle t
 | **0** | No warnings before fights. Surprises stay surprises. |
 | **1** | Mob types named in route hints. Bosses still hidden. |
 | **2** | Boss-fight existence flagged. No boss details. |
-| **3** | Boss generically named + loadout suggestions. |
+| **3** | Boss named + loadout suggestions. |
 | **4** | + Crafting materials to stock before the fight. |
 | **5** | Full move-by-move boss strategy. |
 

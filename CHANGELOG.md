@@ -4,6 +4,13 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Boss names at Tier 3 everywhere; presence lines never at tier 0 (v126, 2026-11-24)
+
+- **`templates/warning_tiers.md`:** a route line saying only that enemies are there is tier 1, as Tier 0 allows no mention of enemies before encounter. Tier 3 now reads "name the boss": a boss's own name is first said at Tier 3, and a generic description is for a boss the game gives no name. README, `setup_wizard.md` and `setup_answers.txt` say the same.
+- **`ingestion.md` step 2:** a boss's own name goes in its own claim at `enemy-tier: 3`, so an existence fact (`progression`) carries no name. Step 3's spoiler-to-tier mapping is a floor that these rules can raise.
+- **`stitch_and_zipper.md`:** the redaction example uses a Tier 3 boss-name heading.
+- **Existing corpora:** the v125 doctor repair pass also checks that boss names sit at enemy-tier 3 or higher and are not inside a lower existence claim.
+
 ### Enemy names in route hints and boss names shared with ordinary enemies (v125, 2026-11-24)
 
 - **`templates/warning_tiers.md` Tier 0:** any line naming the enemy types in a place or on a route is tier 1, even for an early common enemy and even when the name is a map label or mission title. At tier 0 a route line may say "enemies" without naming the type. Before, the rule said "no enemy-type names in route hints" but ingestion had no tag for such lines, so they were written at tier 0.

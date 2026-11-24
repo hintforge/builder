@@ -358,7 +358,7 @@ This is the backbone (user-controlled assistance is Principle #1 in the [univers
 - 0 = no warning ever (encounters are surprises)
 - 1 = mob types named in route hints; bosses still hidden
 - 2 = boss-fight existence flagged; no boss details
-- 3 = boss generically named + loadout suggestions
+- 3 = boss named + loadout suggestions
 - 4 = + crafting materials to stock
 - 5 = full phase-by-phase boss strategy
 
