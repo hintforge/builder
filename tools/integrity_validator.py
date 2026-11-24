@@ -97,7 +97,7 @@ import re
 import sys
 from pathlib import Path
 
-RULES_REVISION = "iv-2026.11.24-4"
+RULES_REVISION = "iv-2026.11.24-5"
 KNOWN_MAX_CORE = 6
 
 CHECKS = ("source", "tier", "status")
@@ -373,6 +373,14 @@ def uncovered_blocks(lines, stripped, in_fence, heading, tag, gov_tag, source_li
     entry blocks that carry their own source or tiers."""
     n = len(lines)
     first_h2 = next((k for k in range(n) if heading[k] >= 2), n)
+    # Header metadata region: consecutive `key: value` / `**key:** value` lines directly under the first H1
+    # (or at the top when there is no H1), ended by the first blank or non-metadata line.
+    h1 = next((k for k in range(n) if heading[k] == 1 and not in_fence[k]), None)
+    header_region = set()
+    k = 0 if h1 is None else h1 + 1
+    while k < first_h2 and k < n and not in_fence[k] and not heading[k] and HEADER_FIELD_RE.match(stripped[k]):
+        header_region.add(k)
+        k += 1
     in_comment = False
     transparent = [False] * n  # not content, and does not end a block
     for i in range(n):
@@ -389,7 +397,7 @@ def uncovered_blocks(lines, stripped, in_fence, heading, tag, gov_tag, source_li
             continue
         if LABEL_LINE_RE.match(s) or HR_RE.match(s) or SPOILER_MARK_RE.match(s):
             transparent[i] = True
-        elif i < first_h2 and HEADER_FIELD_RE.match(s):
+        elif i in header_region:
             transparent[i] = True
 
     def ends_block(i):
@@ -403,8 +411,11 @@ def uncovered_blocks(lines, stripped, in_fence, heading, tag, gov_tag, source_li
             continue
         first = i
         content = []
+        table = stripped[i].startswith("|")
         while i < n and not ends_block(i):
             if not transparent[i]:
+                if stripped[i].startswith("|") != table:
+                    break  # a table is its own block: split at the table edge
                 content.append(i)
             i += 1
         # i is the line that ended the block (or n)
@@ -412,10 +423,22 @@ def uncovered_blocks(lines, stripped, in_fence, heading, tag, gov_tag, source_li
         while j < n and (not stripped[j] or transparent[j]) and not in_fence[j]:
             j += 1
         covered = (j < n and j in source_lines
-                   or ("section-tier-tag" in accepted and gov_tag[first] is not None)
-                   or any(k in covered_lines for k in content))
-        if content and not covered:
-            out.append((content[0], content[-1]))
+                   or ("section-tier-tag" in accepted and gov_tag[first] is not None))
+        if covered or not content:
+            continue
+        # Only the entry's own lines are covered by it; every other line in the run is checked on its own.
+        span = None
+        for k in content:
+            if k in covered_lines:
+                if span:
+                    out.append(tuple(span))
+                span = None
+            elif span:
+                span[1] = k
+            else:
+                span = [k, k]
+        if span:
+            out.append(tuple(span))
     return out
 
 

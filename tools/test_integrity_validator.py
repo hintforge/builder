@@ -720,6 +720,27 @@ class UncoveredBlockTests(unittest.TestCase):
                 "[Confirmed: 3 sources]\n\n- **Attacks:** a charged melee.\n- **Weaknesses:** <element>.\n\n---\n")
         self.assertEqual(self.spans(self._run(text)), [("c.md", 10, 11)])
 
+    def test_paragraph_directly_above_a_table_is_uncovered(self):
+        text = ("# Zone\nstatus: research-integrated\n\n## Notes\n\n"
+                "The final boss is <boss>.\n| a | b |\n|---|---|\n| 1 | 2 |\n"
+                f"{SRC1}\n")
+        self.assertEqual(self.spans(self._run(text)), [("c.md", 6, 6)])
+
+    def test_prose_after_an_entry_block_is_not_covered_by_it(self):
+        entry = ("- **claim:** <enemy> attacks.\n- **source:** https://e.org/a\n- **capture:** web_fetch\n"
+                 "- **confidence:** high\n- **enemy-tier:** 1\n- **puzzle-tier:** 0\n")
+        text = (f"# Zone\nstatus: research-integrated\n\n## Notes\n\n{SRC1}\n\n## Entry\n\n"
+                f"{entry}The final boss is <boss>.\n\n## End\n")
+        spans = self.spans(self._run(text))
+        self.assertEqual(len(spans), 1)
+        self.assertEqual(spans[0][1], spans[0][2])
+        self.assertTrue(spans[0][1] >= 14)
+
+    def test_metadata_like_paragraph_after_a_blank_line_is_content(self):
+        text = (f"# Zone\nstatus: research-integrated\n\nBoss: <boss> returns here.\n\n## Notes\n\n"
+                f"A sourced claim.\n{SRC1}\n")
+        self.assertEqual(self.spans(self._run(text)), [("c.md", 4, 4)])
+
     def test_each_block_with_its_own_source_is_clean(self):
         text = ("# Zone\n**status:** research-integrated\n**zone-id:** z1\n\n## Sequence\n\n"
                 f"1. Clear the <enemy> infestation.\n2. Solve the <puzzle>.\n\n{SRC1}\n\n"
