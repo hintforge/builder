@@ -29,7 +29,7 @@ and only from these name-bearing places:
   - a **bold span** that is not a field label (no trailing colon);
   - every cell of a table row except the `tier` cell, split on `;`, and a piece holding a comma read
     both whole ("Sol, Lord of Cinders") and split on the commas (a list); a one-word value that repeats
-    down a column headed as a category (Rarity, Type, Cost, Status ... see CATEGORY_HEADER_RE) is
+    down a column whose whole header is a category word (Rarity, Type, Cost ... see CATEGORY_HEADER_RE) is
     skipped, except in the row's first name cell; any other repeated value, such as a destination
     several rows share, is kept;
   - a `backticked identifier` that has a capital, digit, `_` or `-` and is not a path, file name or
@@ -88,9 +88,11 @@ JOIN_WORDS = {"a", "an", "the", "of", "and", "or", "in", "on", "at", "to", "for"
 STRUCT_LABEL_RE = re.compile(
     r"^(?:chapter|act|tier|stage|level|part|phase|step|ante|wave|round|zone|day|episode|mission|floor|"
     r"world|season|page|section)\s+\d+[a-z]?$", re.I)
+# The WHOLE header cell must be one of these words: "Required boss" or "DLC boss" names things, and a "Class"
+# column can hold named secret classes, so neither is a category column.
 CATEGORY_HEADER_RE = re.compile(
-    r"\b(?:rarity|type|types|class|category|kind|status|rank|grade|quality|cost|price|difficulty|mode|"
-    r"platform|dlc|required|missable|availability|yes|no)\b", re.I)
+    r"^(?:rarity|type|types|category|kind|status|rank|grade|quality|cost|price|difficulty|mode|"
+    r"platform|dlc|required|missable|availability|yes|no)$", re.I)
 BOLD_RE = re.compile(r"\*\*([^*\n]+?)\*\*")
 TICK_RE = re.compile(r"`([^`\n]+)`")
 IDENT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.\- ]*$")
@@ -204,7 +206,7 @@ def map_file(lines: list[str], skip_names=frozenset()):
                     # several rows lead to), one word or several.
                     if k == col or (k != first and seen[(k, c.strip().lower())] > 1
                                     and len(clean_name(c).split()) < 2
-                                    and k < len(header) and CATEGORY_HEADER_RE.search(header[k])):
+                                    and k < len(header) and CATEGORY_HEADER_RE.match(clean_name(header[k]))):
                         continue
                     cands.extend(cell_parts(c))
                 row_names[r] = cands

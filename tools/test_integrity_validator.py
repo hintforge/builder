@@ -396,6 +396,24 @@ class TierSweepTests(unittest.TestCase):
         self.assertEqual(got, {"Glass Spire", "Obsidian", "Ashen Gate", "Sol, Lord of Cinders", "Lord of Cinders",
                                "Mask of the deep", "Voice of the void", "Choir of ash"})
 
+    def test_category_header_is_the_whole_cell(self):
+        # A repeated one-word value is a category only under a header that IS a category word.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "nav").mkdir()
+            (root / "nav" / "architecture.md").write_text("corpus-core-version: 6\n", encoding="utf-8")
+            (root / "late.md").write_text(
+                "**status:** research-integrated\n\n"
+                "| Key | Required boss | DLC boss | Missable character | Rarity | Type |\n|---|---|---|---|---|---|\n"
+                "| Copper Key | Obsidian | Basalt | Corvina | Mythic | Relic |\n"
+                "| Silver Key | Obsidian | Basalt | Corvina | Mythic | Relic |\n"
+                "_source: https://e.org/a · enemy-tier: 2 · puzzle-tier: 2_\n", encoding="utf-8")
+            (root / "early.md").write_text(
+                "**status:** research-integrated\n\nObsidian, Basalt, Corvina, a Mythic Relic.\n"
+                "_source: https://e.org/b · enemy-tier: 0 · puzzle-tier: 0_\n", encoding="utf-8")
+            r = self.S.sweep_guide(root)
+        self.assertEqual({h["name"] for h in r["hits"]}, {"Obsidian", "Basalt", "Corvina"})
+
     def test_cli_report_only_and_exit_codes(self):
         def run(*a):
             return subprocess.run([sys.executable, "-I", str(self.SWEEP), *a],
