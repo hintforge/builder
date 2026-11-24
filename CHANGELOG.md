@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Uncovered-block warning: three missed shapes (v129, 2026-11-24)
+
+- **`tools/integrity_validator.py`** (rules revision `iv-2026.11.24-5`):
+  - A table is its own block, so a paragraph directly above it with no blank line between needs its own cover.
+  - An entry block covers only its own lines, not other prose in the same run.
+  - The header-metadata exemption covers only the consecutive `key: value` (or `**key:** value`) lines directly under the first H1. A colon-led paragraph after a blank line is content.
+- The uncovered counts on existing guides rise as a result. `TOTALS` and exit codes are unchanged.
+
 ### Validator warning for uncovered blocks (v128, 2026-11-24)
 
 - **`tools/integrity_validator.py`** (rules revision `iv-2026.11.24-4`): a new warning class, `uncovered`. It flags a content block with no `_source:` line directly below it, no section tag line above it and no tiered entry block. It prints on its own `WARNINGS: uncovered=N` line after `TOTALS:`. The `TOTALS` counts and exit codes are unchanged, because neutral prose may be uncovered. Headings, rules, code fences, comments, label-only lines, front-matter metadata and files with no `_source:` line are exempt.
