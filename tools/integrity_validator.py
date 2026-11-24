@@ -24,6 +24,17 @@ Two things count as a `source` violation because they mean claim metadata the pa
     underscore. Prose that only names the field (`_source:` directly followed by a backtick) and
     instruction text whose metadata holds a `<placeholder>` are not flagged.
 
+Spoiler marks the reader cannot see (text inside backticks is ignored). The reader gates on `_source:` lines
+only, so a `_spoiler:` mark written any other way carries no tier. Two findings, named in the detail text:
+  - `spoiler-mark-line` (a `source` violation, a format problem): a line that opens with `_spoiler: <tier> ..._`
+    instead of `_source:`. Repair: convert it to a full `_source:` line.
+  - `spoiler-mark-undercovered` (a `tier` violation): an inline `_spoiler: <tier> ..._` fragment at the end of a
+    claim line or in a table cell whose covering `_source:` line (the reach rule: the line below the claim,
+    paragraph or table) is at a lower tier, or that has no covering line. The covering line's tier is the
+    highest of its `enemy-tier`, `puzzle-tier` and `spoiler:` values (or the section tag in force). Repair:
+    give the marked text its own `_source:` line at the mark's tier. `dlc:` and free-text marks are not ranked.
+A `spoiler:` field inside a normal `_source:` line is the correct form and is never flagged.
+
 NOT wired, deliberately: whether each source citation resolves.
 
 Parser shapes. Two guide-format questions are still open, so every shape
@@ -68,7 +79,7 @@ import re
 import sys
 from pathlib import Path
 
-RULES_REVISION = "iv-2026.10.19-1"
+RULES_REVISION = "iv-2026.11.24-1"
 KNOWN_MAX_CORE = 6
 
 CHECKS = ("source", "tier", "status")
@@ -123,6 +134,13 @@ METADATA_KEY_RE = re.compile(
 ROW_TIER_RE = re.compile(r"^(?:none|progression|late-game|story|dlc:\S.*)$", re.I)
 NUMERIC_TIER_RE = re.compile(r"^\d+(?:\s*/\s*\d+)?$")
 TABLE_SEPARATOR_CELL_RE = re.compile(r"^:?-{1,}:?$")
+# A `_spoiler: <word> ..._` mark written outside a `_source:` line. The reader gates on `_source:` lines only,
+# so a mark it cannot see is a tier the reader never applies.
+SPOILER_MARK_RE = re.compile(r"(?<![\w])_spoiler\s*:(.*)$", re.I)
+CODE_SPAN_RE = re.compile(r"(`+).+?\1")
+SPOILER_RANK = {"none": 0, "progression": 1, "late-game": 2, "story": 3}
+SPOILER_WORD_RE = re.compile(r"\s*(none|progression|late-game|story)(?![\w-])", re.I)
+SOURCE_SPOILER_RE = re.compile(r"(?<![\w-])spoiler\s*:\s*(none|progression|late-game|story)(?![\w-])", re.I)
 
 
 # ---------------------------------------------------------------- manifest
@@ -257,6 +275,38 @@ def midline_source(stripped: str) -> bool:
     if re.search(r"<[^<>\s][^<>]*>", rest):  # `<placeholder>` text: a template or instruction example
         return False
     return bool(METADATA_KEY_RE.search(rest) or re.search(r"\S_\s*(?:\[[^\]]*\]\s*)?$", rest))
+
+
+def blank_code_spans(s: str) -> str:
+    """Text inside backticks is prose about the format, not a mark: blank it out."""
+    return CODE_SPAN_RE.sub(lambda m: " " * len(m.group(0)), s)
+
+
+def spoiler_mark_rank(rest: str):
+    """Strictest tier named by the text after `_spoiler:` (up to the closing underscore), reading the first
+    word of each item split on middle-dot, semicolon or pipe. None when no item names a tier word
+    (a `dlc:` mark or free text), so the mark is not ranked."""
+    body = re.split(r"_(?=\s|$|\[)", rest, maxsplit=1)[0]
+    ranks = []
+    for part in re.split(r"\s*[·;|]\s*", body):
+        m = SPOILER_WORD_RE.match(part)
+        if m:
+            ranks.append(SPOILER_RANK[m.group(1).lower()])
+    return max(ranks) if ranks else None
+
+
+def covering_source_index(i: int, n: int, stripped, in_fence, heading, source_idx):
+    """Index of the `_source:` line that covers line i under the reach rule (a `_source:` line covers the
+    claim, paragraph or table immediately above it), or None. Scans the contiguous block holding line i
+    for a `_source:` line, then looks at the first non-blank line after the block."""
+    j = i + 1
+    while j < n and stripped[j] and not in_fence[j] and not heading[j]:
+        if j in source_idx:
+            return j
+        j += 1
+    while j < n and not stripped[j]:
+        j += 1
+    return j if j < n and j in source_idx and not in_fence[j] else None
 
 
 def table_cells(row: str) -> list[str]:
@@ -449,6 +499,51 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
         if not in_fence[i] and not heading[i] and midline_source(stripped[i]):
             violation(i + 1, stripped[i][:60], "source",
                       "`_source:` is not at the start of its own line, so it is not read as claim metadata")
+
+    # `_spoiler:` marks the reader cannot see. (1) `spoiler-mark-line` (reported under `source`): a line that
+    # opens with `_spoiler:` is not a `_source:` line, so no claim carries it. (2) `spoiler-mark-undercovered`
+    # (reported under `tier`): an inline mark at the end of a claim line or in a table cell whose covering
+    # `_source:` line (reach rule) sits at a lower tier, or that has none. Text inside backticks is ignored.
+    source_idx = {i for i, _, _ in inline_claims}
+    source_body = {i: body for i, body, _ in inline_claims}
+    for i in range(n):
+        if in_fence[i] or stripped[i].lower().startswith("_source"):
+            continue
+        m = SPOILER_MARK_RE.search(blank_code_spans(stripped[i]))
+        if not m:
+            continue
+        if blank_code_spans(stripped[i]).lstrip().startswith("_"):
+            violation(i + 1, stripped[i][:60], "source",
+                      "spoiler-mark-line: a line that opens with `_spoiler:` is not a `_source:` line, so a reader "
+                      "that keys on `_source:` never sees its tier. Convert it to a full `_source:` line "
+                      "(`_source: <where it came from> · capture: <method> · enemy-tier: N · puzzle-tier: N · "
+                      "spoiler: <tier>_`) under the claim it marks")
+            continue
+        rank = spoiler_mark_rank(m.group(1))
+        if rank is None:
+            continue
+        cover = covering_source_index(i, n, stripped, in_fence, heading, source_idx)
+        if cover is None:
+            violation(i + 1, stripped[i][:60], "tier",
+                      f"spoiler-mark-undercovered: inline `_spoiler:` mark (tier {rank}) has no covering "
+                      "`_source:` line (a `_source:` line covers only what is above it). Add a `_source:` line "
+                      "for this claim, paragraph or table at the mark's tier")
+            continue
+        body = source_body[cover]
+        values = [int(tm.group(1)) for tm in (TIER_FIELD_RE[t].search(body) for t in ("enemy-tier", "puzzle-tier"))
+                  if tm]
+        sm =SOURCE_SPOILER_RE.search(body)
+        if sm:
+            values.append(SPOILER_RANK[sm.group(1).lower()])
+        if gov_tag[cover] is not None:
+            values.extend(gov_tag[cover][:2])
+        covered = max(values, default=0)
+        if covered < rank:
+            violation(i + 1, stripped[i][:60], "tier",
+                      f"spoiler-mark-undercovered: inline `_spoiler:` mark is tier {rank} but its covering "
+                      f"`_source:` line (line {cover + 1}) is tier {covered}, so a reader below tier {rank} "
+                      "sees this text. Give the marked claim, paragraph or table its own `_source:` line at "
+                      "the mark's tier (enemy-tier / puzzle-tier / spoiler), then drop the inline mark")
 
     # Row tier column: a tagged table (a `_source:` line directly under it) whose header has a `tier`
     # cell must hold `spoiler:` vocabulary in that column (empty = inherit the table tag).

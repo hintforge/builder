@@ -276,6 +276,80 @@ class EdgeCaseTests(unittest.TestCase):
         self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
 
 
+class SpoilerMarkTests(unittest.TestCase):
+    """`_spoiler:` marks outside a `_source:` line: `spoiler-mark-line` (source) and `spoiler-mark-undercovered` (tier)."""
+
+    HEAD = "**status:** research-integrated\n\n"
+    LOW = "_source: https://e.org/a · capture: web_fetch · enemy-tier: 0 · puzzle-tier: 0 · spoiler: none_\n"
+    HIGH = "_source: https://e.org/a · capture: web_fetch · enemy-tier: 3 · puzzle-tier: 3 · spoiler: story_\n"
+
+    def _run(self, text):
+        return EdgeCaseTests._run(self, self.HEAD + text)
+
+    def _details(self, r, check):
+        return [v["detail"] for v in r["violations"] if v["check"] == check]
+
+    def test_bare_mark_line_is_a_source_format_violation(self):
+        r = self._run("The gate opens at dusk.\n_spoiler: story · enemy-tier: 3_ [Confirmed: 3 sources]\n\n"
+                      "_spoiler: progression_\n\n" + self.LOW)
+        self.assertEqual(r["counts"], {"source": 2, "tier": 0, "status": 0})
+        self.assertTrue(all(d.startswith("spoiler-mark-line:") and "`_source:`" in d
+                            for d in self._details(r, "source")))
+        self.assertEqual([v["line"] for v in r["violations"]], [4, 6])
+
+    def test_blockquoted_bare_mark_line_is_flagged(self):
+        r = self._run("> The gate opens at dusk.\n> _spoiler: story_\n\n" + self.LOW)
+        self.assertEqual(r["counts"]["source"], 1)
+
+    def test_inline_mark_under_lower_tier_source_is_a_tier_violation(self):
+        r = self._run("The traitor is the steward. _spoiler: story — ending_\n" + self.LOW)
+        self.assertEqual(r["counts"], {"source": 0, "tier": 1, "status": 0})
+        d = self._details(r, "tier")[0]
+        self.assertTrue(d.startswith("spoiler-mark-undercovered:") and "tier 3" in d and "tier 0" in d, d)
+
+    def test_inline_mark_in_table_cell_is_checked_against_the_tag_under_the_table(self):
+        table = ("| Name | Note |\n|---|---|\n| A | plain |\n| B | the steward lies _spoiler: story_ |\n")
+        r = self._run(table + self.LOW)
+        self.assertEqual(r["counts"]["tier"], 1)
+        self.assertEqual(r["violations"][0]["line"], 6)
+        r = self._run(table + "\n" + self.LOW)  # a blank line between table and tag still covers it
+        self.assertEqual(r["counts"]["tier"], 1)
+
+    def test_inline_mark_with_no_covering_source_line_is_flagged(self):
+        r = self._run("The traitor is the steward. _spoiler: story_\n\n# Next\n\n" + self.LOW)
+        self.assertEqual(r["counts"]["tier"], 1)
+        self.assertIn("no covering", self._details(r, "tier")[0])
+
+    def test_marks_with_a_stricter_or_equal_covering_source_are_not_flagged(self):
+        r = self._run("The traitor is the steward. _spoiler: story_\n" + self.HIGH + "\n"
+                      "A late detail. _spoiler: late-game_\n" + self.HIGH + "\n"
+                      "Plain note. _spoiler: none_\n" + self.LOW)
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+
+    def test_spoiler_field_inside_a_normal_source_line_is_not_flagged(self):
+        r = self._run(self.HIGH + "\n> Claim.\n> " + self.HIGH.replace("spoiler: story", "spoiler: late-game"))
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+
+    def test_marks_inside_backticks_and_fences_are_ignored(self):
+        r = self._run("Write it as `_spoiler: story_` in the template.\n" + self.LOW + "\n"
+                      "```\n_spoiler: story_\nClaim _spoiler: story_\n```\n")
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+
+    def test_unranked_inline_mark_is_left_alone(self):
+        r = self._run("Bonus quest. _spoiler: dlc:expansion_\n" + self.LOW)
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+
+    def test_mixed_mark_takes_its_strictest_item(self):
+        r = self._run("Detail. _spoiler: progression (existence) · story (the reveal) · enemy-tier: 1_\n" + self.LOW)
+        self.assertEqual(r["counts"]["tier"], 1)
+        self.assertIn("tier 3", self._details(r, "tier")[0])
+
+    def test_section_tag_in_force_counts_as_the_covering_tier(self):
+        r = self._run("# Part\n\nenemy-tier 3, puzzle-tier 3\n\nDetail. _spoiler: story_\n"
+                      "_source: https://e.org/a · capture: web_fetch_\n")
+        self.assertEqual(r["counts"]["tier"], 0)
+
+
 class TierSweepTests(unittest.TestCase):
     """tier_sweep.py: lists where a name tagged above tier 0 also appears at a lower tier or untagged."""
 

@@ -137,6 +137,14 @@ Every fact in a corpus that could be falsified is structured as a **claim** with
 - `trigger_type` -- one of `progression | branch | mastery | collection | threshold | discovery`. Required when `achievement:` is present. Decision questions and disambiguation rules at category boundaries live in [`../ingestion.md`](../ingestion.md) step 8.
 - `genre` -- optional, repeatable. Open-vocabulary overlay; conventional values `social | roguelike | mission | multiplayer | meta | class`. Corpora may declare their own values with a one-line definition in their `achievements.md` "Genre vocabulary" section.
 
+**Allowed shapes for carrying the tier fields.** Three shapes are accepted (the integrity validator's `ACCEPTED_SHAPES`); a corpus may use any of them:
+
+- **Per-claim metadata** (the default): each claim carries its own `enemy-tier` and `puzzle-tier`.
+- **Section-level tag line** (`section-tier-tag`): one standalone line carrying `enemy-tier` and `puzzle-tier` (for example `enemy-tier 2, puzzle-tier 1`) governs the claims under it until the next H1-H3 heading or the next such line. Unlike a `_source:` line, it covers what is BELOW it. A claim that carries its own tiers keeps them. A section-opening `_source:` citation directly above subheadings whose sections carry these tag lines is a container citation, not a claim.
+- **Table or entry-block citation** (`table-citation`, `entry-block-container`): one `_source:` line directly under a table cites the whole table; one `_source:` line above headings whose sections hold per-entry blocks carrying their own tiers is a container citation. See [`../templates/claim_format.md`](../templates/claim_format.md) "Tables".
+
+Whatever the shape, a spoiler tier is stated only in a `_source:` line (its `spoiler:` field) or a tag line. A `_spoiler: <tier>_` mark written on its own line or at the end of a claim or table cell is not read, and the validator reports it.
+
 Opinions, recommendations, tier rankings, hint-ladder Lvl 1 nudges, section overviews, and procedural advice are **not** claims and should not carry metadata. Prose is fine.
 
 The authoritative working version of this convention lives at [`templates/claim_format.md`](../templates/claim_format.md).
