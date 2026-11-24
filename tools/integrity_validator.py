@@ -261,6 +261,7 @@ TYPED_FIELD_KEYS = frozenset({
 
 def is_typed_field(key: str) -> bool:
     """A metadata field with a fixed vocabulary (a source, a tier, a spoiler word ...): it never wraps."""
+    key = key.replace("_", "-")  # the field parser accepts `capture_method` as well as `capture-method`
     return key in TYPED_FIELD_KEYS or key.endswith("-tier")
 
 

@@ -456,6 +456,14 @@ class SpoilerMarkTests(unittest.TestCase):
             self.assertEqual(r["counts"]["tier"], 1, field)
             self.assertIn("no covering `_source:` line", self._details(r, "tier")[0], field)
 
+    def test_underscore_spelling_of_a_typed_field_still_ends_the_block(self):
+        for field, val in (("capture_method", "web_fetch"), ("last_verified", "2026-11-24"), ("enemy_tier", "3")):
+            r = self._run("- **claim:** The keeper waits.\n- **source:** https://e.org/a\n- **capture:** web_fetch\n"
+                          "- **enemy-tier:** 3\n- **puzzle-tier:** 3\n"
+                          f"- **{field}:** {val}\n  The keeper returns. _spoiler: story_\n")
+            self.assertEqual(r["counts"]["tier"], 1, field)
+            self.assertIn("no covering `_source:` line", self._details(r, "tier")[0], field)
+
     def test_continuation_in_the_middle_of_a_block_belongs_to_the_block(self):
         # The wrapped line sits between two fields, so the fields after it still belong to the same block.
         r = self._run("- **claim:** The keeper waits\n  below. _spoiler: story_\n"
