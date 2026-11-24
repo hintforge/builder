@@ -27,14 +27,16 @@ What counts as a NAME. Only content tagged above tier 0 (enemy-tier or puzzle-ti
 and only from these name-bearing places:
   - a heading's text (parenthetical and text after ` -- ` dropped);
   - a **bold span** that is not a field label (no trailing colon);
-  - every cell of a table row except the `tier` cell, a list cell split on `;` and `,` (a value that
-    repeats down a column, such as a rarity or "yes", is a category and is skipped, except in the row's
-    first name cell);
+  - every cell of a table row except the `tier` cell, split on `;`, and a piece holding a comma read
+    both whole ("Sol, Lord of Cinders") and split on the commas (a list); a one-word value that repeats
+    down a column, such as a rarity or "yes", is a category and is skipped, except in the row's first
+    name cell (a repeated name of several words, such as a shared destination, is kept);
   - a `backticked identifier` that has a capital, digit, `_` or `-` and is not a path, file name or
     `key: value`.
 A name must be 4-60 characters, at most 6 words, start with a letter, contain a capital letter (or, for
 a backticked identifier only, `_`/`-`), be in title case when it has several words (sentence-case
-labels such as "Unlock edges" are not names), hold no `:` or quote mark, and not be in STOP_NAMES
+labels such as "Unlock edges" are not names; a backticked identifier is exempt, so a sentence-cased
+proper name is caught when it is written in backticks), hold no `:` or quote mark, and not be in STOP_NAMES
 (structural words such as "Notes" or "Overview"), a numbered structural label ("Chapter 4", "Tier 2")
 or the game's own title (the manifest H1 before ` -- `). A leading "The"/"A"/"An" is dropped when two
 or more words remain; a one-word name keeps it ("The Ox"). Names match as whole words anywhere in the
@@ -64,7 +66,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import integrity_validator as V  # noqa: E402
 
-RULES_REVISION = "ts-2026.11.24-1"
+RULES_REVISION = "ts-2026.11.24-2"
 
 SPOILER_TIER = {"none": 0, "progression": 1, "late-game": 2, "story": 3}
 ROW_ID_RE = re.compile(r"^[A-Z]{2,5}-\d+[a-z]?$")
@@ -189,12 +191,16 @@ def map_file(lines: list[str], skip_names=frozenset()):
                 # The row's own name is its first cell that reads as a name (a table numbered in its
                 # first column, `| 106 | <name> | ...`, still yields it). Every later cell is read too,
                 # and a list cell is split on `;` and `,`, so a name in any column is seen.
-                first = next((k for k, c in enumerate(cells) if k != col and usable_name(clean_name(c))), None)
-                cands = [cells[first]] if first is not None else []
+                first = next((k for k, c in enumerate(cells)
+                              if k != col and any(usable_name(clean_name(p)) for p in cell_parts(c))), None)
+                cands = []
                 for k, c in enumerate(cells):
-                    if k in (col, first) or seen[(k, c.strip().lower())] > 1:
+                    # A repeated one-word value is a category; a repeated name of several words (a shared
+                    # destination, a boss several rows lead to) is still a name.
+                    if k == col or (k != first and seen[(k, c.strip().lower())] > 1
+                                    and len(clean_name(c).split()) < 2):
                         continue
-                    cands.extend(p for p in re.split(r"[;,]", c) if p.strip())
+                    cands.extend(cell_parts(c))
                 row_names[r] = cands
                 if col is not None and col < len(cells) and cells[col].lower() in SPOILER_TIER:
                     t = SPOILER_TIER[cells[col].lower()]
@@ -238,10 +244,25 @@ def map_file(lines: list[str], skip_names=frozenset()):
                 cands.append((tok, True))
         for c, ident in cands:
             name = clean_name(c)
-            if (usable_name(name) and (ident or re.search(r"[A-Z]", name))
+            # A backticked identifier is marked as a name by its author, so its case is not a label test.
+            if (usable_name(name, title_case=not ident) and (ident or re.search(r"[A-Z]", name))
                     and name.lower() not in skip_names):
                 defs.append((name, tg, i))
     return tiers, meta, in_fence, defs
+
+
+def cell_parts(cell: str) -> list[str]:
+    """The name candidates in one table cell: each `;`-separated piece, and for a piece holding a comma
+    both the whole piece ("Sol, Lord of Cinders" may be one name) and its comma parts (or a list)."""
+    out = []
+    for piece in cell.split(";"):
+        piece = piece.strip()
+        if not piece:
+            continue
+        out.append(piece)
+        if "," in piece:
+            out.extend(p.strip() for p in piece.split(",") if p.strip())
+    return out
 
 
 def clean_name(text: str) -> str:
@@ -273,7 +294,7 @@ def case_sensitive(name: str) -> bool:
     return len(words) == 1 or (len(words) == 2 and words[0].lower() in ("the", "a", "an"))
 
 
-def usable_name(name: str) -> bool:
+def usable_name(name: str, title_case: bool = True) -> bool:
     """4-60 characters, at most 6 words, starts with a letter, has a capital or a `_`/`-` (game names are
     capitalized; ordinary lowercase phrases are noise), a name of several words is in title case
     (sentence-case phrases such as "Unlock edges" are labels, not names), no `:` or quote mark, not a
@@ -282,7 +303,7 @@ def usable_name(name: str) -> bool:
     higher-tier rows without naming them)."""
     return (4 <= len(name) <= 60 and len(name.split()) <= 6 and name[0].isalpha()
             and re.search(r"[A-Z_\-]", name) is not None and not re.search(r"[:\"]", name)
-            and (" " not in name or is_title_case(name))
+            and (" " not in name or not title_case or is_title_case(name))
             and not ROW_ID_RE.match(name) and not STRUCT_LABEL_RE.match(name)
             and name.lower() not in STOP_NAMES and name.lower() not in SPOILER_TIER
             and not name.lower().startswith("dlc:"))

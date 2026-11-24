@@ -367,6 +367,32 @@ class TierSweepTests(unittest.TestCase):
         # not names: the game's own title, a sentence-case heading, a numbered label, a repeated category value
         self.assertEqual(r["names_above_tier_0"], 4)  # Glass Spire, Ashen Gate, Iron Stair, The Ox
 
+    def test_shared_names_list_cells_commas_and_backticked_names(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "nav").mkdir()
+            (root / "nav" / "architecture.md").write_text("corpus-core-version: 6\n", encoding="utf-8")
+            (root / "late.md").write_text(
+                "**status:** research-integrated\n\n"
+                "| Key | Opens | Guard |\n|---|---|---|\n"
+                "| Copper Key | Glass Spire | Rare |\n"
+                "| Silver Key | Glass Spire | Rare |\n"
+                "| Ashen Gate; Iron Stair | Bone Hall | Sol, Lord of Cinders |\n"
+                "_source: https://e.org/a · enemy-tier: 2 · puzzle-tier: 2_\n\n"
+                "The `Voice of the void` waits at the end.\n"
+                "_source: https://e.org/c · enemy-tier: 3 · puzzle-tier: 3_\n", encoding="utf-8")
+            (root / "early.md").write_text(
+                "**status:** research-integrated\n\n"
+                "The Glass Spire, the Ashen Gate, Sol, Lord of Cinders and the Voice of the void are ahead; "
+                "a rare find.\n"
+                "_source: https://e.org/b · enemy-tier: 0 · puzzle-tier: 0_\n", encoding="utf-8")
+            r = self.S.sweep_guide(root)
+        got = {h["name"] for h in r["hits"]}
+        # a repeated name of several words is kept; a first-column list is split; a comma name is read whole
+        # (and its parts); a backticked sentence-case name counts; a repeated one-word value is a category
+        self.assertEqual(got, {"Glass Spire", "Ashen Gate", "Sol, Lord of Cinders", "Lord of Cinders",
+                               "Voice of the void"})
+
     def test_cli_report_only_and_exit_codes(self):
         def run(*a):
             return subprocess.run([sys.executable, "-I", str(self.SWEEP), *a],
