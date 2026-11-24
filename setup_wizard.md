@@ -91,6 +91,7 @@ Before any other step, check whether the user has filled in `hintforge/setup_ans
 | `tts` | `[TTS_ENABLED]`, `[TTS_STYLE]` | 6 |
 | `ptt` | `[PTT_ENABLED]` | 6.5 |
 | `ptt_hotkey` | `[PTT_HOTKEY]` | 6.5 |
+| `reader_gate` | `[READER_GATE]` | 6.6 |
 | `stage0` | `[STAGE0]` | 6.7 |
 | `research` | `[RESEARCH_MODE]` | 8 |
 | `run_p2` | `[RUN_P2]` | 8 |
@@ -106,6 +107,7 @@ Before any other step, check whether the user has filled in `hintforge/setup_ans
 - `game_install_dir = <path>` → prefills `[GAME_INSTALL_DIR]` for Step 2.5 and skips that step's own locate-the-install-dir sub-step; Step 2.5's own ask still runs live (a path prefill answers "where," not "whether to probe"). `game_install_dir = skip` → no install-dir prefill; Step 2.5's ask still runs live.
 - `save_dir = skip` → Step 3's save-watcher setup is skipped; record `[SAVE_DIR] = skipped (from setup_answers.txt)`. (No longer paired with `game_install_dir` -- that key moved to Step 2.5.)
 - `research = deep` → still announce the cost estimate and confirm before running, even though pre-filled. Heavy ops always get one final live confirmation.
+- `reader_gate = yes` → `[READER_GATE] = yes`; the build still runs at Step 9 sub-step 6b. `reader_gate = skip` → `[READER_GATE] = skipped`.
 - `run_p2 = skip` → `[RUN_P2] = false`. `run_p2 = yes` → `[RUN_P2] = true`. Ignored when `[RESEARCH_MODE]` is not `handoff` or `deep`.
 - `run_p3 = skip` → `[RUN_P3] = false`. `run_p3 = yes` → `[RUN_P3] = true`. Ignored when `[RESEARCH_MODE]` is not `handoff` or `deep`.
 
@@ -492,7 +494,7 @@ The voice-agnostic discipline that applies to every persona in every corpus -- p
 
 **Existing guides:** a player can ask the builder to add the safeguard to a guide folder that already exists. Run only this step's build (the `_build_for_your_setup.md` prompt) in that folder; nothing else in setup re-runs.
 
-**Auto-confirm / sandbox behavior:** under the benchmark auto-confirm directive this step resolves to **skip**, so sandbox runs stay comparable with earlier runs.
+**Auto-confirm / sandbox behavior:** under the benchmark auto-confirm directive this step resolves to **skip**, so sandbox runs stay comparable with earlier runs. A `reader_gate` value prefilled in `setup_answers.txt` is not an ask, so it wins over this default (Step -1 prefill precedence).
 
 **Default for the first-user test:** yes.
 

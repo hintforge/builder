@@ -4,6 +4,13 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Tier sweep reads every table cell and drops label noise; setup reads the `reader_gate` prefill; launcher save key by path (v120, 2026-11-24)
+
+- **`tools/tier_sweep.py`:** every cell of a table row is read for names, not just the first one, and a list cell is split on `;` and `,`, so names in later columns and in lists are seen. A value repeated down a column (a rarity, a type) is a category, not a name. A one-word "The X" name keeps its article ("The Ox"), and a one-word name matches only as written, so the ordinary word ("order", "window") no longer counts as a hit. Not names any more: several-word labels in sentence case ("Unlock edges"), numbered structural labels ("Chapter 4", "Tier 2"), lowercase hyphenated words outside backticks, and the game's own title (the manifest H1 before ` -- `). Test added.
+- **`setup_wizard.md`:** the Step -1 key table lists `reader_gate` -> `[READER_GATE]` (Step 6.6), so a filled-in value in `setup_answers.txt` is used instead of being treated as unknown; a prefilled `reader_gate` wins over the auto-confirm default of skip.
+- **Reader, `tools/artifact-launcher/build_index.ps1`:** a page gets the save key only when its path under `artifacts/` matches the manifest entry that declares `writes_state`, so a same-named page in another subfolder no longer gets it.
+- Existing corpus impact: none; re-run the sweep at the next doctor pass for a fuller list.
+
 ### Tool fixes: chained citations, labelled fact rows, escaped pipes, blockquoted tags in the sweep; brief stub wording (v119, 2026-10-20)
 
 - **`tools/citation_receipt.py`:** every id in a chained marker such as `[1][4]` (the brief's pinned form) counts, so a missing `[4]` is reported; a table row carrying a source label is a fact, never a reference entry, even when its second cell is an address; a bare `[Corroborated: N sources ...]` label is a head count, not a named source.

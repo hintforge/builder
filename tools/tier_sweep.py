@@ -27,13 +27,20 @@ What counts as a NAME. Only content tagged above tier 0 (enemy-tier or puzzle-ti
 and only from these name-bearing places:
   - a heading's text (parenthetical and text after ` -- ` dropped);
   - a **bold span** that is not a field label (no trailing colon);
-  - the first cell of a table row;
+  - every cell of a table row except the `tier` cell, a list cell split on `;` and `,` (a value that
+    repeats down a column, such as a rarity or "yes", is a category and is skipped, except in the row's
+    first name cell);
   - a `backticked identifier` that has a capital, digit, `_` or `-` and is not a path, file name or
     `key: value`.
-A name must be 4-60 characters, at most 6 words, start with a letter, contain a capital letter or `_`/`-`
-(ordinary lowercase phrases are noise), hold no `:` or quote mark, and not be in STOP_NAMES (structural
-words such as "Notes" or "Overview"). A leading "The"/"A"/"An" is dropped. Names match case-insensitively as whole words anywhere in the guide's corpus
-files. A name defined at several tiers takes the strictest (highest) tier on each dial.
+A name must be 4-60 characters, at most 6 words, start with a letter, contain a capital letter (or, for
+a backticked identifier only, `_`/`-`), be in title case when it has several words (sentence-case
+labels such as "Unlock edges" are not names), hold no `:` or quote mark, and not be in STOP_NAMES
+(structural words such as "Notes" or "Overview"), a numbered structural label ("Chapter 4", "Tier 2")
+or the game's own title (the manifest H1 before ` -- `). A leading "The"/"A"/"An" is dropped when two
+or more words remain; a one-word name keeps it ("The Ox"). Names match as whole words anywhere in the
+guide's corpus files: case-insensitively, except a one-word name or "The" plus one word, which matches
+only as written, since the capital is what tells such a name from the ordinary word. A name defined at
+several tiers takes the strictest (highest) tier on each dial.
 
 What counts as a HIT. An occurrence is a hit when it is untagged, or when its tier is below the name's
 tier on either dial (a reader whose dials cover the occurrence but not the name sees the name). The
@@ -57,7 +64,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import integrity_validator as V  # noqa: E402
 
-RULES_REVISION = "ts-2026.10.20-2"
+RULES_REVISION = "ts-2026.11.24-1"
 
 SPOILER_TIER = {"none": 0, "progression": 1, "late-game": 2, "story": 3}
 ROW_ID_RE = re.compile(r"^[A-Z]{2,5}-\d+[a-z]?$")
@@ -71,7 +78,13 @@ STOP_NAMES = {
     "boss", "entry", "exit", "enemy", "item", "reward", "rewards", "location", "type", "goal", "objective",
     "requirement", "requirements", "prerequisite", "prereq", "result", "outcome", "puzzle", "zone", "zones",
     "cross-system dependency",  # the label stitch writes on every inline cross-ref
+    "start", "unlock", "unlocks", "prerequisites",
 }
+JOIN_WORDS = {"a", "an", "the", "of", "and", "or", "in", "on", "at", "to", "for", "with", "by", "from",
+              "into", "vs", "de", "du", "la", "le", "von", "van", "der"}
+STRUCT_LABEL_RE = re.compile(
+    r"^(?:chapter|act|tier|stage|level|part|phase|step|ante|wave|round|zone|day|episode|mission|floor|"
+    r"world|season|page|section)\s+\d+[a-z]?$", re.I)
 BOLD_RE = re.compile(r"\*\*([^*\n]+?)\*\*")
 TICK_RE = re.compile(r"`([^`\n]+)`")
 IDENT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.\- ]*$")
@@ -92,9 +105,10 @@ def body_tiers(body: str):
     return None
 
 
-def map_file(lines: list[str]):
+def map_file(lines: list[str], skip_names=frozenset()):
     """Per-line tiers plus the name definitions found in tagged content.
-    Returns (tiers, meta, in_fence, defs) -- tiers[i] is (e, p) or None; defs is a list of (name, (e, p), i)."""
+    Returns (tiers, meta, in_fence, defs) -- tiers[i] is (e, p) or None; defs is a list of (name, (e, p), i).
+    skip_names (lowercase) are never names (the game's own title)."""
     n = len(lines)
     # Same reading as the validator: a leading blockquote marker is dropped (`> _source: ...`).
     stripped = [re.sub(r"^(?:>\s*)+", "", ln.strip()) for ln in lines]
@@ -152,7 +166,7 @@ def map_file(lines: list[str]):
         i += 1
 
     # 1. row tier column (strongest).
-    row_first = {}  # line index -> first cell text, for every data row of every table
+    row_names = {}  # line index -> candidate names from that data row's cells
     i = 0
     while i < n:
         if in_fence[i] or not V.is_table_row(stripped[i]):
@@ -165,12 +179,23 @@ def map_file(lines: list[str]):
         sep_ok = end > i and all(V.TABLE_SEPARATOR_CELL_RE.match(c) for c in V.table_cells(stripped[i + 1]))
         if sep_ok:
             col = next((k for k, c in enumerate(header) if c.lower() == "tier"), None)
-            for r in range(i + 2, end + 1):
-                cells = V.table_cells(stripped[r])
-                # The row's name is its first cell that reads as a name, so a table numbered in its
-                # first column (`| 106 | <name> | ...`) still yields the name.
-                row_first[r] = next((c for k, c in enumerate(cells) if k != col and usable_name(c)),
-                                    cells[0] if cells else "")
+            rows = {r: V.table_cells(stripped[r]) for r in range(i + 2, end + 1)}
+            # A value repeated down a column (a rarity, a type, "yes") is a category, not a name.
+            seen = {}
+            for cells in rows.values():
+                for k, c in enumerate(cells):
+                    seen[(k, c.strip().lower())] = seen.get((k, c.strip().lower()), 0) + 1
+            for r, cells in rows.items():
+                # The row's own name is its first cell that reads as a name (a table numbered in its
+                # first column, `| 106 | <name> | ...`, still yields it). Every later cell is read too,
+                # and a list cell is split on `;` and `,`, so a name in any column is seen.
+                first = next((k for k, c in enumerate(cells) if k != col and usable_name(clean_name(c))), None)
+                cands = [cells[first]] if first is not None else []
+                for k, c in enumerate(cells):
+                    if k in (col, first) or seen[(k, c.strip().lower())] > 1:
+                        continue
+                    cands.extend(p for p in re.split(r"[;,]", c) if p.strip())
+                row_names[r] = cands
                 if col is not None and col < len(cells) and cells[col].lower() in SPOILER_TIER:
                     t = SPOILER_TIER[cells[col].lower()]
                     tiers[r] = (t, t)
@@ -198,34 +223,81 @@ def map_file(lines: list[str]):
             text = re.sub(r"^\s*#+\s*|\s*#+\s*$", "", lines[i])
             text = re.sub(r"\([^)]*\)", "", text.split(" -- ")[0])
             cands.append(text)
-        elif i in row_first:
-            cands.append(row_first[i])
+        elif i in row_names:
+            cands.extend(row_names[i])
         for m in BOLD_RE.finditer(lines[i]):
             if not m.group(1).strip().endswith(":"):
                 cands.append(m.group(1))
+        # Prose sources (heading, bold, cell) need a capital; a lowercase hyphenated word there
+        # ("time-windowed") is a description. Backticked identifiers may be all lowercase.
+        cands = [(c, False) for c in cands]
         for m in TICK_RE.finditer(lines[i]):
             tok = m.group(1).strip()
             if (IDENT_RE.match(tok) and re.search(r"[A-Z0-9_\-]", tok)
                     and not re.search(r"\.(md|py|json|txt|html|ps1|sh)$", tok, re.I)):
-                cands.append(tok)
-        for c in cands:
-            name = re.sub(r"\s+", " ", re.sub(r"[*_`]", "", c)).strip(" .,:;-\"'")
-            name = re.sub(r"^(?:the|a|an)\s+", "", name, flags=re.I)
-            if usable_name(name):
+                cands.append((tok, True))
+        for c, ident in cands:
+            name = clean_name(c)
+            if (usable_name(name) and (ident or re.search(r"[A-Z]", name))
+                    and name.lower() not in skip_names):
                 defs.append((name, tg, i))
     return tiers, meta, in_fence, defs
 
 
+def clean_name(text: str) -> str:
+    """Markup and edge punctuation dropped. A leading "The"/"A"/"An" is dropped when two or more words
+    remain ("The Hollow King" -> "Hollow King"); a one-word name keeps its "The" ("The Ox"), since the
+    bare word is too short or too ordinary to match on its own."""
+    name = re.sub(r"\s+", " ", re.sub(r"[*_`]", "", text)).strip(" .,:;-\"'")
+    m = re.match(r"(?:the|a|an)\s+(.+)$", name, flags=re.I)
+    if m and len(m.group(1).split()) >= 2:
+        name = m.group(1)
+    return name
+
+
+def is_title_case(name: str) -> bool:
+    """Every word but a short joining word (of, and, the ...) starts with a capital or a digit."""
+    for w in name.split():
+        if w.lower() in JOIN_WORDS:
+            continue
+        first = next((ch for ch in w if ch.isalnum()), None)
+        if first is not None and first.isalpha() and not first.isupper():
+            return False
+    return True
+
+
+def case_sensitive(name: str) -> bool:
+    """A one-word name, or "The" plus one word, matches only as written: such names are often ordinary
+    words too ("Order", "The Wall"), and the capital is what tells the name from the word."""
+    words = name.split()
+    return len(words) == 1 or (len(words) == 2 and words[0].lower() in ("the", "a", "an"))
+
+
 def usable_name(name: str) -> bool:
     """4-60 characters, at most 6 words, starts with a letter, has a capital or a `_`/`-` (game names are
-    capitalized; ordinary lowercase phrases are noise), no `:` or quote mark, not a structural word,
-    and not a corpus row id such as `DEP-012` (stitch writes bare id pointers precisely so that lower-tier
-    text can point at higher-tier rows without naming them)."""
+    capitalized; ordinary lowercase phrases are noise), a name of several words is in title case
+    (sentence-case phrases such as "Unlock edges" are labels, not names), no `:` or quote mark, not a
+    structural word or a numbered structural label ("Chapter 4", "Tier 2"), and not a corpus row id such
+    as `DEP-012` (stitch writes bare id pointers precisely so that lower-tier text can point at
+    higher-tier rows without naming them)."""
     return (4 <= len(name) <= 60 and len(name.split()) <= 6 and name[0].isalpha()
             and re.search(r"[A-Z_\-]", name) is not None and not re.search(r"[:\"]", name)
-            and not ROW_ID_RE.match(name)
+            and (" " not in name or is_title_case(name))
+            and not ROW_ID_RE.match(name) and not STRUCT_LABEL_RE.match(name)
             and name.lower() not in STOP_NAMES and name.lower() not in SPOILER_TIER
             and not name.lower().startswith("dlc:"))
+
+
+def guide_title(guide_dir: Path) -> str | None:
+    """The game's own title: the manifest's H1 before ` -- ` (`# <Game> -- Architecture manifest`). It is
+    in every file's title, so it is never a name the guide withholds."""
+    m = V.find_manifest(guide_dir)
+    if m is None:
+        return None
+    for line in m.read_text(encoding="utf-8", errors="ignore").splitlines()[:5]:
+        if line.startswith("# ") and " -- " in line:
+            return clean_name(re.sub(r"\([^)]*\)", "", line[2:].split(" -- ")[0]))
+    return None
 
 
 # ------------------------------------------------------------------ sweep
@@ -247,12 +319,14 @@ def sweep_guide(guide_dir: Path) -> dict:
     result["parsed"] = True
     files = []  # (rel, lines, tiers, meta, in_fence)
     names = {}  # lowered name -> {"name", "tier", "where": [(rel, line)]}
+    title = guide_title(guide_dir)
+    skip = frozenset({title.lower()}) if title else frozenset()
     for rel, path in V.iter_corpus_files(guide_dir):
         lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
         raw, _ = V.file_status(lines)
         if raw is not None and V.status_word(raw) == "scaffold":
             continue
-        tiers, meta, in_fence, defs = map_file(lines)
+        tiers, meta, in_fence, defs = map_file(lines, skip)
         files.append((rel, lines, tiers, meta, in_fence))
         for name, tg, i in defs:
             e = names.setdefault(name.lower(), {"name": name, "tier": (0, 0), "where": []})
@@ -261,7 +335,10 @@ def sweep_guide(guide_dir: Path) -> dict:
     result["files_read"] = len(files)
     result["names_above_tier_0"] = len(names)
 
-    patterns = {k: re.compile(r"(?<![\w])" + re.escape(k) + r"(?![\w])") for k in names}
+    # Short names match as written (see case_sensitive); the rest match in any case.
+    exact = {k: case_sensitive(info["name"]) for k, info in names.items()}
+    patterns = {k: re.compile(r"(?<![\w])" + re.escape(info["name"] if exact[k] else k) + r"(?![\w])")
+                for k, info in names.items()}
     hits = {k: [] for k in names}
     for rel, lines, tiers, meta, in_fence in files:
         for i, line in enumerate(lines):
@@ -269,7 +346,8 @@ def sweep_guide(guide_dir: Path) -> dict:
                 continue
             low = line.lower()
             for k, info in names.items():
-                if k in low and lower_than(tiers[i], info["tier"]) and patterns[k].search(low):
+                if (k in low and lower_than(tiers[i], info["tier"])
+                        and patterns[k].search(line if exact[k] else low)):
                     hits[k].append({"file": rel, "line": i + 1, "tier": tiers[i],
                                     "text": line.strip()[:100]})
     # strictest names first, then alphabetical, so the leaks that matter most read first

@@ -342,6 +342,31 @@ class TierSweepTests(unittest.TestCase):
         self.assertEqual([(h["name"], [tuple(p["tier"]) for p in h["also_at"]]) for h in r["hits"]],
                          [("Hollow Crown", [(0, 0)])])
 
+    def test_every_cell_is_read_and_labels_are_not_names(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "nav").mkdir()
+            (root / "nav" / "architecture.md").write_text(
+                "# Ember Realm -- Architecture manifest\n\ncorpus-core-version: 6\n", encoding="utf-8")
+            (root / "late.md").write_text(
+                "# Ember Realm -- Late zones\n**status:** research-integrated\n\n"
+                "## Unlock edges\n\n"
+                "| Gate | Opens | Also opens | Rarity |\n|---|---|---|---|\n"
+                "| the north door after the long climb up | Glass Spire | Ashen Gate; Iron Stair | Rare |\n"
+                "| The Ox | lights the vault | Chapter 4 | Rare |\n"
+                "_source: https://e.org/a · enemy-tier: 2 · puzzle-tier: 2_\n", encoding="utf-8")
+            (root / "early.md").write_text(
+                "# Ember Realm -- Early\n**status:** research-integrated\n\n"
+                "Welcome to Ember Realm. The Glass Spire and the Iron Stair are far away; a rare ox wanders by; "
+                "unlock edges are listed in Chapter 4. The Ox waits.\n"
+                "_source: https://e.org/b · enemy-tier: 0 · puzzle-tier: 0_\n", encoding="utf-8")
+            r = self.S.sweep_guide(root)
+        got = {h["name"] for h in r["hits"]}
+        # later columns and list cells are read; a one-word "The X" name keeps its article and its capital
+        self.assertEqual(got, {"Glass Spire", "Iron Stair", "The Ox"})
+        # not names: the game's own title, a sentence-case heading, a numbered label, a repeated category value
+        self.assertEqual(r["names_above_tier_0"], 4)  # Glass Spire, Ashen Gate, Iron Stair, The Ox
+
     def test_cli_report_only_and_exit_codes(self):
         def run(*a):
             return subprocess.run([sys.executable, "-I", str(self.SWEEP), *a],
