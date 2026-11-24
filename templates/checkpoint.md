@@ -12,6 +12,9 @@ Last played: YYYY-MM-DD
 game_window_process:
 <!-- The game's program name without .exe, for the reader's Windows screenshot tool. Leave blank at setup: the reader fills it on the player's first screenshot request (it can differ by store, so it is per-player). -->
 
+run: 1
+<!-- Name of the current run (playthrough); the reader shelves the old run to `runs/<name>.md` when the player starts a new one. -->
+
 
 ## Goal
 Spoiler-controlled playthrough on [PLATFORM]. Cowork acts as live reference for [puzzles, items, missables, areas, ...] -- no story, no enemy reveals (unless tier raised).

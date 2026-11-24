@@ -4,6 +4,13 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Runs kept apart in the CHECKPOINT template; tier sweep keeps shared names, splits first-column lists, reads comma names whole (v121, 2026-11-24)
+
+- **`templates/checkpoint.md`:** new `run: 1` line under `## Player`, the name of the current run (playthrough). When the player starts over, the reader shelves the old run's state to `runs/<name>.md` (and the collectible map's marks to `runs/<name>.item_status.json`) and resets the run parts; dials, player name and guide knowledge carry over. `docs/corpus-format.md` lists `runs/` as optional personal play state, never published.
+- **`tools/tier_sweep.py`:** a repeated value down a column is skipped as a category only when it is one word, so a shared name of several words (a destination several rows lead to) is read; the first name cell is split on `;` like every other cell; a cell piece holding a comma is read whole as well as split, so a name such as "Sol, Lord of Cinders" is kept; a backticked identifier is exempt from the title-case test. Test added.
+- **Reader:** run separation (new-run, switch-back and resume rules; the collectible map and its save helper keep each run's marks apart), and the launcher save key matches declarations by full path. See the reader changelog.
+- Existing corpus impact: none. A guide with no `run:` line behaves as before; the reader adds the line when the player first starts a new run. Re-run the sweep at the next doctor pass.
+
 ### Tier sweep reads every table cell and drops label noise; setup reads the `reader_gate` prefill; launcher save key by path (v120, 2026-11-24)
 
 - **`tools/tier_sweep.py`:** every cell of a table row is read for names, not just the first one, and a list cell is split on `;` and `,`, so names in later columns and in lists are seen. A value repeated down a column (a rarity, a type) is a category, not a name. A one-word "The X" name keeps its article ("The Ox"), and a one-word name matches only as written, so the ordinary word ("order", "window") no longer counts as a hit. Not names any more: several-word labels in sentence case ("Unlock edges"), numbered structural labels ("Chapter 4", "Tier 2"), lowercase hyphenated words outside backticks, and the game's own title (the manifest H1 before ` -- `). Test added.
