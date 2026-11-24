@@ -33,7 +33,8 @@ only, so a `_spoiler:` mark written any other way carries no tier. Two findings,
     paragraph or table) is at a lower tier, or that has no covering line. The covering line's tier is the
     highest of its `enemy-tier`, `puzzle-tier` and `spoiler:` values (a tier axis the line does not state comes
     from the section tag in force). Every mark on a line is ranked. A mark inside a bullet-field entry block that
-    carries its own tier or spoiler fields is compared with those fields instead. Repair:
+    carries its own tier or spoiler fields is compared with those fields instead (a field that wraps onto an
+    unbulleted continuation line keeps that line in the block). Repair:
     give the marked text its own `_source:` line at the mark's tier. `dlc:` and free-text marks are not ranked.
   - `tier-mark-undercovered` (a `tier` violation): the same for an `_enemy-tier: N ..._` or `_puzzle-tier: N ..._`
     mark (inline, in a table cell, or on a line of its own), compared with the covering line's value on the SAME
@@ -84,7 +85,7 @@ import re
 import sys
 from pathlib import Path
 
-RULES_REVISION = "iv-2026.11.24-2"
+RULES_REVISION = "iv-2026.11.24-3"
 KNOWN_MAX_CORE = 6
 
 CHECKS = ("source", "tier", "status")
@@ -249,18 +250,41 @@ def scan_tag_line(stripped: str):
     return None
 
 
+LIST_ITEM_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s")
+
+
+def is_continuation_line(line: str) -> bool:
+    """A line that carries on the field above it: non-blank prose that is not a heading, fence, list item,
+    table row, quote, `_source:` metadata line or section tag line (each of those starts something new)."""
+    s = line.strip()
+    if not s or HEADING_RE.match(line) or FENCE_RE.match(line) or LIST_ITEM_RE.match(line):
+        return False
+    if s[0] in ">|" or scan_tag_line(s) is not None:
+        return False
+    return not (s[0] == "_" and INLINE_SOURCE_RE.match(inline_body(s)))
+
+
 def parse_bullet_run(lines: list[str], i: int):
-    """Contiguous `- **key:** value` lines starting at i -> (fields, end_i)."""
+    """Contiguous `- **key:** value` lines starting at i -> (fields, end_i). A field that wraps onto an
+    unbulleted line (indented or not) keeps that line in the run and in its value; a blank line or any line
+    that starts something new ends the run."""
     fields: dict[str, str] = {}
     n = len(lines)
-    while i < n and BULLET_FIELD_LINE_RE.match(lines[i]):
+    last = None
+    while i < n:
         line = lines[i]
-        ms = list(BULLET_FIELD_RE.finditer(line))
-        for k, m in enumerate(ms):
-            key = m.group(1).strip("_").lower()
-            end = ms[k + 1].start() if k + 1 < len(ms) else len(line)
-            val = line[m.end():end].strip().rstrip("|").strip()
-            fields[key] = (fields[key] + ", " + val) if key in fields else val
+        if BULLET_FIELD_LINE_RE.match(line):
+            ms = list(BULLET_FIELD_RE.finditer(line))
+            for k, m in enumerate(ms):
+                key = m.group(1).strip("_").lower()
+                end = ms[k + 1].start() if k + 1 < len(ms) else len(line)
+                val = line[m.end():end].strip().rstrip("|").strip()
+                fields[key] = (fields[key] + ", " + val) if key in fields else val
+                last = key
+        elif last is not None and is_continuation_line(line):
+            fields[last] = (fields[last] + " " + line.strip()).strip()
+        else:
+            break
         i += 1
     return fields, i
 
