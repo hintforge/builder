@@ -394,6 +394,16 @@ class SpoilerMarkTests(unittest.TestCase):
         low = self._run(block.format(e=0, s="none"))
         self.assertEqual(low["counts"]["tier"], 1)
         self.assertIn("its entry block is tier 0", self._details(low, "tier")[0])
+        # The block's strictest value counts: a range's upper digit, a mixed spoiler field's strictest item.
+        self.assertEqual(self._run(block.format(e="1/3", s="progression · story"))["counts"]["tier"], 0)
+        enemy = block.replace("_spoiler: story_", "_enemy-tier: 3_")
+        self.assertEqual(self._run(enemy.format(e="1/3", s="none"))["counts"]["tier"], 0)
+        self.assertEqual(self._run(enemy.format(e="1", s="none"))["counts"]["tier"], 1)
+
+    def test_mark_appended_to_a_source_line_is_checked(self):
+        # A source line's own `spoiler:` field is not a mark, but an `_spoiler:` tacked onto it is.
+        r = self._run("Claim.\n" + self.LOW.rstrip("\n") + " _spoiler: story_\n")
+        self.assertEqual(r["counts"]["tier"], 1)
 
 
 class TierSweepTests(unittest.TestCase):

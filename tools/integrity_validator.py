@@ -545,11 +545,10 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
         if block is not None and (any(tier_present(block.get(k)) for k in ("enemy-tier", "puzzle-tier"))
                                   or block.get("spoiler")):
             # A mark inside an entry block that carries its own tiers: the block's fields are its cover.
-            def block_tier(key):
-                m = re.match(r"\s*(\d)", block.get(key) or "")
-                return int(m.group(1)) if m else 0
-            sw = SPOILER_WORD_RE.match((block.get("spoiler") or "").strip())
-            block_spoiler = SPOILER_RANK[sw.group(1).lower()] if sw else 0
+            def block_tier(key):  # the strictest digit, as a mark's rank is read
+                digits = re.findall(r"\d", block.get(key) or "") if tier_present(block.get(key)) else []
+                return max(int(d) for d in digits) if digits else 0
+            block_spoiler = spoiler_mark_rank(block.get("spoiler") or "") or 0
             for name, label, axis, rank in marks:
                 covered = (max(block_tier("enemy-tier"), block_tier("puzzle-tier"), block_spoiler)
                            if axis is None else block_tier(axis))
