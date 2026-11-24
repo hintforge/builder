@@ -31,7 +31,9 @@ only, so a `_spoiler:` mark written any other way carries no tier. Two findings,
   - `spoiler-mark-undercovered` (a `tier` violation): an inline `_spoiler: <tier> ..._` fragment at the end of a
     claim line or in a table cell whose covering `_source:` line (the reach rule: the line below the claim,
     paragraph or table) is at a lower tier, or that has no covering line. The covering line's tier is the
-    highest of its `enemy-tier`, `puzzle-tier` and `spoiler:` values (or the section tag in force). Repair:
+    highest of its `enemy-tier`, `puzzle-tier` and `spoiler:` values (a tier axis the line does not state comes
+    from the section tag in force). Every mark on a line is ranked. A mark inside a bullet-field entry block that
+    carries its own tier or spoiler fields is compared with those fields instead. Repair:
     give the marked text its own `_source:` line at the mark's tier. `dlc:` and free-text marks are not ranked.
   - `tier-mark-undercovered` (a `tier` violation): the same for an `_enemy-tier: N ..._` or `_puzzle-tier: N ..._`
     mark (inline, in a table cell, or on a line of its own), compared with the covering line's value on the SAME
@@ -139,7 +141,7 @@ NUMERIC_TIER_RE = re.compile(r"^\d+(?:\s*/\s*\d+)?$")
 TABLE_SEPARATOR_CELL_RE = re.compile(r"^:?-{1,}:?$")
 # A `_spoiler: <word> ..._` mark written outside a `_source:` line. The reader gates on `_source:` lines only,
 # so a mark it cannot see is a tier the reader never applies.
-SPOILER_MARK_RE = re.compile(r"(?<![\w])_spoiler\s*:(.*)$", re.I)
+SPOILER_MARK_RE = re.compile(r"(?<![\w])_spoiler\s*:", re.I)
 # `_enemy-tier: N ..._` / `_puzzle-tier: N ..._` written as a mark (leading underscore), not a field of a `_source:` line.
 TIER_MARK_RE = re.compile(r"(?<![\w])_(enemy|puzzle)-tier\s*:\s*(\d(?:\s*[/-]\s*\d)*)", re.I)
 CODE_SPAN_RE =re.compile(r"(`+).+?\1")
@@ -511,21 +513,26 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
     # `_source:` line (reach rule) sits at a lower tier, or that has none. Text inside backticks is ignored.
     source_idx = {i for i, _, _ in inline_claims}
     source_body = {i: body for i, body, _ in inline_claims}
+    block_at = {}  # line index -> fields of the bullet-field entry block holding that line
+    for start, fields in block_runs:
+        _, end = parse_bullet_run(lines, start)
+        for j in range(start, end):
+            block_at[j] = fields
     for i in range(n):
-        if in_fence[i] or stripped[i].lower().startswith("_source"):
+        if in_fence[i]:
             continue
         text = blank_code_spans(stripped[i])
         marks = []  # (finding name, label, axis, rank)
-        sm_mark = SPOILER_MARK_RE.search(text)
-        if sm_mark and text.lstrip().startswith("_"):
+        sm_marks = list(SPOILER_MARK_RE.finditer(text))
+        if SPOILER_MARK_RE.match(text.lstrip()):
             violation(i + 1, stripped[i][:60], "source",
                       "spoiler-mark-line: a line that opens with `_spoiler:` is not a `_source:` line, so a reader "
                       "that keys on `_source:` never sees its tier. Convert it to a full `_source:` line "
                       "(`_source: <where it came from> · capture: <method> · enemy-tier: N · puzzle-tier: N · "
                       "spoiler: <tier>_`) under the claim it marks")
             continue
-        if sm_mark:
-            rank = spoiler_mark_rank(sm_mark.group(1))
+        for sm_mark in sm_marks:  # every mark on the line, each read up to its own closing underscore
+            rank = spoiler_mark_rank(text[sm_mark.end():])
             if rank is not None:
                 marks.append(("spoiler-mark-undercovered", "`_spoiler:`", None, rank))
         for tm in TIER_MARK_RE.finditer(text):
@@ -533,6 +540,25 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
             rank = max(int(d) for d in re.findall(r"\d", tm.group(2)))
             marks.append(("tier-mark-undercovered", f"`_{axis}:`", axis, rank))
         if not marks:
+            continue
+        block = block_at.get(i)
+        if block is not None and (any(tier_present(block.get(k)) for k in ("enemy-tier", "puzzle-tier"))
+                                  or block.get("spoiler")):
+            # A mark inside an entry block that carries its own tiers: the block's fields are its cover.
+            def block_tier(key):
+                m = re.match(r"\s*(\d)", block.get(key) or "")
+                return int(m.group(1)) if m else 0
+            sw = SPOILER_WORD_RE.match((block.get("spoiler") or "").strip())
+            block_spoiler = SPOILER_RANK[sw.group(1).lower()] if sw else 0
+            for name, label, axis, rank in marks:
+                covered = (max(block_tier("enemy-tier"), block_tier("puzzle-tier"), block_spoiler)
+                           if axis is None else block_tier(axis))
+                if covered < rank:
+                    violation(i + 1, stripped[i][:60], "tier",
+                              f"{name}: inline {label} mark is tier {rank} but its entry block is tier {covered}"
+                              + ("" if axis is None else f" on {axis}")
+                              + f", so a reader below tier {rank} sees this text. Set the block's own "
+                              "enemy-tier / puzzle-tier / spoiler fields to the mark's tier, then drop the mark")
             continue
         cover = covering_source_index(i, n, stripped, in_fence, heading, source_idx)
         body = source_body[cover] if cover is not None else None
@@ -544,12 +570,16 @@ def analyze_file(rel: str, lines: list[str], accepted: set[str], result: dict):
                           "paragraph or table at the mark's tier")
                 continue
             if axis is None:  # a spoiler mark: the covering line's highest tier on any axis
-                values = [int(tm.group(1)) for tm in (TIER_FIELD_RE[t].search(body) for t in TIER_FIELD_RE) if tm]
+                values = []
+                for k, t in enumerate(("enemy-tier", "puzzle-tier")):  # its own field, else the tag in force
+                    fm = TIER_FIELD_RE[t].search(body)
+                    if fm:
+                        values.append(int(fm.group(1)))
+                    elif gov_tag[cover] is not None:
+                        values.append(gov_tag[cover][k])
                 sm = SOURCE_SPOILER_RE.search(body)
                 if sm:
                     values.append(SPOILER_RANK[sm.group(1).lower()])
-                if gov_tag[cover] is not None:
-                    values.extend(gov_tag[cover][:2])
                 covered = max(values, default=0)
             else:  # an enemy-tier / puzzle-tier mark: the covering line's value on the same axis
                 fm = TIER_FIELD_RE[axis].search(body)

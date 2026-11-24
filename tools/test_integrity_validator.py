@@ -370,6 +370,31 @@ class SpoilerMarkTests(unittest.TestCase):
                       "_source: https://e.org/a · capture: web_fetch_\n")
         self.assertEqual(r["counts"]["tier"], 0)
 
+    def test_source_line_tiers_beat_the_section_tag(self):
+        # The source line states its own tiers (0), so the section tag (3) does not raise its cover.
+        r = self._run("# Part\n\nenemy-tier 3, puzzle-tier 3\n\nDetail. _spoiler: story_\n" + self.LOW)
+        self.assertEqual(r["counts"]["tier"], 1)
+        self.assertIn("is tier 3 but its covering `_source:` line", self._details(r, "tier")[0])
+
+    def test_line_opening_with_italic_text_is_not_a_mark_line(self):
+        r = self._run("_Crown of Ash_ revives the wearer. _spoiler: story_\n" + self.HIGH)
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+
+    def test_every_mark_on_a_line_is_ranked(self):
+        r = self._run("A. _spoiler: none_ B. _spoiler: story_\n" + self.LOW)
+        self.assertEqual(r["counts"]["tier"], 1)
+        self.assertIn("is tier 3", self._details(r, "tier")[0])
+
+    def test_mark_inside_an_entry_block_is_checked_against_its_own_fields(self):
+        block = ("- **claim:** The keeper waits below. _spoiler: story_\n"
+                 "- **source:** https://e.org/a\n- **capture:** web_fetch\n"
+                 "- **enemy-tier:** {e}\n- **puzzle-tier:** 0\n- **spoiler:** {s}\n")
+        ok = self._run(block.format(e=0, s="story"))
+        self.assertEqual(ok["counts"]["tier"], 0)
+        low = self._run(block.format(e=0, s="none"))
+        self.assertEqual(low["counts"]["tier"], 1)
+        self.assertIn("its entry block is tier 0", self._details(low, "tier")[0])
+
 
 class TierSweepTests(unittest.TestCase):
     """tier_sweep.py: lists where a name tagged above tier 0 also appears at a lower tier or untagged."""
