@@ -118,6 +118,7 @@ def _key_date(entry):
 
 
 def _direction(keys, strict):
+    """'oldest' (rising), 'newest' (falling) or None (a key missing, not monotone, or no information)."""
     if any(k is None for k in keys):
         return None
     up = all((a < b) if strict else (a <= b) for a, b in zip(keys, keys[1:]))
@@ -130,14 +131,29 @@ def _direction(keys, strict):
 
 
 def detect_order(entries):
-    """'oldest', 'newest' or None (cannot tell). Version numbers first, dates second."""
+    """'oldest', 'newest' or None (cannot tell).
+
+    Version numbers `vN` decide when every heading has one and they run strictly one way; any date
+    present must then agree. With no version numbers anywhere, dates decide (equal dates tell nothing).
+    Mixed or missing version numbers, a non-monotone run, or numbers and dates that disagree: None."""
     if len(entries) < 2:
         return "newest"
-    by_ver = _direction([_key_version(x) for x in entries], True)
-    by_date = _direction([_key_date(x) for x in entries], False)
-    if by_ver and by_date and by_ver != by_date:
-        return None
-    return by_ver or by_date
+    vers = [_key_version(x) for x in entries]
+    dates = [_key_date(x) for x in entries]
+    if any(v is not None for v in vers):
+        by_ver = _direction(vers, True)
+        if by_ver is None:
+            return None
+        have = [d for d in dates if d is not None]
+        if have and len(have) != len(dates):
+            return None
+        if have:
+            up = all(a <= b for a, b in zip(dates, dates[1:]))
+            down = all(a >= b for a, b in zip(dates, dates[1:]))
+            if not ((by_ver == "oldest" and up) or (by_ver == "newest" and down)):
+                return None
+        return by_ver
+    return _direction(dates, False)
 
 
 def detect_eol(data):
@@ -198,11 +214,15 @@ def plan(guide, reverse_flag):
             raise Refuse("the section reads oldest first; rerun with --reverse-if-oldest-first")
         entries = entries[::-1]
         reversed_now = True
-    elif order is None and reverse_flag:
+    elif order is None and (reverse_flag or len(entries) > KEEP or len(cp) > LIMIT):
         raise Refuse("cannot tell whether the section is oldest first or newest first "
-                     "(no consistent version numbers or dates in the headings); not touching it")
+                     "(the headings give no one consistent direction in version numbers and dates); "
+                     "not touching it")
     if not entries:
         raise Refuse("the changelog section holds no `### ` entries")
+    if older and any(_strip_eol(x) != POINTER for x in older):
+        raise Refuse("an `Older entries:` line names a target other than archive/harness_changelog.md "
+                     "(a legacy archive); migrate it by hand per doctor.md Branch A step 7, then rerun")
     if any(not e.endswith((b"\n", b"\r")) for e in entries[1:]) or \
             (entries and not entries[-1].endswith((b"\n", b"\r")) and (older or tail or rest or reversed_now)):
         raise Refuse("an entry ends mid-line; not touching it")
@@ -213,6 +233,9 @@ def plan(guide, reverse_flag):
         with open(ar_path, "rb") as f:
             ar = f.read()
         split_archive(ar)  # validates the header
+    elif older:
+        raise Refuse("CHECKPOINT.md has an `Older entries:` line but archive/harness_changelog.md does not "
+                     "exist; fix the pointer or restore the archive first")
 
     reuse = older[0] if (len(older) == 1 and _strip_eol(older[0]) == POINTER) else None
 
@@ -228,6 +251,12 @@ def plan(guide, reverse_flag):
         k -= 1
         out = render(k)
     moved = entries[k:]
+    if ar_exists and moved:
+        already = set(archive_entries(split_archive(ar)[2]))
+        dup = [heading(e) for e in moved if e in already]
+        if dup:
+            raise Refuse("entries to move already appear in the archive (a partial earlier run?): %s; "
+                         "nothing written" % "; ".join(dup))
 
     new_ar = ar
     if moved:
@@ -273,9 +302,16 @@ def write_atomic(path, data):
     d = os.path.dirname(path)
     os.makedirs(d, exist_ok=True)
     tmp = path + ".tmp"
-    with open(tmp, "wb") as f:
-        f.write(data)
-    os.replace(tmp, path)
+    try:
+        with open(tmp, "wb") as f:
+            f.write(data)
+        os.replace(tmp, path)
+    except OSError:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def main(argv=None):
@@ -303,13 +339,33 @@ def main(argv=None):
     if a.dry_run:
         print("dry run: nothing written")
         return 0
+    ar_dir = os.path.dirname(p["ar_path"])
+    dir_existed = os.path.isdir(ar_dir)
+    wrote_ar = False
     try:
         if changed_ar:
             write_atomic(p["ar_path"], p["new_ar"])
+            wrote_ar = True
         if changed_cp:
             write_atomic(p["cp_path"], p["out"])
     except OSError as e:
-        print("FAILED while writing: %s" % e, file=sys.stderr)
+        msg = "FAILED while writing: %s" % e
+        if wrote_ar:
+            try:
+                if p["ar_exists"]:
+                    write_atomic(p["ar_path"], p["ar"])
+                else:
+                    os.remove(p["ar_path"])
+                    if not dir_existed:
+                        os.rmdir(ar_dir)
+                msg += "; the archive was restored to its original state and CHECKPOINT.md was not changed"
+            except OSError as e2:
+                msg += ("; ROLLBACK FAILED (%s): archive/harness_changelog.md now holds the moved entries "
+                        "while CHECKPOINT.md still holds them too; restore the archive by hand before rerunning"
+                        % e2)
+        else:
+            msg += "; nothing was changed"
+        print(msg, file=sys.stderr)
         return 1
     print("wrote: %s" % ", ".join(n for n, c in (("archive/harness_changelog.md", changed_ar),
                                                    ("CHECKPOINT.md", changed_cp)) if c) or "nothing (already in shape)")

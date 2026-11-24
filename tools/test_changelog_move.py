@@ -203,6 +203,106 @@ def test_other_sections_untouched(tmp):
     assert cp.endswith(after)
 
 
+def _refused_unchanged(tmp, text, *flags, archive=None):
+    setup(tmp, text, archive)
+    assert run(tmp, *flags) == 1
+    assert rd(tmp, "CHECKPOINT.md") == text.encode()
+    if archive is None:
+        assert not os.path.exists(os.path.join(tmp, "archive"))
+    else:
+        assert rd(tmp, "archive", "harness_changelog.md") == archive.encode()
+
+
+def _h(title, n=3):
+    return f"### {title}\nbody\n\n"
+
+
+def test_default_refuses_non_monotone_versions(tmp):
+    es = [entry(n) for n in (5, 2, 4, 3, 1)]
+    _refused_unchanged(tmp, checkpoint(es))
+
+
+def test_default_refuses_contradictory_version_and_date(tmp):
+    es = [f"### v{n} -- 2026-11-{d:02d}\nbody\n\n" for n, d in ((5, 1), (4, 2), (3, 3), (2, 4), (1, 5))]
+    _refused_unchanged(tmp, checkpoint(es))
+
+
+def test_default_refuses_missing_or_mixed_keys(tmp):
+    es = [_h("v5 -- 2026-11-05"), _h("note -- 2026-11-04"), _h("v3 -- 2026-11-03"),
+          _h("v2 -- 2026-11-02"), _h("v1 -- 2026-11-01")]
+    _refused_unchanged(tmp, checkpoint(es))
+
+
+def test_default_refuses_same_day_entries_without_versions(tmp):
+    es = [_h("fix four -- 2026-11-01"), _h("fix three -- 2026-11-01"), _h("fix two -- 2026-11-01"),
+          _h("fix one -- 2026-11-01")]
+    _refused_unchanged(tmp, checkpoint(es))
+
+
+def test_default_refuses_dates_only_non_monotone(tmp):
+    es = [_h(f"x -- 2026-11-{d:02d}") for d in (5, 2, 4, 3)]
+    _refused_unchanged(tmp, checkpoint(es))
+
+
+def test_unknown_order_is_fine_when_nothing_moves(tmp):
+    es = [_h("alpha"), _h("beta")]
+    text = checkpoint(es)
+    setup(tmp, text)
+    assert run(tmp) == 0
+    assert rd(tmp, "CHECKPOINT.md") == text.encode()
+
+
+def test_pointer_without_archive_refused(tmp):
+    es = [entry(n) for n in (3, 2, 1)]
+    _refused_unchanged(tmp, checkpoint(es, pointer=True))
+
+
+def test_legacy_pointer_refused(tmp):
+    es = [entry(n) for n in (3, 2, 1)]
+    text = checkpoint(es).replace("## Next", "## Next") + "Older entries: docs/old_log.md\n"
+    _refused_unchanged(tmp, text, archive="# Harness changelog archive\n\n")
+
+
+def _fail_second_write(monkeypatch):
+    real = cm.write_atomic
+
+    def fake(path, data):
+        if os.path.basename(path) == "CHECKPOINT.md":
+            raise OSError("locked")
+        return real(path, data)
+    monkeypatch.setattr(cm, "write_atomic", fake)
+
+
+def test_second_write_failure_rolls_back_existing_archive(tmp, monkeypatch, capsys):
+    es = [entry(n) for n in (5, 4, 3, 2, 1)]
+    text = checkpoint(es[:4] + [es[4]], pointer=False)
+    archive = "# Harness changelog archive\n\n" + entry(0)
+    setup(tmp, text, archive)
+    _fail_second_write(monkeypatch)
+    assert run(tmp) == 1
+    assert rd(tmp, "CHECKPOINT.md") == text.encode()
+    assert rd(tmp, "archive", "harness_changelog.md") == archive.encode()
+    assert "restored" in capsys.readouterr().err
+
+
+def test_second_write_failure_removes_new_archive(tmp, monkeypatch):
+    es = [entry(n) for n in (5, 4, 3, 2, 1)]
+    text = checkpoint(es)
+    setup(tmp, text)
+    _fail_second_write(monkeypatch)
+    assert run(tmp) == 1
+    assert rd(tmp, "CHECKPOINT.md") == text.encode()
+    assert not os.path.exists(os.path.join(tmp, "archive"))
+
+
+def test_rerun_after_partial_write_refused(tmp):
+    es = [entry(n) for n in (5, 4, 3, 2, 1)]
+    text = checkpoint(es)
+    # the state a crash between the two writes leaves: archive updated, CHECKPOINT not
+    archive = "# Harness changelog archive\n\n" + es[3] + es[4]
+    _refused_unchanged(tmp, text, archive=archive)
+
+
 def test_missing_section_fails_closed(tmp):
     setup(tmp, "# Status\n\n## Next step\nGo.\n")
     assert run(tmp) == 1
