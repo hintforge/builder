@@ -4,12 +4,18 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Tier floor in the format contract and a doctor repair route for tier-rule changes (v127, 2026-11-24)
+
+- **`docs/corpus-format.md`:** the spoiler-to-tier mapping is now stated as a floor that the template and ingestion rules raise. A table row holding a boss's name takes `story` in its `tier` cell, because the reader maps that cell straight to the row's tiers.
+- **`ingestion.md` step 3:** the same table-row rule for boss names.
+- **`doctor.md` Branch C:** new "Tier rule changed in the template" repair. It copies the new rule text into the guide's `warning_tiers.md` and treats every line that breaks it as a misclassification. For the v125-v126 enemy rules it lists what to look for. This is the repair route the v125 and v126 entries below refer to.
+
 ### Boss names at Tier 3 everywhere; presence lines never at tier 0 (v126, 2026-11-24)
 
 - **`templates/warning_tiers.md`:** a route line saying only that enemies are there is tier 1, as Tier 0 allows no mention of enemies before encounter. Tier 3 now reads "name the boss": a boss's own name is first said at Tier 3, and a generic description is for a boss the game gives no name. README, `setup_wizard.md` and `setup_answers.txt` say the same.
-- **`ingestion.md` step 2:** a boss's own name goes in its own claim at `enemy-tier: 3`, so an existence fact (`progression`) carries no name. Step 3's spoiler-to-tier mapping is a floor that these rules can raise.
+- **`ingestion.md` step 3:** a boss's own name goes in its own claim at `enemy-tier: 3`, so an existence fact (`progression`) carries no name. Step 3's spoiler-to-tier mapping is a floor that these rules can raise.
 - **`stitch_and_zipper.md`:** the redaction example uses a Tier 3 boss-name heading.
-- **Existing corpora:** the v125 doctor repair pass also checks that boss names sit at enemy-tier 3 or higher and are not inside a lower existence claim.
+- **Existing corpora:** run `doctor.md` Branch C "Tier rule changed in the template" (added in v127). It checks that boss names sit at enemy-tier 3 or higher and are not inside a lower existence claim.
 
 ### Enemy names in route hints and boss names shared with ordinary enemies (v125, 2026-11-24)
 
@@ -17,7 +23,7 @@ All notable, user-visible changes to the hintforge builder land here.
 - **Tier 3** now states that it is the first tier at which a boss's own name may be said.
 - **New section "A name a boss shares with a common enemy":** where the boss comes first, the shared name is a boss name everywhere (Tier 3). A warning about the ordinary enemy at a lower tier is written without the name, with the name in its own Tier 3 claim. A file's place in the story never lowers the tier, because the player can ask about places not yet reached.
 - **`ingestion.md` step 3:** presence lines (which enemy types a place holds) are tagged `progression`, never `none`.
-- **Existing corpora:** no format bump and no migration step. A doctor repair pass copies the new template text into the guide's `warning_tiers.md` and re-tags route lines that name enemy types at tier 0 or with no covering tier line, and any shared boss name below Tier 3.
+- **Existing corpora:** no format bump and no migration step. A doctor repair pass (`doctor.md` Branch C "Tier rule changed in the template", added in v127) copies the new template text into the guide's `warning_tiers.md` and re-tags route lines that name enemy types at tier 0 or with no covering tier line, and any shared boss name below Tier 3.
 
 ### Byte-exact changelog move script (v124, 2026-11-24)
 

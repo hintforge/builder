@@ -141,6 +141,8 @@ Every fact in a corpus that could be falsified is structured as a **claim** with
   - `story` → tier 3
   - `dlc:<name>` → tier of DLC content + DLC flag
 
+  This mapping is a floor. The rules in `templates/warning_tiers.md` and `ingestion.md` step 3 set higher tiers for some claims (a boss's own name at `enemy-tier: 3`, a line naming or mentioning enemies in a place at 1 or more), and those win over the spoiler-derived value. In a table with a `tier` column, a row holding a boss's name takes `story` (tier 3) in that cell, because the reader maps the cell's value straight to the row's tiers.
+
 **Optional (post-distribution):**
 
 - `conflicts-with` -- other claims this contradicts.
