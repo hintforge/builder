@@ -4,6 +4,15 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Byte-exact changelog move script (v124, 2026-11-24)
+
+- **`tools/changelog_move.py`** (new, stdlib): performs the `docs/corpus-format.md` §1 changelog move on a guide (`python tools/changelog_move.py <guide-dir> [--dry-run] [--reverse-if-oldest-first]`). It keeps the newest 3 entries, moves the rest byte for byte to the top of `archive/harness_changelog.md`, keeps one `Older entries:` line, and changes no other byte.
+- **Safety:**
+  - It verifies before writing and fails closed: an unclear heading order (from `v<N>` tokens or dates), an oldest-first section without the flag, a pointer with no archive or a legacy target, or a re-run after a partial write.
+  - If the second write fails, it rolls back the archive, unless the archive changed in the meantime, in which case it leaves both files for a manual check. Tests added.
+- **`docs/corpus-format.md` §1, `doctor.md` Branch A step 7:** a procedure writes its new entry at the top first, then runs the move; the script is the preferred way.
+- Existing corpus impact: none; it makes the v123 migration safer to run.
+
 ### CHECKPOINT size limit and changelog archive; `save_schema.md` defined as a local-only tooling file; validator reads wrapped entry-block fields (v123, 2026-11-24)
 
 - **`tools/integrity_validator.py`** (rules revision `iv-2026.11.24-3`): an entry-block field that wraps onto an indented line under a free-text field keeps that line in its block, so a mark there is ranked against the block's tier instead of reported as uncovered. The rule fails closed: an unindented line, prose after a finished block, and a line under a typed metadata field (source, capture, confidence, any tier, spoiler, category, status, last-verified, contributor, in hyphen or underscore spelling) end the block. `save_schema.md` is left out of the corpus walk (and so out of the tier sweep). Tests added.
