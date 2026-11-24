@@ -4,6 +4,14 @@ All notable, user-visible changes to the hintforge builder land here.
 
 ## Unreleased
 
+### Enemy names in route hints and boss names shared with ordinary enemies (v125, 2026-11-24)
+
+- **`templates/warning_tiers.md` Tier 0:** any line naming the enemy types in a place or on a route is tier 1, even for an early common enemy and even when the name is a map label or mission title. At tier 0 a route line may say "enemies" without naming the type. Before, the rule said "no enemy-type names in route hints" but ingestion had no tag for such lines, so they were written at tier 0.
+- **Tier 3** now states that it is the first tier at which a boss's own name may be said.
+- **New section "A name a boss shares with a common enemy":** where the boss comes first, the shared name is a boss name everywhere (Tier 3). A warning about the ordinary enemy at a lower tier is written without the name, with the name in its own Tier 3 claim. A file's place in the story never lowers the tier, because the player can ask about places not yet reached.
+- **`ingestion.md` step 3:** presence lines (which enemy types a place holds) are tagged `progression`, never `none`.
+- **Existing corpora:** no format bump and no migration step. A doctor repair pass copies the new template text into the guide's `warning_tiers.md` and re-tags route lines that name enemy types at tier 0 or with no covering tier line, and any shared boss name below Tier 3.
+
 ### Byte-exact changelog move script (v124, 2026-11-24)
 
 - **`tools/changelog_move.py`** (new, stdlib): performs the `docs/corpus-format.md` §1 changelog move on a guide (`python tools/changelog_move.py <guide-dir> [--dry-run] [--reverse-if-oldest-first]`). It keeps the newest 3 entries, moves the rest byte for byte to the top of `archive/harness_changelog.md`, keeps one `Older entries:` line, and changes no other byte.

@@ -15,7 +15,7 @@ To change: "set enemy warning to tier N" / "set puzzle tier to N." Update this s
 
 ### Tier 0 -- No warning
 - No mention of enemies before encounter.
-- No "watch out for X," no enemy-type names in route hints.
+- No "watch out for X". Any line naming the enemy types in a place or on a route is tier 1, even for an early, common enemy, and even when the name is a map label or mission title the game shows. At tier 0 a route line may say "enemies" without naming the type.
 - Boss existence hidden. No boss prep.
 - Permitted: post-encounter help on request.
 
@@ -30,6 +30,7 @@ To change: "set enemy warning to tier N" / "set puzzle tier to N." Update this s
 
 ### Tier 3 -- Boss prep
 - Tier 2 + name the boss generically ("a heavy mech," "a mutant cluster") and recommend loadout swaps.
+- This is also the first tier at which a boss's own name may be said.
 - No mechanics walkthrough, no phase descriptions.
 
 ### Tier 4 -- Boss prep + materials
@@ -38,6 +39,13 @@ To change: "set enemy warning to tier N" / "set puzzle tier to N." Update this s
 
 ### Tier 5 -- Full boss strategy
 - Tier 4 + phase-by-phase mechanics, ability combos, common failure modes, cheese strats.
+
+### A name a boss shares with a common enemy
+Some games give a boss the same name as an ordinary enemy. Where the player meets the boss first, the shared name is a boss name everywhere: tag any line that says it at Tier 3 (the boss-name tier), whatever file it is in and whatever fight it describes.
+- To warn about the ordinary enemy at a lower tier, write the warning without the name ("organic enemies roam the bridge") and put the name in its own claim at Tier 3.
+- A file's place in the story never lowers the name's tier. The player can ask about places they have not reached.
+- Where the ordinary enemy comes before the boss, its name is an ordinary-enemy name. Only boss-fight lines take the boss tiers.
+- If the guide does not say which comes first, treat the name as a boss name and correct the facts.
 
 ---
 
