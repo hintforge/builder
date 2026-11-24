@@ -206,7 +206,7 @@ The flag resets to `false` when stitch completes.
 2. Model reads CHECKPOINT: confirms at least P1 is ingested. Reads `## Phase state`. Reads user's current tier for spoiler discipline.
 3. Model scans file list (headings, metadata, vector tags only -- no content reads yet). Reports files surveyed.
 4. For each overlap detected: picks the best resolution, executes it, reports one line per overlap (see Autonomous resolution above).
-5. Updates `## Phase state` in CHECKPOINT: `zipper: complete YYYY-MM-DD`. Adds `## Harness changelog` entry listing overlaps found and resolutions applied.
+5. Updates `## Phase state` in CHECKPOINT: `zipper: complete YYYY-MM-DD`. Adds `## Harness changelog` entry listing overlaps found and resolutions applied, then runs the changelog move ([`docs/corpus-format.md`](docs/corpus-format.md) §1, "CHECKPOINT size and the changelog archive").
 
 ### Stitch session
 
@@ -273,7 +273,7 @@ The flag resets to `false` when stitch completes.
    **Propagation completion gate.** Before proceeding to 5d, the completion gate (5a) extends: in addition to `audits-done == edges-in-dependencies`, the model must enumerate `propagation-done == edge-text-corrections-in-5b`. Every 5b edit that changed an edge's text must have a corresponding grep run with classified matches. If any 5b edit lacks a propagation grep, return to 5c for that edit. Do not proceed to 5d until both lists match.
 
 
-   5d. **Write run log + CHECKPOINT.** Add a row to `dependencies.md` stitch run log -- include the count from step 4's audit in the `Inconsistencies surfaced` column (count the inconsistencies found, even if they were resolved in 5b; when 5b resolved and removed every row, write the cell as `N (resolved in 5b)` so a non-zero count with an empty `## Corpus inconsistencies` section is explained; rows still open stay in the section). Update `## Phase state` in CHECKPOINT: `stitch: complete YYYY-MM-DD`, `stitch_stale: false`, `stitch_scope: full` (or scoped list). Add `## Harness changelog` entry listing DEP-IDs written (IDs only -- no descriptions), inconsistencies found and resolved, plus an optional aggregate skip count if borderline candidates were common.
+   5d. **Write run log + CHECKPOINT.** Add a row to `dependencies.md` stitch run log -- include the count from step 4's audit in the `Inconsistencies surfaced` column (count the inconsistencies found, even if they were resolved in 5b; when 5b resolved and removed every row, write the cell as `N (resolved in 5b)` so a non-zero count with an empty `## Corpus inconsistencies` section is explained; rows still open stay in the section). Update `## Phase state` in CHECKPOINT: `stitch: complete YYYY-MM-DD`, `stitch_stale: false`, `stitch_scope: full` (or scoped list). Add `## Harness changelog` entry listing DEP-IDs written (IDs only -- no descriptions), inconsistencies found and resolved, plus an optional aggregate skip count if borderline candidates were common. Then run the changelog move ([`docs/corpus-format.md`](docs/corpus-format.md) §1, "CHECKPOINT size and the changelog archive").
 
 6. Chat reply at end of session: bare completion line per **Chat output discipline** above. No edge tables, titles, or rationales.
    Then emit the session-close ref line (builder `SKILL.md`, "Session-close ref line") as the final line. It carries only a branch, a commit and a count, so it fits the chat output discipline above.

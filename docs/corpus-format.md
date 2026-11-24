@@ -33,12 +33,28 @@ A directory is a Hintforge corpus if and only if it contains the three always-pr
 | `dependencies.md` | Cross-system edges written by the stitch pass (e.g. "this puzzle solution requires an item from a later zone"). Ships at status `scaffold` from the builder template; populated by stitch and reconciled by zipper. Reader treats scaffold-status as absent per the §6 status discipline. |
 | `achievements.md` | Per-`trigger_type` aggregation of the game's platform achievement list (Steam / PSN / Xbox), bound back to canonical claim homes via `vector-binding`. Required as of `corpus-core-version: 4`. Wizard creates the scaffold from the Stage 0 stub fetch; P1 ingestion classifies each entry into one of six `trigger_type` sections (`Progression | Branch | Mastery | Collection | Threshold | Discovery`) and writes a coverage check against `research_briefs/achievement_stubs.md`. See [`../templates/achievements.md`](../templates/achievements.md). |
 
+**CHECKPOINT size and the changelog archive.** This is the one statement of the size rule; other files point here.
+
+- **Limit:** `CHECKPOINT.md` stays at or under **24,000 bytes**. Measure bytes (the file size), not lines: one changelog line can run past a thousand characters.
+- **What stays:** `## Harness changelog` lists entries newest first and keeps the **newest 3**, followed by one line: `Older entries: archive/harness_changelog.md`. An entry is a `### ` heading and everything under it up to the next `### ` or `## ` heading.
+- **Where the rest goes:** `archive/harness_changelog.md` holds every older entry, newest first, text unchanged, under a first line `# Harness changelog archive`. It is working state like CHECKPOINT: not part of the universal core (a corpus is valid without it), it survives regeneration, and it is kept private or published exactly as CHECKPOINT is. The reader does not read it at session start; open it only when a question or a procedure needs an older entry.
+- **The changelog move.** Every procedure that writes a changelog entry runs this right after writing it:
+  1. If the section holds more than 3 entries, or the file is over the limit, take its oldest entry, whole and unchanged.
+  2. Put it at the top of `archive/harness_changelog.md`, below the first line. Create the file (and `archive/`) if absent.
+  3. Remove it from CHECKPOINT and make sure the `Older entries:` line is present.
+  4. Repeat until 3 entries remain and the file is within the limit, but always keep the newest entry.
+  5. Re-read both files: every moved entry appears once in the archive and no longer in CHECKPOINT.
+
+  If the file is still over the limit with one entry left, the excess is play state: say so in the recap and leave those sections to the reader.
+- **The move's scope.** It edits only the `## Harness changelog` section and the archive file. It is allowed where a rule otherwise keeps a procedure out of CHECKPOINT (the regeneration preservation lists in [`../instantiation.md`](../instantiation.md), [`../ingestion.md`](../ingestion.md) and [`../doctor.md`](../doctor.md)), and it never rewrites, shortens or merges an entry or touches another section.
+
 **Optional host shims (not required, not part of the universal core).** A corpus MAY carry thin per-platform auto-load files that an agent host reads on entry and that do nothing but point at the reader skill: `CLAUDE.md` (Claude Code), `AGENTS.md` (Codex CLI; OpenClaw only when it runs through the Codex backend). OpenClaw's native bootstrap reads `AGENTS.md` from its configured workspace rather than discovering a guide-folder copy, so native OpenClaw still relies on skill activation. The shims are **optional** -- a corpus is valid with neither, one, or both. They carry **no unique corpus data**: an identity line + "this is a Hintforge corpus, load the hintforge-reader skill" + pointers to the neutral homes where the real content lives (`warning_tiers.md`, `persona.md`, the manifest, the reader skill's `principles.md`). The reader does not require them for detection and does not read them by name as corpus data. Before v6, `CLAUDE.md` was a *required* universal-core file carrying per-game harness rules; v6 dissolved that role and relocated its content to the neutral homes (see §3 history). On v1-v5 corpora the reader still reads a present `CLAUDE.md` as the harness file (back-compat).
 
 **Excluded from the published corpus by definition.** These exist in some directories on disk during authoring or runtime, but are not part of the corpus format and the reader does not look for them:
 
 - **Builder-only paths:** `research_briefs/`, `research_inbox/` (including its `p1/`, `p2/`, ..., `_processed/` subfolders). These are scratch space the builder uses while authoring.
 - **Platform/runtime paths:** `ptt/`, `save_state/`, `.claude/`. These are local runtime infrastructure, not corpus content.
+- **Local tooling files:** `save_schema.md`, the save-file layout a save reader is built on (see §6, "Files outside the status system").
 
 A reader scanning a directory for "is this a corpus?" checks the three always-present directories, the universal files, and a manifest at either sanctioned location. The presence of builder-only or platform/runtime paths does not affect the answer.
 
@@ -175,6 +191,8 @@ Every per-zone file (and every claim-bearing file produced by ingestion) carries
 - `reconciled` -- multiple sources merged with conflicts resolved.
 
 The reader uses `status` to decide whether to answer from the file or fall through to web search. A file with `status: scaffold` and no substantive content is treated as if absent.
+
+**Files outside the status system.** Config and state files carry no `status` and no claim metadata: `CHECKPOINT.md`, `archive/harness_changelog.md`, `CLAUDE.md`, `AGENTS.md`, `limitations.md`, `warning_tiers.md`, `dependencies.md`, and `save_schema.md`. `save_schema.md` is a **local-only tooling file**: it records how a player's save files are laid out, for a save reader, not facts about the game, and it is not part of the published corpus (§1). It has no `status` line and no `_source:` or tier lines, so it never ranks against a claim in a conflict. Mark each field mapping in it `candidate` (read from saves, meaning not yet checked) or `confirmed` (checked by the player against the game screen, for example with a before-and-after save pair). A game fact learned from saves goes into a corpus file as a normal claim.
 
 **Update discipline.** Live observation > research cascade > web search. When live play contradicts a research-integrated file, the live observation wins and the status moves to `live-observed`. Stitch-and-zipper passes (post-ingestion synthesis) may move a file from `research-integrated` or `live-observed` to `reconciled` once cross-system edges are written and conflicts resolved.
 

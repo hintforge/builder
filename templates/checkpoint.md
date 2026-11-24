@@ -1,7 +1,7 @@
 # [GAME NAME] -- CHECKPOINT
 Last updated: YYYY-MM-DD HH:MM UTC
 Last played: YYYY-MM-DD
-<!-- `Last played:` is the ISO 8601 date (YYYY-MM-DD) the user last actually played the game. Distinct from `Last updated:`, which tracks edits to this file. Bump `Last played:` at the end of a play session. If this date is >30 days from today's date, `setup_wizard.md` Step 10's stale-session detection offers a controls refresher before resuming. -->
+<!-- `Last played:` = the date the player last played (bump at session end); `Last updated:` = last edit of this file. Stale-session rule: `setup_wizard.md` Step 10. Size limit and changelog archive: `docs/corpus-format.md` §1. -->
 
 ## Status
 [1-2 lines: where the player is right now. Map / area / quest / save state. Be specific -- a fresh session resumes from this.]
@@ -53,8 +53,7 @@ player_position:
     pnr_warnings: []                # spoiler-safe one-line warnings (e.g. "next gate is one-way -- finish missables here first")
     notes: ""                       # optional author/maintainer context for next session
 ```
-
-The `lookahead_cache` block lets the reader skip the zone-graph walk at session start. The reader writes it during `checkpoint`/wrap (cost amortizes over the whole session); future sessions read it for free on entry. The cache is **fresh** when `computed_at_position == last_known_gate`; stale otherwise (the reader recomputes on the first nav-relevant turn). See the reader skill's SKILL.md "Lookahead caching" section for the full contract.
+<!-- `lookahead_cache` contract (fresh when `computed_at_position == last_known_gate`; written at checkpoint/wrap): the reader skill's `lookahead_cache.md`. -->
 
 ## Progress timeline
 - [x] [Major milestone reached]
@@ -66,18 +65,12 @@ The `lookahead_cache` block lets the reader skip the zone-graph walk at session 
 - `mechanics.md` -- core game-system rules, mechanics, modes (stable)
 - `limitations.md` -- blocked sources
 - `puzzles/index.md` / `[areas]/index.md` / `items/` / `sections/` -- lookup hubs
-- `persona.md` -- voice toggle
-- `warning_tiers.md` -- tier flags
 
 ## Next step
 [1 line: bot-orientation marker for session resume -- area name, quest stage, structural position. NOT a preview of upcoming game content. The player doesn't see this as guidance; the bot reads it to re-orient. See Principle #2.]
 
 ## Phase state
-<!-- Builder phase tracking. Read by the phase-readiness check. Updated by setup, ingestion, stitch, and zipper sessions. -->
-<!-- Natural language triggers: "what's next", "is [phase] ready", "I want to redo P2", "run stitch", etc. -->
-<!-- Preconditions: P2 requires P1 ingested or explicit skip-acknowledge. P3 requires P2 ingested or skip-acknowledge. Stitch requires at least P1 ingested. Zipper has no hard precondition but is most useful post-P1. -->
-<!-- Phase-readiness check: any query implying "what should I do next" or naming a phase reads this section and responds with what's complete, what's next, whether preconditions are met, and what's blocking if not. -->
-<!-- stitch_stale flag: set to true when any corpus file receives a new live-observed claim after the stitch: date. Persona surfaces a one-time notice at session start; resets to false when stitch completes. -->
+<!-- Builder phase tracking, updated by setup, ingestion, stitch and zipper. Readiness check, preconditions and `stitch_stale`: `stitch_and_zipper.md` "Phase-readiness check" and "`stitch_stale` flag". -->
 setup: complete YYYY-MM-DD
 p1_brief: written YYYY-MM-DD | not started
 p1_ingestion: complete YYYY-MM-DD | pending | skipped (reason)
@@ -99,5 +92,6 @@ gitforge_handle: none
 aggregation_opt_in: false
 
 ## Harness changelog
+<!-- Newest first; keep the newest 3, older ones move to `archive/harness_changelog.md` (docs/corpus-format.md §1). -->
 ### v1 -- YYYY-MM-DD HH:MM UTC
 - Project created from [`templates/`](https://github.com/hintforge/builder/tree/main/templates). Subfolders chosen: [list]. Personas chosen: [PERSONA1] / [PERSONA2], active: [DEFAULT]. Warning tiers: enemies [N], puzzles [N].

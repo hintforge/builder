@@ -258,7 +258,7 @@ Silent scaffold at end of pass -- no deferral note, no honest empty-statement --
 
 **Step 8 is a field-value check, not a content-propagation check.** A file's `status: research-integrated` value answers "was this file integrated?" -- it does NOT answer "did this phase's supersessions reach this file?" Passing step 8 is not evidence that step 7 ran on a file you did not edit this pass. The two checks ask different questions: step 8 confirms the status-field contract, step 7 confirms content propagation across the whole corpus. Run step 7's whole-corpus supersession audit (above) on its own terms; never treat a clean step-8 status sweep as a proxy for it. Collapsing the two is how a post-patch supersession lands only in the changelog while the stale claim keeps being served at read-time.
 
-**Scope.** The check applies to claim-bearing files only. Per [`docs/corpus-format.md`](docs/corpus-format.md) §6 ("Every per-zone file and every claim-bearing file produced by ingestion carries a status field"), config and state files don't carry status and aren't checked: `CHECKPOINT.md`, `CLAUDE.md`, `limitations.md`, `warning_tiers.md`, `dependencies.md`. The check covers:
+**Scope.** The check applies to claim-bearing files only. Per [`docs/corpus-format.md`](docs/corpus-format.md) §6 ("Every per-zone file and every claim-bearing file produced by ingestion carries a status field"), config and state files don't carry status and aren't checked: `CHECKPOINT.md`, `archive/harness_changelog.md`, `CLAUDE.md`, `AGENTS.md`, `limitations.md`, `warning_tiers.md`, `dependencies.md`, and the local-only tooling file `save_schema.md` (no status and no claim metadata; each field mapping marked `candidate` or `confirmed`; §6 "Files outside the status system"). The check covers:
 
 - **Universal claim-bearing root files:** `controls.md`, `settings.md`, `mechanics.md`, `achievements.md` (the last only at `corpus-core-version: 4` and later -- aggregation rule below)
 - **Universal directory indices:** `nav/index.md`, `items/index.md`, `sections/index.md`. (Not `_overflow/index.md` -- see exemption below.)
@@ -356,6 +356,7 @@ Run index re-derivation separately from identifier grep: re-read roster cells an
 - `Research preferences: cascade-handoff (P1 ingested YYYY-MM-DD from <source-tool>; P2: ingested/pending/skipped; P3: ingested/pending/skipped)`
 - Add a `## Harness changelog` entry: which phase was ingested, which subfolders received content, approximate token count, any caveats. **For P2/P3, also list each gap-fill resolution and the corpus file/line it acted on** (e.g. "<claim short-name> -- DROPPED, removed `sections/<chapter>.md` lines 42-44") so the changelog and corpus stay legible against each other.
 - **Include step 8's coverage-check results:** every honest empty-statement promotion and every deferral, per that step's "Changelog requirement" clause.
+- Then run the changelog move ([`docs/corpus-format.md`](docs/corpus-format.md) §1, "CHECKPOINT size and the changelog archive"): older entries go verbatim to `archive/harness_changelog.md` once the section holds more than 3 or the file passes the size limit.
 
 ### 10. Refresh downstream briefs (mandatory)
 
@@ -454,4 +455,4 @@ Rules for this block:
 
 ## Regeneration safety
 
-When the guide is wiped and regenerated from a refreshed cascade pass, the preservation rule from [`instantiation.md`](instantiation.md) applies: `CHECKPOINT.md`, loadouts, user-flagged live-observed truths, and infrastructure (`.claude/`, PTT/TTS, save-watcher, persona customization) survive. Everything else gets regenerated. Ingestion is the regen path's main mechanism -- it's how the new content lands in the wiped folder.
+When the guide is wiped and regenerated from a refreshed cascade pass, the preservation rule from [`instantiation.md`](instantiation.md) applies: `CHECKPOINT.md` and `archive/harness_changelog.md`, loadouts, user-flagged live-observed truths, and infrastructure (`.claude/`, PTT/TTS, save-watcher, persona customization) survive. Everything else gets regenerated. Step 9's changelog move is not a regeneration: it moves whole entries between those two files and is allowed. Ingestion is the regen path's main mechanism -- it's how the new content lands in the wiped folder.

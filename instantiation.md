@@ -109,7 +109,7 @@ When the publishing wrapper ships, this section gets filled in with: GitHub repo
 
 A guide may eventually be wiped and regenerated from a refreshed cascade pass (new framework version, revised research, scrap-and-rebuild after structural drift). When that happens, the following survive -- never auto-overwritten by regeneration:
 
-1. **`CHECKPOINT.md`** -- per-game state. Includes the `player_position` block when present. Survival is unconditional; a regeneration that touches CHECKPOINT.md is a bug.
+1. **`CHECKPOINT.md`** and its changelog archive **`archive/harness_changelog.md`** -- per-game state. Includes the `player_position` block when present. Survival is unconditional; a regeneration that touches either file is a bug. (The changelog move in [`docs/corpus-format.md`](docs/corpus-format.md) §1 is not a regeneration.)
 2. **Loadouts** -- the user's actually-played-with weapon trees, build choices, ability picks, spec selections. Wherever they live in the game folder (`mechanics.md`, a dedicated `loadouts.md`, etc.).
 3. **Live-observed truths** the user has explicitly flagged as authoritative -- in-game text the user transcribed, post-game-state routes the user discovered, save-station locations the user verified. Higher fidelity than research; supersedes research output on conflict (per the integration discipline at the bottom of `setup_wizard.md` Step 8).
 4. **Infrastructure** -- `.claude/` settings + hooks, push-to-talk / TTS module installs, save-watcher scripts, `persona.md` if it carries customization beyond the template defaults.

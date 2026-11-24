@@ -81,6 +81,7 @@ Show the user what was fetched and a one-line summary of the change before conti
 4. Update `nav/architecture.md`'s `corpus-core-version` field. This is the only doctor branch that touches the manifest version.
 5. Enumerate any newly-scaffolded files or fields and offer to queue branch C to fill them. Phrasing: "Branch A scaffolded these empty: X, Y, Z. Want to run branch C now to fill them?" Yes proceeds; no logs the deferred work in CHECKPOINT as pending.
 6. Log the migration in `CHECKPOINT.md`'s `## Harness changelog` with from-version, to-version, and which files were touched.
+7. **Move the changelog to its archive (every Branch A run, whatever the version gap).** If `## Harness changelog` holds more than 3 entries, has no `Older entries:` line, or `CHECKPOINT.md` is over the size limit, run the changelog move in [`docs/corpus-format.md`](docs/corpus-format.md) §1 ("CHECKPOINT size and the changelog archive"). On a guide whose entries run oldest first, first reverse their order so the section reads newest first, without changing any entry's text. If the guide already keeps older entries in another file, move them into `archive/harness_changelog.md` in date order and point the `Older entries:` line there. Add the file size in bytes before and after, and the number of entries moved, to this run's Branch A entry. The move is not a content move across corpus files and sets no Phase state flag.
 
 Branch A does not invent content. If a bump introduced a new universal-core field or file, branch A scaffolds it empty per the changelog's migration instructions; filling it is branch C.
 
@@ -130,7 +131,7 @@ Doctor has authority to read and set any `## Phase state` flag in CHECKPOINT whe
 | Framework procedure changes affect how existing edges/content should be audited | `stitch_stale: true`; `stitch_scope: full` |
 | Prior ingestion results invalidated (branch B game update contradicts existing content, branch C reveals systematic research error) | Reset relevant `p[N]_ingestion` to `pending (reason)` |
 
-**Audit inherited state (mandatory).** Before declaring step 6 complete, compare the last 5 `## Harness changelog` entries in CHECKPOINT with the rules table above. If a prior finding matches a current rule and its required Phase state flag is missing, set that flag. Add a one-line changelog entry: `vN+1 -- backfill: <flag> set per <rule> (inherited from vX recommendation)`.
+**Audit inherited state (mandatory).** Before declaring step 6 complete, compare the last 5 `## Harness changelog` entries (CHECKPOINT first, then the top of `archive/harness_changelog.md` when CHECKPOINT holds fewer) with the rules table above. If a prior finding matches a current rule and its required Phase state flag is missing, set that flag. Add a one-line changelog entry: `vN+1 -- backfill: <flag> set per <rule> (inherited from vX recommendation)`.
 
 **Run vs flag.** If the re-run is small and scoped (touched files only, <5 files), run it in this session per [`stitch_and_zipper.md`](stitch_and_zipper.md). If the re-run would be a full re-audit or the session is already long, set the flags and defer. **A CHECKPOINT changelog entry alone is not sufficient** -- flags in Phase state are what future sessions scan; changelog entries are archaeology.
 
@@ -154,6 +155,7 @@ Log the violation counts and the actions taken in the CHECKPOINT harness changel
 ### 7. Update CHECKPOINT and surface a recap
 
 - Add a dated `## Harness changelog` entry per branch that ran: branch letter, one-line description, files touched, pending follow-ups (e.g. "ingestion run pending for `doctor_<date>.txt`", "branch C deferred -- scaffolded fields not yet filled"). Don't merge branches into a single ambiguous entry. **Changelog text names nothing above tier 0**: the reader reads the guide's CHECKPOINT at every session start, so an entry says what kind of change was made and where, never the late name or fact involved.
+- After the entries, run the changelog move ([`docs/corpus-format.md`](docs/corpus-format.md) §1, "CHECKPOINT size and the changelog archive").
 - One-screen recap to the user: which branches ran, what changed, what research handoffs need to happen, any reconciliation actions taken.
 - **Scope the recap to where the work actually landed.** If this run wrote to a non-default branch (see pre-flight), the recap says so and names the merge as the outstanding step. "Fixed", "updated", "pushed" with no such qualifier are claims about the guide itself, and from a side branch they are false -- the repair is real, the guide does not have it yet.
 - **Close with the ref line** (builder `SKILL.md`, "Session-close ref line"), after the CHECKPOINT entry. On a non-default branch the line names that branch, which is what keeps later analysis scoped to where the work landed.
@@ -169,4 +171,4 @@ Log the violation counts and the actions taken in the CHECKPOINT harness changel
 
 ## Regeneration safety
 
-Same rule as ingestion. `CHECKPOINT.md`, loadouts, user-flagged live-observed truths, and infrastructure (`.claude/`, PTT/TTS, save-watcher, persona customization) survive any doctor run. Doctor never touches those files.
+Same rule as ingestion. `CHECKPOINT.md`, `archive/harness_changelog.md`, loadouts, user-flagged live-observed truths, and infrastructure (`.claude/`, PTT/TTS, save-watcher, persona customization) survive any doctor run. Doctor never regenerates or rewrites those files: in CHECKPOINT it adds its own entries, flags and pending notes, runs the changelog move, and leaves the rest as it found it.
