@@ -400,6 +400,48 @@ class SpoilerMarkTests(unittest.TestCase):
         self.assertEqual(self._run(enemy.format(e="1/3", s="none"))["counts"]["tier"], 0)
         self.assertEqual(self._run(enemy.format(e="1", s="none"))["counts"]["tier"], 1)
 
+    def test_field_wrapping_onto_a_continuation_line_stays_in_its_entry_block(self):
+        # A claim field that wraps onto an unbulleted line (indented or flush left) keeps that line in the
+        # block: the mark on it is ranked against the block's fields, not reported as having no cover.
+        for pad in ("  ", ""):
+            block = ("- **claim:** The keeper waits below the vault and\n"
+                      + pad + "guards the way down. _spoiler: story_\n"
+                      "- **source:** https://e.org/a\n- **capture:** web_fetch\n"
+                      "- **enemy-tier:** {e}\n- **puzzle-tier:** 0\n- **spoiler:** {s}\n")
+            ok = self._run(block.format(e=3, s="story"))
+            self.assertEqual(ok["counts"], {"source": 0, "tier": 0, "status": 0}, pad)
+            low = self._run(block.format(e=0, s="none"))
+            self.assertEqual(low["counts"]["tier"], 1, pad)
+            d = self._details(low, "tier")[0]
+            self.assertIn("its entry block is tier 0", d, pad)
+            self.assertNotIn("no covering", d, pad)
+            enemy = block.replace("_spoiler: story_", "_enemy-tier: 2_")
+            self.assertEqual(self._run(enemy.format(e=2, s="none"))["counts"]["tier"], 0, pad)
+            self.assertEqual(self._run(enemy.format(e=1, s="none"))["counts"]["tier"], 1, pad)
+
+    def test_continuation_in_the_middle_of_a_block_belongs_to_the_block(self):
+        # The wrapped line sits between two fields, so the fields after it still belong to the same block.
+        r = self._run("- **claim:** The keeper waits\n  below. _spoiler: story_\n"
+                      "- **source:** https://e.org/a\n- **capture:** web_fetch\n"
+                      "- **enemy-tier:** 0\n- **puzzle-tier:** 0\n- **spoiler:** story\n")
+        self.assertEqual(r["counts"], {"source": 0, "tier": 0, "status": 0})
+
+    def test_blank_line_ends_the_block_so_a_later_mark_is_not_covered_by_it(self):
+        r = self._run("- **claim:** The keeper waits below.\n- **source:** https://e.org/a\n"
+                      "- **capture:** web_fetch\n- **enemy-tier:** 3\n- **puzzle-tier:** 3\n- **spoiler:** story\n"
+                      "\nA stray paragraph. _spoiler: story_\n")
+        self.assertEqual(r["counts"]["tier"], 1)
+        self.assertIn("no covering `_source:` line", self._details(r, "tier")[0])
+
+    def test_new_paragraph_directly_under_the_block_is_not_a_continuation(self):
+        # An inline `_source:` line right under a block is its own claim line, and a heading ends the block.
+        r = self._run("- **claim:** The keeper waits below.\n- **source:** https://e.org/a\n"
+                      "- **capture:** web_fetch\n- **enemy-tier:** 3\n- **puzzle-tier:** 3\n- **spoiler:** story\n"
+                      + self.LOW + "\n# Next\n\nA stray line. _spoiler: story_\n")
+        self.assertEqual(r["counts"]["tier"], 1)
+        self.assertIn("no covering `_source:` line", self._details(r, "tier")[0])
+        self.assertEqual(r["claims_checked"], 2)
+
     def test_mark_appended_to_a_source_line_is_checked(self):
         # A source line's own `spoiler:` field is not a mark, but an `_spoiler:` tacked onto it is.
         r = self._run("Claim.\n" + self.LOW.rstrip("\n") + " _spoiler: story_\n")
