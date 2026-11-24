@@ -401,23 +401,60 @@ class SpoilerMarkTests(unittest.TestCase):
         self.assertEqual(self._run(enemy.format(e="1", s="none"))["counts"]["tier"], 1)
 
     def test_field_wrapping_onto_a_continuation_line_stays_in_its_entry_block(self):
-        # A claim field that wraps onto an unbulleted line (indented or flush left) keeps that line in the
-        # block: the mark on it is ranked against the block's fields, not reported as having no cover.
-        for pad in ("  ", ""):
-            block = ("- **claim:** The keeper waits below the vault and\n"
-                      + pad + "guards the way down. _spoiler: story_\n"
+        # A claim field that wraps onto an INDENTED unbulleted line keeps that line in the block: the mark on
+        # it is ranked against the block's fields, not reported as having no cover.
+        pad = "  "
+        block = ("- **claim:** The keeper waits below the vault and\n"
+                 + pad + "guards the way down. _spoiler: story_\n"
+                 "- **source:** https://e.org/a\n- **capture:** web_fetch\n"
+                 "- **enemy-tier:** {e}\n- **puzzle-tier:** 0\n- **spoiler:** {s}\n")
+        ok = self._run(block.format(e=3, s="story"))
+        self.assertEqual(ok["counts"], {"source": 0, "tier": 0, "status": 0})
+        low = self._run(block.format(e=0, s="none"))
+        self.assertEqual(low["counts"]["tier"], 1)
+        d = self._details(low, "tier")[0]
+        self.assertIn("its entry block is tier 0", d)
+        self.assertNotIn("no covering", d)
+        enemy = block.replace("_spoiler: story_", "_enemy-tier: 2_")
+        self.assertEqual(self._run(enemy.format(e=2, s="none"))["counts"]["tier"], 0)
+        self.assertEqual(self._run(enemy.format(e=1, s="none"))["counts"]["tier"], 1)
+
+    def test_unindented_wrap_ends_the_block_and_its_mark_is_reported(self):
+        # Fail closed: a flush-left line is outside the block, so a mark on it has no covering source.
+        r = self._run("- **claim:** The keeper waits below the vault and\n"
+                      "guards the way down. _spoiler: story_\n"
                       "- **source:** https://e.org/a\n- **capture:** web_fetch\n"
-                      "- **enemy-tier:** {e}\n- **puzzle-tier:** 0\n- **spoiler:** {s}\n")
-            ok = self._run(block.format(e=3, s="story"))
-            self.assertEqual(ok["counts"], {"source": 0, "tier": 0, "status": 0}, pad)
-            low = self._run(block.format(e=0, s="none"))
-            self.assertEqual(low["counts"]["tier"], 1, pad)
-            d = self._details(low, "tier")[0]
-            self.assertIn("its entry block is tier 0", d, pad)
-            self.assertNotIn("no covering", d, pad)
-            enemy = block.replace("_spoiler: story_", "_enemy-tier: 2_")
-            self.assertEqual(self._run(enemy.format(e=2, s="none"))["counts"]["tier"], 0, pad)
-            self.assertEqual(self._run(enemy.format(e=1, s="none"))["counts"]["tier"], 1, pad)
+                      "- **enemy-tier:** 3\n- **puzzle-tier:** 0\n- **spoiler:** story\n")
+        self.assertTrue(any("no covering `_source:` line" in d for d in self._details(r, "tier")))
+
+    FINISHED_BLOCK = ("- **claim:** The keeper waits below.\n- **source:** https://e.org/a\n"
+                      "- **capture:** web_fetch\n- **enemy-tier:** 3\n- **puzzle-tier:** 3\n- **spoiler:** story\n")
+
+    def test_prose_right_after_a_finished_block_does_not_inherit_its_tier(self):
+        r = self._run(self.FINISHED_BLOCK + "The steward is the traitor. _spoiler: story_\n")
+        self.assertEqual(r["counts"]["tier"], 1)
+        self.assertIn("no covering `_source:` line", self._details(r, "tier")[0])
+        # Indented prose after a typed field (spoiler) is not a wrap either.
+        r = self._run(self.FINISHED_BLOCK + "  The steward is the traitor. _spoiler: story_\n")
+        self.assertEqual(r["counts"]["tier"], 1)
+        self.assertIn("no covering `_source:` line", self._details(r, "tier")[0])
+
+    def test_prose_after_a_block_does_not_merge_the_next_block_into_it(self):
+        r = self._run(self.FINISHED_BLOCK + "A stray remark.\n"
+                      "- **claim:** Another fact.\n- **source:** https://e.org/b\n- **capture:** web_fetch\n"
+                      "- **enemy-tier:** 0\n- **puzzle-tier:** 0\n")
+        self.assertEqual(r["claims_checked"], 2)
+
+    def test_continuation_of_a_tier_field_cannot_cover_its_own_mark(self):
+        for field in ("enemy-tier", "puzzle-tier", "spoiler", "source"):
+            vals = {"enemy-tier": "0", "puzzle-tier": "0", "spoiler": "none", "source": "https://e.org/a"}
+            body = "".join(f"- **{k}:** {v}\n" for k, v in vals.items() if k != field)
+            body += f"- **{field}:** {vals[field]}\n"
+            mark = "_enemy-tier: 3_" if field != "spoiler" else "_spoiler: story_"
+            r = self._run("- **claim:** The keeper waits.\n- **capture:** web_fetch\n" + body
+                          + "  The keeper returns. " + mark + "\n")
+            self.assertEqual(r["counts"]["tier"], 1, field)
+            self.assertIn("no covering `_source:` line", self._details(r, "tier")[0], field)
 
     def test_continuation_in_the_middle_of_a_block_belongs_to_the_block(self):
         # The wrapped line sits between two fields, so the fields after it still belong to the same block.
@@ -485,6 +522,17 @@ class TierSweepTests(unittest.TestCase):
         r = self.S.sweep_guide(self.LEAKY)
         self.assertNotIn("Plain Charm", {h["name"] for h in r["hits"]})  # `none` row, also named in a tier-0 block
         self.assertNotIn("Ember Charm", {h["name"] for h in r["hits"]})  # story row, named nowhere else
+
+    def test_unindented_prose_under_a_block_does_not_get_the_blocks_tiers(self):
+        lines = ["- **claim:** The keeper waits below the vault and", "  guards the way down.",
+                 "- **source:** https://e.org/a", "- **capture:** web_fetch",
+                 "- **enemy-tier:** 3", "- **puzzle-tier:** 3", "- **spoiler:** story",
+                 "The Iron Warden also guards the gate.",
+                 "  The Hollow King sits behind it."]
+        tiers, _meta, _fence, _defs = self.S.map_file(lines)
+        self.assertEqual(tiers[:7], [(3, 3)] * 7)  # the indented wrap is part of the block
+        self.assertIsNone(tiers[7])
+        self.assertIsNone(tiers[8])  # indented, but after a typed field: not a wrap
 
     def test_tag_line_covers_only_what_is_above_it(self):
         with tempfile.TemporaryDirectory() as d:
